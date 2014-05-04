@@ -1,0 +1,6 @@
+<% if user_signed_in? %>
+  <p>  <%= link_to "My Postcards", post_cards_path%>
+  </p>
+<% else %>
+  <p>Coming soon</p>
+<% end %>
