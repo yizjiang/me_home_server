@@ -11,12 +11,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140504002735) do
+ActiveRecord::Schema.define(:version => 20140504001422) do
 
-  create_table "omni_auth_providers", :force => true do |t|
+  create_table "auth_provider", :force => true do |t|
     t.string "name"
-    t.string "app_id"
-    t.string "app_secret"
+    t.string "access_token"
+    t.string "access_token_secret"
+    t.string "external_id"
   end
 
   create_table "post_cards", :force => true do |t|
@@ -39,9 +40,8 @@ ActiveRecord::Schema.define(:version => 20140504002735) do
     t.string   "last_sign_in_ip"
     t.datetime "created_at",                             :null => false
     t.datetime "updated_at",                             :null => false
-    t.integer  "omniauth_provider_id"
+    t.integer  "auth_provider_id"
     t.string   "username"
-    t.string   "oauth_external_id"
   end
 
   add_index "users", ["email"], :name => "index_users_on_email", :unique => true

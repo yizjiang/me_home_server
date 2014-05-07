@@ -1,7 +1,7 @@
 class OmniauthCallbacksController < Devise::OmniauthCallbacksController
   def all
     user = User.from_omniauth(request.env["omniauth.auth"])
-    #raise request.env["omniauth.auth"].to_yaml   how to better use oauth callback
+    #raise request.env["omniauth.auth"].to_yaml   #how to better use oauth callback
     if user.persisted?
       flash.notice = "Signed in!"
       sign_in_and_redirect user
@@ -11,4 +11,5 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     end
   end
   alias_method :twitter, :all
+  alias_method :facebook, :all
 end

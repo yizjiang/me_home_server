@@ -5,17 +5,13 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable
 
   has_many :post_cards
-  has_many :auth_provider, class_name: OmniAuthProvider
+  has_one :auth_provider, class_name: AuthProvider
   # Setup accessible (or protected) attributes for your model
-  attr_accessible :email, :password, :username, :password_confirmation, :remember_me, :omniauth_provider_id, :oauth_external_id #validate uniqueness of omniauth and external id
+  attr_accessible :email, :password, :username, :password_confirmation, :remember_me, :auth_provider_id#validate uniqueness of omniauth and external id
 
   def self.from_omniauth(auth)
-    provider_id = OmniAuthProvider.find_by_name(auth.provider).id
-    where(omniauth_provider_id: provider_id, oauth_external_id: auth.uid).first_or_create do |user|
-      user.omniauth_provider_id = provider_id
-      user.oauth_external_id = auth.uid
-      user.username = auth.info.nickname
-    end
+    auth_provider = AuthProvider.find_or_create_by_name_and_external_id(name: auth.provider, external_id: auth.uid, access_token: auth.credentials.token, access_token_secret: auth.credentials.secret)
+    User.find_or_create_by_auth_provider_id(auth_provider_id: auth_provider.id, username: auth.info.nickname)
   end
 
   def self.new_with_session(params, session)
@@ -30,7 +26,7 @@ class User < ActiveRecord::Base
   end
 
   def password_required?
-    super && omniauth_provider_id.blank?
+    super && auth_provider_id.blank?
   end
 
   def update_with_password(params, *options)   #need have password when omniauth
