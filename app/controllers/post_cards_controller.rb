@@ -5,10 +5,10 @@ class PostCardsController < ApplicationController
   def index
     @post_cards = current_user.post_cards
 
-    respond_to do |format|
-      format.html # index.html.erb
-      format.json { render json: @post_cards }
-    end
+    #respond_to do |format|
+    #  format.html # index.html.erb
+    #  format.json { render json: @post_cards }
+    #end
   end
 
   # GET /post_cards/1
