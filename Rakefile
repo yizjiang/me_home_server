@@ -4,4 +4,4 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-SpotCard::Application.load_tasks
+MeHome::Application.load_tasks

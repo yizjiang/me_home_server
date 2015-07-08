@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140504001422) do
+ActiveRecord::Schema.define(:version => 20140504000056) do
 
   create_table "auth_provider", :force => true do |t|
     t.string "name"
@@ -20,15 +20,8 @@ ActiveRecord::Schema.define(:version => 20140504001422) do
     t.string "external_id"
   end
 
-  create_table "post_cards", :force => true do |t|
-    t.string   "content"
-    t.integer  "user_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
-  end
-
   create_table "users", :force => true do |t|
-    t.string   "email",                  :default => "", :null => false
+    t.string   "email"
     t.string   "encrypted_password",     :default => "", :null => false
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
@@ -38,13 +31,10 @@ ActiveRecord::Schema.define(:version => 20140504001422) do
     t.datetime "last_sign_in_at"
     t.string   "current_sign_in_ip"
     t.string   "last_sign_in_ip"
-    t.datetime "created_at",                             :null => false
-    t.datetime "updated_at",                             :null => false
     t.integer  "auth_provider_id"
     t.string   "username"
+    t.datetime "created_at",                             :null => false
+    t.datetime "updated_at",                             :null => false
   end
-
-  add_index "users", ["email"], :name => "index_users_on_email", :unique => true
-  add_index "users", ["reset_password_token"], :name => "index_users_on_reset_password_token", :unique => true
 
 end

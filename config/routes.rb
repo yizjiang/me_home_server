@@ -1,6 +1,7 @@
-SpotCard::Application.routes.draw do
-  resources :post_cards
+MeHome::Application.routes.draw do
   root to: 'application#index'
-  devise_for :users, controllers: {omniauth_callbacks: "omniauth_callbacks"}
-  #devise_for :users, path_names: {sign_in: "login", sign_out: "logout"}
+  devise_for :users, path_names: {sign_in: "login", sign_out: "logout"},
+             controllers: {omniauth_callbacks: "omniauth_callbacks"}
+  devise_for :users do get '/users/logout' => 'devise/sessions#destroy' end
+  devise_for :users do get '/users/sign_out' => 'devise/sessions#destroy' end
 end

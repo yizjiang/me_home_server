@@ -1,9 +1,0 @@
-= javascript_include_tag 'post_cards.js'
-
-#app
-
-%script{type: 'text/html', id: 'postcards_list'}
-  = render 'post_cards/templates/postcards_list'
-
-:javascript
-  APP.Postcard.all_cards = #{@post_cards.to_json};
