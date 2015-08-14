@@ -11,7 +11,6 @@ class User < ActiveRecord::Base
   def self.from_omniauth(auth)
     auth_provider = AuthProvider.find_or_create_by_name_and_external_id(name: auth.provider, external_id: auth.uid, access_token: auth.credentials.token, access_token_secret: auth.credentials.secret)
     user = User.find_or_create_by_auth_provider_id(auth_provider_id: auth_provider.id)
-    p "XX #{auth}"
     user.update_attributes(email: auth.info.email, username:auth.info.try(:nickname))
     user
   end

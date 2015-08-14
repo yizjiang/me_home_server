@@ -11,13 +11,57 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140504000056) do
+ActiveRecord::Schema.define(:version => 20150725005337) do
 
   create_table "auth_provider", :force => true do |t|
     t.string "name"
     t.string "access_token"
     t.string "access_token_secret"
     t.string "external_id"
+  end
+
+  create_table "home_school_assignments", :force => true do |t|
+    t.integer "home_id"
+    t.integer "school_id"
+    t.float   "distance"
+    t.boolean "assigned"
+  end
+
+  create_table "homes", :force => true do |t|
+    t.string   "addr1"
+    t.string   "addr2"
+    t.string   "city"
+    t.string   "county"
+    t.string   "state"
+    t.integer  "zipcode"
+    t.datetime "last_refresh_at"
+    t.datetime "created_at"
+    t.string   "link"
+    t.text     "description"
+    t.integer  "bed_num"
+    t.integer  "bath_num"
+    t.integer  "indoor_size"
+    t.integer  "lot_size"
+    t.string   "price"
+    t.float    "unit_price"
+    t.string   "home_type"
+    t.integer  "year_built"
+    t.string   "neighborhood"
+    t.integer  "stores"
+    t.string   "status"
+  end
+
+  create_table "images", :force => true do |t|
+    t.string  "image_url"
+    t.integer "home_id"
+  end
+
+  create_table "schools", :force => true do |t|
+    t.string "name"
+    t.string "grade"
+    t.float  "student_teacher_ratio"
+    t.float  "rating"
+    t.string "school_type"
   end
 
   create_table "users", :force => true do |t|

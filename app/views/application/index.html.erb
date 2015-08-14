@@ -1,6 +1,16 @@
 <% if user_signed_in? %>
-  <p>  Home
-  </p>
+  <% current_user.attributes.each do |k, v| %>
+    <%= k %>  is <%= v %>
+  <br>
+  <% end %>
+  <%= link_to 'Edit profile', edit_user_registration_path %> |
+  <%= link_to "Logout", destroy_user_session_path, method: :delete %>
 <% else %>
-  <p>Coming soon</p>
+  <%= link_to button_tag("Sign up", width: '60px', height: '60px'), new_user_registration_path %> |
+  <%= link_to button_tag("Login", size: "30x30"), new_user_session_path %>
+  <br>
+  <%= link_to image_tag('twitter.jpeg', size: "30x30"), user_omniauth_authorize_path(:twitter) %>
+  <%= link_to image_tag('facebook.jpeg', size: "30x30"), user_omniauth_authorize_path(:facebook) %>
+  <%= link_to image_tag('wechat.jpeg', size: "30x30"), user_omniauth_authorize_path(:facebook) %>
 <% end %>
+

@@ -11,3 +11,16 @@
  *= require_self
  *= require_tree .
  */
+
+.tw_login {
+  width: 20px;
+  height: 20px
+}
+
+.fb_login{
+
+}
+
+.wechat_login{
+
+}

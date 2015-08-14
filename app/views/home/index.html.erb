@@ -1,0 +1,21 @@
+<h1>All Homes</h1>
+<% @homes.each do |home| %>
+  <h2>*********************</h2>
+  <p>Address: <%= home.addr1 %></p>
+  <p>City: <%= home.city %></p>
+  <p>State: <%= home.state %></p>
+  <p>Zipcode: <%= home.zipcode %></p>
+  <% home.images.each do |image| %>
+    <img src=<%= image.image_url %>>
+  <% end %>
+  <p>Link: <%= home.link %></p>
+  <p>Description: <%= home.description %></p>
+  <p>Bed Num: <%= home.bed_num %></p>
+  <p>Bath Num: <%= home.bath_num %></p>
+  <p>Indoor Size: <%= home.indoor_size %></p>
+  <p>Lot Size: <%= home.lot_size %></p>
+  <p>Price: <%= home.price %></p>
+  <% home.schools.each do |school| %>
+    <p>School name: <%= school.name %></p>
+  <% end %>
+<% end %>

@@ -6,6 +6,7 @@ gem 'devise'
 gem 'omniauth-twitter'
 gem 'omniauth-facebook'
 gem 'haml'
+gem 'spreadsheet'
 
 # Gems used only for assets and not required
 # in production environments by default.
