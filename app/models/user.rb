@@ -8,6 +8,28 @@ class User < ActiveRecord::Base
   # Setup accessible (or protected) attributes for your model
   attr_accessible :email, :password, :username, :password_confirmation, :remember_me, :auth_provider_id#validate uniqueness of omniauth and external id
 
+  has_many :saved_searches, foreign_key: 'uid'
+  has_many :questions, foreign_key: 'uid'
+  has_many :favorite_homes, foreign_key: 'uid'
+  has_many :homes, through: :favorite_homes
+
+  def create_search(query)
+    SavedSearch.find_or_create_by_search_query(JSON(query.slice(*%w(regionValue priceMin priceMax)))) do |search|
+      search.uid = self.id
+    end
+  end
+
+  def add_favorite(home_id)
+    FavoriteHome.find_or_create_by_uid_and_home_id(self.id, home_id)
+  end
+
+  def create_question(question)
+    Question.find_or_create_by_text(question[:text]) do |q|
+      q.uid = self.id
+    end
+  end
+
+
   def self.from_omniauth(auth)
     auth_provider = AuthProvider.find_or_create_by_name_and_external_id(name: auth.provider, external_id: auth.uid, access_token: auth.credentials.token, access_token_secret: auth.credentials.secret)
     user = User.find_or_create_by_auth_provider_id(auth_provider_id: auth_provider.id)

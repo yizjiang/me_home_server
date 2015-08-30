@@ -256,3 +256,18 @@ Devise.setup do |config|
   config.omniauth :twitter, 'AX7bmaHIfhHH801jYv2w', 'jjc5M9K8vv3dOHdjY5n0L91IVct2AeQ2YsgKACL30Qo'
   config.omniauth :facebook, '130820110438847', 'c872d4a1a4f72cb6b183294ec161569b', scope: 'public_profile,user_friends,email,user_birthday,read_stream'
 end
+
+#TODO
+Devise::SessionsController.class_eval do
+  def destroy
+    signed_out = (Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name))
+    yield if block_given?
+    respond_to_on_destroy
+  end
+
+  def respond_to_on_destroy
+    # We actually need to hardcode this as Rails default responder doesn't
+    # support returning empty response on GET request
+    redirect_to 'http://localhost:3031'
+  end
+end

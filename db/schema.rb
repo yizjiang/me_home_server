@@ -11,13 +11,28 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150725005337) do
+ActiveRecord::Schema.define(:version => 20150830065102) do
+
+  create_table "addresses", :force => true do |t|
+    t.string  "addr1"
+    t.string  "addr2"
+    t.string  "city"
+    t.string  "county"
+    t.string  "state"
+    t.integer "zipcode"
+    t.integer "entity_id"
+  end
 
   create_table "auth_provider", :force => true do |t|
     t.string "name"
     t.string "access_token"
     t.string "access_token_secret"
     t.string "external_id"
+  end
+
+  create_table "favorite_homes", :force => true do |t|
+    t.integer "home_id"
+    t.integer "uid"
   end
 
   create_table "home_school_assignments", :force => true do |t|
@@ -42,7 +57,7 @@ ActiveRecord::Schema.define(:version => 20150725005337) do
     t.integer  "bath_num"
     t.integer  "indoor_size"
     t.integer  "lot_size"
-    t.string   "price"
+    t.float    "price"
     t.float    "unit_price"
     t.string   "home_type"
     t.integer  "year_built"
@@ -56,12 +71,23 @@ ActiveRecord::Schema.define(:version => 20150725005337) do
     t.integer "home_id"
   end
 
+  create_table "questions", :force => true do |t|
+    t.string  "text"
+    t.integer "uid"
+  end
+
+  create_table "saved_searches", :force => true do |t|
+    t.string  "search_query"
+    t.integer "uid"
+  end
+
   create_table "schools", :force => true do |t|
-    t.string "name"
-    t.string "grade"
-    t.float  "student_teacher_ratio"
-    t.float  "rating"
-    t.string "school_type"
+    t.string  "name"
+    t.string  "grade"
+    t.float   "student_teacher_ratio"
+    t.float   "rating"
+    t.string  "school_type"
+    t.integer "address_id"
   end
 
   create_table "users", :force => true do |t|

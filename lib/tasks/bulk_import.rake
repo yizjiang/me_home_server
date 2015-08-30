@@ -17,7 +17,7 @@ namespace :cvs do
                              bath_num: row[12],
                              indoor_size: row[13],
                              lot_size: row[14],
-                             price: row[15],
+                             price: row[15].delete(','),
                              unit_price: row[16],
                              home_type: row[17],
                              year_built: row[18].to_i,
@@ -36,6 +36,13 @@ namespace :cvs do
     end
   end
 
+  task :college => :environment do
+    univ = CSV.read('./sample/college.csv')
+    univ[1..-1].each_with_index do |row, index|
+      School.importer(row)
+    end
+
+  end
   # add validation
   def parse_wierd_input_to_array(input)
     input.split("}").map do |item|

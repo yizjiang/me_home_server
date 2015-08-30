@@ -1,0 +1,10 @@
+<h1>All Schools</h1>
+<% @schools.sort_by{|obj| obj.rating}.each do |school| %>
+  <h2>*********************</h2>
+  <p>Name: <%= school.name %></p>
+  <p>Ranking: <%= school.rating.to_i %></p>
+  <p>Address: <%= school.address.addr1 %></p>
+  <p>City: <%= school.address.city %></p>
+  <p>State: <%= school.address.state %></p>
+  <p>Zipcode: <%= school.address.zipcode %></p>
+<% end %>

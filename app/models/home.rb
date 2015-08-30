@@ -4,8 +4,19 @@ class Home < ActiveRecord::Base
   has_many :home_school_assignments
   has_many :schools, through: :home_school_assignments
 
+  has_many :favorite_homes, foreign_key: 'home_id'
+  has_many :users, through: :favorite_homes
+
   def self.search(search)
-    where('(city LIKE ? or zipcode LIKE ?) and price < ? and price > ?', "%#{search.region}%", "%#{search.region}%", search.price_max, search.price_min)
+    result = []
+    if search.region != ''             #TODO make it smart
+      search.region.split(',').each do |region|
+        result.push(*where('(city LIKE ? or zipcode LIKE ?) and price < ? and price > ?', "%#{region}%", "%#{region}%", search.price_max, search.price_min))
+      end
+    else
+      result.push(*where('price < ? and price > ?', search.price_max, search.price_min))
+    end
+    result
   end
 
   def assign_schools(schools, assigned, type)
