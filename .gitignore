@@ -9,3 +9,5 @@
 /log/*.log
 /tmp
 .idea/
+/sample
+public/homes/*

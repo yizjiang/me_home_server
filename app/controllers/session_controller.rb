@@ -5,7 +5,7 @@ class SessionController < ApplicationController
   end
 
   def show
-    render json: {sid: session[:ticket]}
+    render json: {sid: session}
   end
 
   def get_uid_from_ticket(ticket)

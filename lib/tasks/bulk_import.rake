@@ -1,7 +1,7 @@
-namespace :cvs do
+namespace :csv do
   desc 'import xls from file'
   task :import => :environment do
-    home = CSV.read('./sample/san_mateo.csv')
+    home = CSV.read('./sample/data/san-mateo0729.csv')
     home[1..-1].each_with_index do |row, index|
       begin
       uniq_condition = {addr1: row[1],

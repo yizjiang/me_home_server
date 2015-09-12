@@ -3,12 +3,22 @@ MeHome::Application.routes.draw do
   resources :home
   resources :region
   resources :school
-  resources :user
+  resources :user do
+    #collection do
+    #  get 'questions'
+    #end
+  end
+
   resources :session
+  resources :question
 
   post 'user/save_search', to: 'user#save_search'
   post 'user/submit_question', to: 'user#submit_question'
   post 'user/favorite_home', to: 'user#favorite_home'
+  post 'user/unfavorite_home', to: 'user#unfavorite_home'
+
+  post 'question/post_answer', to: 'question#post_answer'
+
 
   devise_for :users, path_names: {sign_in: "login", sign_out: "logout"},
              controllers: {omniauth_callbacks: "omniauth_callbacks"}

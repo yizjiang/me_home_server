@@ -14,7 +14,6 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
   end
 
   def encrypt_uid(uid)       #TODO
-    p 'xxxx session should be ' + "eqon2#{uid}xfk9"
     return "eqon2#{uid}xfk9"
   end
 

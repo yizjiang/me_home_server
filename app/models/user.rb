@@ -6,12 +6,13 @@ class User < ActiveRecord::Base
 
   has_one :auth_provider, class_name: AuthProvider
   # Setup accessible (or protected) attributes for your model
-  attr_accessible :email, :password, :username, :password_confirmation, :remember_me, :auth_provider_id#validate uniqueness of omniauth and external id
+  attr_accessible :email, :password, :username, :password_confirmation, :remember_me, :auth_provider_id, :qr_code#validate uniqueness of omniauth and external id
 
   has_many :saved_searches, foreign_key: 'uid'
   has_many :questions, foreign_key: 'uid'
   has_many :favorite_homes, foreign_key: 'uid'
   has_many :homes, through: :favorite_homes
+  has_many :answers, foreign_key: 'uid'
 
   def create_search(query)
     SavedSearch.find_or_create_by_search_query(JSON(query.slice(*%w(regionValue priceMin priceMax)))) do |search|
@@ -21,6 +22,10 @@ class User < ActiveRecord::Base
 
   def add_favorite(home_id)
     FavoriteHome.find_or_create_by_uid_and_home_id(self.id, home_id)
+  end
+
+  def remove_favorite(home_id)
+    FavoriteHome.find_by_uid_and_home_id(self.id, home_id).destroy
   end
 
   def create_question(question)
