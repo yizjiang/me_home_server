@@ -268,6 +268,6 @@ Devise::SessionsController.class_eval do
   def respond_to_on_destroy
     # We actually need to hardcode this as Rails default responder doesn't
     # support returning empty response on GET request
-    redirect_to 'http://localhost:3031'
+    redirect_to 'http://localhost:3031'                  #todo redirect to where
   end
 end

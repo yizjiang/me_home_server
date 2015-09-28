@@ -2,9 +2,26 @@ class UserController < ApplicationController
   def index
     uid =  params[:uid].present? ? params[:uid] : session[:uid]
     result = uid.present? ? User.find(uid) : {}
-    temp_json = JSON.parse result.to_json(include: [:saved_searches, :homes])
+    unless result
+      render json: {}
+      return
+    end
+
+    temp_json = JSON.parse result.to_json(include: [:saved_searches, :homes])   #TODO include image in homes
     temp_json.merge!(JSON.parse result.to_json(include: {:questions=> {include: {:answers => {include: :user}}}}))      #TODO what is this shit
-    temp_json.merge!(published_page: {name: 'cindy', tel: 6508174451})
+    if result.agent_extention
+      page_config = if result.agent_extention.page_config
+                      JSON.parse(result.agent_extention.page_config)
+                    else
+                      {}
+                    end
+      search = if page_config['search']
+                page_config['search'].map{|_, v| JSON.parse(v)}
+               else
+                 []
+               end
+      temp_json.merge!(agent_identifier: result.agent_extention.agent_identifier, published_page_config: {header: page_config['header'], search: search})   #TODO saved search
+    end
     render json: temp_json.to_json  #TODO write to json method in model
   end
 

@@ -1,58 +1,69 @@
 namespace :csv do
   desc 'import xls from file'
   task :import => :environment do
-    home = CSV.read('./sample/data/san-mateo0729.csv')
-    home[1..-1].each_with_index do |row, index|
+    home = CSV.read('./sample/data/SanMateo-2015-09-04-306.csv', :encoding => 'windows-1251:utf-8')
+    home[1..1].each_with_index do |row, index|
       begin
-      uniq_condition = {addr1: row[1],
-                        city: row[2],
-                        state: row[3],
-                        zipcode: row[4]}
+      row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
+      uniq_condition = {addr1: row[3],
+                        city: row[4],
+                        state: row[5],
+                        zipcode: row[6]}
       home = Home.where(uniq_condition).first_or_create
-      home.update_attributes(county: row[5],
-                             last_refresh_at: time_before_now(row[6]),
-                             link: row[8],
-                             description: row[10],
-                             bed_num: row[11],
-                             bath_num: row[12],
-                             indoor_size: row[13],
-                             lot_size: row[14],
-                             price: row[15].delete(','),
-                             unit_price: row[16],
-                             home_type: row[17],
-                             year_built: row[18].to_i,
-                             neighborhood: row[19],
-                             stores: row[21],
-                             status: row[22]
+      home.update_attributes(county: row[7],
+                             last_refresh_at: time_before_now(row[8]),
+                             link: row[10],
+                             description: row[12],
+                             bed_num: row[13],
+                             bath_num: row[14],
+                             indoor_size: row[15],
+                             lot_size: row[16],
+                             price: row[17].delete(','),
+                             unit_price: row[18],
+                             home_type: row[19],
+                             year_built: row[20].to_i,
+                             neighborhood: row[21],
+                             stores: row[23],
+                             status: row[24]
                              )
 
-      home.build_image_group(row[9])
-      assigned_schools = parse_wierd_input_to_array(row[55])[1..-1] #remove header
+      home.build_image_group(row[11])
+      assigned_schools = parse_wierd_input_to_array(row[61])[1..-1] #remove header
+      public_elementary =  parse_wierd_input_to_array(row[62])[1..-1]
+      public_middle =  parse_wierd_input_to_array(row[63])[1..-1]
+      public_high =  parse_wierd_input_to_array(row[64])[1..-1]
+      private_schools =  parse_wierd_input_to_array(row[65])[1..-1]
+
+      home.import_public_record(row[0..2])
       home.assign_public_schools(assigned_schools)
+      home.other_public_schools(public_elementary + public_middle + public_high)
+      home.assign_private_schools(private_schools)
+
+      p "update #{home.id}"
       rescue StandardError
         p "error out for item #{index}"
       end
-      #assiged_public_school: 55, public_school: 56, private_school: 59, property_tax: 61
+     # property_tax: 67
     end
   end
 
-  task :college => :environment do
-    univ = CSV.read('./sample/college.csv')
-    univ[1..-1].each_with_index do |row, index|
-      School.importer(row)
-    end
+   task :college => :environment do
+     univ = CSV.read('./sample/college.csv')
+     univ[1..-1].each_with_index do |row, index|
+       School.importer(row)
+     end
 
   end
   # add validation
   def parse_wierd_input_to_array(input)
     input.split("}").map do |item|
       item[2..-2].split(",\"").map do |item|
-        item[0..-2]
+        item.delete('""').delete('\"')
       end
     end
   end
 
-  def time_before_now(time)
+  def time_before_now(time)  # time is hour
     Time.now - time.to_i * 3600
   end
 

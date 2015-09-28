@@ -9,9 +9,14 @@ class SessionController < ApplicationController
   end
 
   def get_uid_from_ticket(ticket)
-    value = REDIS.get(ticket)
-    REDIS.del(ticket)
-    return value if value
-    return ''
+    if ticket.present?
+      return decode_uid(ticket)
+    else
+      return ''
+    end
+  end
+
+  def decode_uid(ticket)
+    return ticket[5..-5]
   end
 end

@@ -1,22 +1,51 @@
 class Home < ActiveRecord::Base
   attr_accessible *column_names
   has_many :images
+  has_many :public_records
+
   has_many :home_school_assignments
-  has_many :schools, through: :home_school_assignments
+
+  has_many :schools, through: :home_school_assignments do
+    def assigned
+      where("home_school_assignments.assigned = ?", true)
+    end
+    def other_public
+      where("home_school_assignments.assigned = ? && school_type = ?", false, 'public')
+    end
+    def private
+      where("home_school_assignments.assigned = ? && school_type = ?", false, 'private')
+    end
+  end
 
   has_many :favorite_homes, foreign_key: 'home_id'
   has_many :users, through: :favorite_homes
 
-  def self.search(search)
+  def self.search(searches)
+    unless searches.is_a? Array
+      searches = [searches]
+    end
+
     result = []
-    if search.region != ''             #TODO make it smart
-      search.region.split(',').each do |region|
-        result.push(*where('(city LIKE ? or zipcode LIKE ?) and price < ? and price > ?', "%#{region}%", "%#{region}%", search.price_max, search.price_min))
+    searches.each do |search|
+      if(region = search.region)
+        result.push(*where('(city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ?', "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active'))
+      else
+        result.push(*where('price < ? and price > ? and status = ?', search.price_max, search.price_min, 'Active'))
       end
-    else
-      result.push(*where('price < ? and price > ?', search.price_max, search.price_min))
     end
     result
+  end
+
+  def assigned_schools
+    schools.assigned
+  end
+
+  def nearby_public_schools
+    schools.other_public
+  end
+
+  def private_schools
+    schools.private
   end
 
   def assign_schools(schools, assigned, type)
@@ -26,13 +55,23 @@ class Home < ActiveRecord::Base
       record.rating= school[4]
       record.save
 
-      assignment = HomeSchoolAssignment.where(home_id: self.id, school_id: record.id).first_or_create
-      assignment.update_attributes(distance: record[1], assigned: assigned)
+      if assigned
+        assignment = HomeSchoolAssignment.where(home_id: self.id, school_id: record.id).first_or_create
+        assignment.update_attributes(distance: record[1], assigned: assigned)
+      end
     end
   end
 
   def assign_public_schools(schools)
-   assign_schools(schools, true, 'public')
+    assign_schools(schools, true, 'public')
+  end
+
+  def assign_private_schools(schools)
+    assign_schools(schools, false, 'private')
+  end
+
+  def other_public_schools(schools)
+    assign_schools(schools, false, 'public')
   end
 
   def build_image_group(images)
@@ -44,4 +83,9 @@ class Home < ActiveRecord::Base
     end
   end
 
+  def import_public_record(record)
+    PublicRecord.where(source: record[0], property_id: record[1], file_id: record[2]).first_or_create do |pr|
+      pr.home_id = self.id
+    end
+  end
 end

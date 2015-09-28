@@ -4,15 +4,38 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable, :omniauthable,
          :recoverable, :rememberable, :trackable, :validatable
 
+  validates :username, presence: true
   has_one :auth_provider, class_name: AuthProvider
   # Setup accessible (or protected) attributes for your model
-  attr_accessible :email, :password, :username, :password_confirmation, :remember_me, :auth_provider_id, :qr_code#validate uniqueness of omniauth and external id
+  attr_accessible :email, :password, :username, :password_confirmation, :remember_me, :auth_provider_id, :qr_code,
+                  :agent_identifier, :agent_license_id, :agent_extention_id#validate uniqueness of omniauth and external id
 
   has_many :saved_searches, foreign_key: 'uid'
   has_many :questions, foreign_key: 'uid'
   has_many :favorite_homes, foreign_key: 'uid'
   has_many :homes, through: :favorite_homes
   has_many :answers, foreign_key: 'uid'
+  has_one :agent_extention
+
+  after_create :assign_agent_extension, if: lambda{self.agent_extention_id.present?}
+
+  def agent_license_id
+    ''
+  end
+
+  def agent_identifier
+    ''
+  end
+
+  def create_agent_extension(identifier, license_id)
+    agent_ex = AgentExtention.find_or_create_by_agent_identifier(identifier).id
+    self.agent_extention_id = agent_ex
+  end
+
+  def assign_agent_extension
+    agent_ex = AgentExtention.find(self.agent_extention_id)
+    agent_ex.update_attributes(user_id: self.id)
+  end
 
   def create_search(query)
     SavedSearch.find_or_create_by_search_query(JSON(query.slice(*%w(regionValue priceMin priceMax)))) do |search|
@@ -44,10 +67,15 @@ class User < ActiveRecord::Base
 
   def self.new_with_session(params, session)
     if session["devise.user_attributes"]
-      new(session["devise.user_attributes"], without_protection: true) do |user|
+      agent_identifier,agent_license_id = agent_params(params)
+      user = new(session["devise.user_attributes"], without_protection: true) do |user|
         user.attributes = params
         user.valid?
       end
+      if agent_identifier && agent_license_id
+        user.create_agent_extension(agent_identifier, agent_license_id)
+      end
+      user
     else
       super
     end

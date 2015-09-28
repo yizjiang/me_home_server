@@ -14,4 +14,20 @@ test:
   pool: 50
   username: root
 
+staging:
+  adapter: mysql2
+  encoding: utf8mb4
+  reconnect: false
+  database: meejia
+  pool: 50
+  username: meejia
+  password: lfww2015
+
 production:
+  adapter: mysql2
+  encoding: utf8mb4
+  reconnect: false
+  database: meejia
+  pool: 50
+  username: meejia
+  password: lfww2015

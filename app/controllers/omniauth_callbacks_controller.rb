@@ -4,7 +4,6 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     #raise request.env["omniauth.auth"].to_yaml   #how to better use oauth callback
     if user.persisted?
       flash.notice = "Signed in!"
-      REDIS.set(encrypt_uid(user.id), user.id)
       session[:ticket] = encrypt_uid(user.id)
       sign_in_and_redirect user
     else
