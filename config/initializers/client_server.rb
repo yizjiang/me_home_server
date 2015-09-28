@@ -1,0 +1,1 @@
+CLIENT_HOST = 'http://www.usreclub.com:3001/'

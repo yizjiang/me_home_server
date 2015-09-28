@@ -1,5 +1,6 @@
-PATH
-  remote: ../devise
+GIT
+  remote: git@github.com:yizjiang/devise.git
+  revision: d8ec85091cb8bd8a7d1d1a0bbeaf1d8681a11287
   specs:
     devise (3.5.2)
       bcrypt (~> 3.0)
