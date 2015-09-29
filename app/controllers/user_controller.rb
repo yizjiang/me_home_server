@@ -28,7 +28,9 @@ class UserController < ApplicationController
   def save_search
     uid = request.headers['HTTP_USER_ID']
     user = User.find(uid)
+    p params
     user.create_search(params)
+    p user.saved_searches
     render json: user.to_json(include: [:saved_searches])
   end
 

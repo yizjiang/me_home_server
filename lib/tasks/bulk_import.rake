@@ -1,8 +1,10 @@
 namespace :csv do
   desc 'import xls from file'
   task :import => :environment do
-    home = CSV.read('./sample/data/SanMateo-2015-09-04-306.csv', :encoding => 'windows-1251:utf-8')
-    home[1..1].each_with_index do |row, index|
+    puts 'Enter csv file name under sample/data/'
+    file = STDIN.gets.chomp
+    home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
+    home[1..-1].each_with_index do |row, index|
       begin
       row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
       uniq_condition = {addr1: row[3],
@@ -39,7 +41,6 @@ namespace :csv do
       home.other_public_schools(public_elementary + public_middle + public_high)
       home.assign_private_schools(private_schools)
 
-      p "update #{home.id}"
       rescue StandardError
         p "error out for item #{index}"
       end

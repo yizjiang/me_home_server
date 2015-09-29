@@ -36,16 +36,12 @@ class Home < ActiveRecord::Base
     result
   end
 
-  def assigned_schools
-    schools.assigned
-  end
-
-  def nearby_public_schools
-    schools.other_public
-  end
-
-  def private_schools
-    schools.private
+  def as_json
+    result = super
+    result[:assigned_school] = self.schools.assigned
+    result[:public_schools] = self.schools.other_public
+    result[:private_schools] = self.schools.private
+    result
   end
 
   def assign_schools(schools, assigned, type)

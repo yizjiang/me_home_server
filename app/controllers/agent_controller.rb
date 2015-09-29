@@ -3,10 +3,12 @@ class AgentController < ApplicationController
     config = JSON.parse AgentExtention.find_by_agent_identifier(params[:name]).page_config
     search_config = config['search']
 
+    if search_config
     searches = search_config.map{|_, v| Search.new(JSON.parse(v).with_indifferent_access.reject{|_, v| v.empty?})}
 
     result = Home.search(searches).to_json(include: [:schools, :images => {:only => :image_url}])
-    render json: {header: config['header'], home_list: JSON.parse(result) }
+    end
+    render json: {header: config['header'], home_list: JSON.parse(result || '[]') }
   end
 
   def save_page_config

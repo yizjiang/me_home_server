@@ -1,0 +1,11 @@
+development:
+  client_server_url: http://localhost:3031
+
+test:
+  client_server_url: http://localhost:3031
+
+staging:
+  client_server_url: http://www.usreclub.com:3001
+
+production:
+  client_server_url: http://www.meejia.com:3001

@@ -6,6 +6,6 @@
   <%= link_to 'Edit profile', edit_user_registration_path %> |
   <%= link_to "Logout", destroy_user_session_path, method: :delete %>
 <% else %>
-  <% redirect_to "http://localhost:3031" %>
+  <% redirect_to "#{CLIENT_HOST}" %>
 <% end %>
 
