@@ -6,7 +6,7 @@ namespace :csv do
     home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
     home[1..-1].each_with_index do |row, index|
       begin
-      row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
+      #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
       uniq_condition = {addr1: row[3],
                         city: row[4],
                         state: row[5],
@@ -30,7 +30,7 @@ namespace :csv do
                              )
 
       home.build_image_group(row[11])
-      assigned_schools = parse_wierd_input_to_array(row[61])[1..-1] #remove header
+      assigned_schools = row[61] ? parse_wierd_input_to_array(row[61])[1..-1] : [] #remove header
       public_elementary =  parse_wierd_input_to_array(row[62])[1..-1]
       public_middle =  parse_wierd_input_to_array(row[63])[1..-1]
       public_high =  parse_wierd_input_to_array(row[64])[1..-1]
@@ -54,7 +54,8 @@ namespace :csv do
        School.importer(row)
      end
 
-  end
+   end
+
   # add validation
   def parse_wierd_input_to_array(input)
     input.split("}").map do |item|

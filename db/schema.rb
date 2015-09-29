@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150917051754) do
+ActiveRecord::Schema.define(:version => 20150929214644) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -76,6 +76,10 @@ ActiveRecord::Schema.define(:version => 20150917051754) do
     t.string   "neighborhood"
     t.integer  "stores"
     t.string   "status"
+  end
+
+  create_table "homes_cn", :force => true do |t|
+    t.text "description"
   end
 
   create_table "images", :force => true do |t|

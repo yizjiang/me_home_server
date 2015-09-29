@@ -4,6 +4,7 @@ class Home < ActiveRecord::Base
   has_many :public_records
 
   has_many :home_school_assignments
+  has_one :home_cn, foreign_key: 'id'
 
   has_many :schools, through: :home_school_assignments do
     def assigned
@@ -41,6 +42,7 @@ class Home < ActiveRecord::Base
     result[:assigned_school] = self.schools.assigned
     result[:public_schools] = self.schools.other_public
     result[:private_schools] = self.schools.private
+    result[:chinese_description] = self.home_cn.description
     result
   end
 
