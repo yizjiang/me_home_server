@@ -42,7 +42,7 @@ class Home < ActiveRecord::Base
     result[:assigned_school] = self.schools.assigned
     result[:public_schools] = self.schools.other_public
     result[:private_schools] = self.schools.private
-    result[:chinese_description] = self.home_cn.description
+    result[:chinese_description] = self.home_cn.try(:description)
     result
   end
 
