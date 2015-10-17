@@ -21,6 +21,9 @@ MeHome::Application.routes.draw do
 
   post 'question/post_answer', to: 'question#post_answer'
 
+  get 'dm/wechat', to: 'wechat#auth'
+  get 'dm/wechat/test', to: 'wechat#test'
+  post 'dm/wechat', to: 'wechat#message'
 
   devise_for :users, path_names: {sign_in: "login", sign_out: "logout"},
              controllers: {omniauth_callbacks: "omniauth_callbacks"}

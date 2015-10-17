@@ -21,7 +21,7 @@ class Home < ActiveRecord::Base
   has_many :favorite_homes, foreign_key: 'home_id'
   has_many :users, through: :favorite_homes
 
-  def self.search(searches)
+  def self.search(searches, limit = nil)
     unless searches.is_a? Array
       searches = [searches]
     end
@@ -29,9 +29,9 @@ class Home < ActiveRecord::Base
     result = []
     searches.each do |search|
       if(region = search.region)
-        result.push(*where('(city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ?', "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active'))
+        result.push(*where('(city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ?', "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active').limit(limit))
       else
-        result.push(*where('price < ? and price > ? and status = ?', search.price_max, search.price_min, 'Active'))
+        result.push(*where('price < ? and price > ? and status = ?', search.price_max, search.price_min, 'Active').limit(limit))
       end
     end
     result
@@ -39,6 +39,7 @@ class Home < ActiveRecord::Base
 
   def as_json
     result = super
+    result[:images] = self.images
     result[:assigned_school] = self.schools.assigned
     result[:public_schools] = self.schools.other_public
     result[:private_schools] = self.schools.private
