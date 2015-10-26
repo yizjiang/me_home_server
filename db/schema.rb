@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150929214644) do
+ActiveRecord::Schema.define(:version => 20151026012313) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -27,6 +27,14 @@ ActiveRecord::Schema.define(:version => 20150929214644) do
     t.string  "page_config"
     t.string  "agent_identifier"
     t.integer "user_id"
+  end
+
+  create_table "agent_requests", :force => true do |t|
+    t.string "open_id"
+    t.string "agent_identifier_list"
+    t.string "status"
+    t.string "selected_agent"
+    t.string "region"
   end
 
   create_table "answers", :force => true do |t|
@@ -98,6 +106,7 @@ ActiveRecord::Schema.define(:version => 20150929214644) do
     t.string  "text"
     t.integer "uid"
     t.integer "accepted_aid"
+    t.string  "open_id"
   end
 
   create_table "saved_searches", :force => true do |t|

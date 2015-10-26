@@ -1,0 +1,7 @@
+<xml>
+<ToUserName><![CDATA[<%= @msg_hash[:from_username] %>]]></ToUserName>
+<FromUserName><![CDATA[<%= @msg_hash[:to_username] %>]]></FromUserName>
+<CreateTime><![CDATA[<%= Time.now.to_i %>]]></CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[<%= @msg_hash[:body] %>]]></Content>
+</xml>

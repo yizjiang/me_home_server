@@ -25,6 +25,9 @@ MeHome::Application.routes.draw do
   get 'dm/wechat/test', to: 'wechat#test'
   post 'dm/wechat', to: 'wechat#message'
 
+  get 'customers', to: 'customer#index'
+  post 'customers/connect', to: 'customer#connect'
+
   devise_for :users, path_names: {sign_in: "login", sign_out: "logout"},
              controllers: {omniauth_callbacks: "omniauth_callbacks"}
   devise_for :users do get '/users/logout' => 'devise/sessions#destroy' end

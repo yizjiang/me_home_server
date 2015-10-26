@@ -1,11 +1,11 @@
 <xml>
-<ToUserName><![CDATA[<%= data[:from_username] %>]]></ToUserName>
-<FromUserName><![CDATA[<%= data[:to_username] %>]]></FromUserName>
+<ToUserName><![CDATA[<%= @msg_hash[:from_username] %>]]></ToUserName>
+<FromUserName><![CDATA[<%= @msg_hash[:to_username] %>]]></FromUserName>
 <CreateTime><![CDATA[<%= Time.now.to_i %>]]></CreateTime>
 <MsgType><![CDATA[news]]></MsgType>
-<ArticleCount><%= data[:items].size%></ArticleCount>
+<ArticleCount><%= @msg_hash[:items].size%></ArticleCount>
 <Articles>
-<% data[:items].each do |item| %>
+<% @msg_hash[:items].each do |item| %>
 <item>
   <Title>
     <![CDATA[<%= item[:title] %>]]>
