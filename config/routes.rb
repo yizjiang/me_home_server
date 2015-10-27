@@ -23,6 +23,8 @@ MeHome::Application.routes.draw do
 
   get 'dm/wechat', to: 'wechat#auth'
   get 'dm/wechat/test', to: 'wechat#test'
+  get 'wechat/callback', to: 'wechat#collect_data'
+
   post 'dm/wechat', to: 'wechat#message'
 
   get 'customers', to: 'customer#index'

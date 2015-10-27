@@ -3,13 +3,18 @@
 #require '../../lib/wechat/response_command'
 
 class WechatController < ApplicationController
+  before_filter :get_message_from_params, :if => lambda {request.post?}
 
-  before_filter :get_message_from_params
   METHOD_MAPPING = {'s' => :home_search,
                     'q' => :ask_question,
                     'a' => :need_agent,
                     'u' => :update_search
   }
+
+  def collect_data
+    p params
+    #redirect_to 'http://www.google.com'
+  end
 
   def auth
     render text: params['echostr']
@@ -43,9 +48,18 @@ class WechatController < ApplicationController
   private
 
   def get_message_from_params
+    body = case params['xml']['MsgType']
+             when 'text'
+               params['xml']['Content']
+             when 'event'
+               params['xml']['EventKey']
+             else
+               ''
+           end
+
     @msg_hash = {from_username: params['xml']['FromUserName'],
                  to_username: params['xml']['ToUserName'],
-                 body: params['xml']['Content']}
+                 body: body}
   end
 
   def default_response
