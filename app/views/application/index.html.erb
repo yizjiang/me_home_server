@@ -1,3 +1,5 @@
+<a href= <%="#{CLIENT_HOST}"%> > Go Back </a>
+
 <% if user_signed_in? %>
   <% current_user.attributes.each do |k, v| %>
     <%= k %>  is <%= v %>

@@ -35,4 +35,18 @@ class AgentController < ApplicationController
     end
     render json: {header: new_config['header'], home_list: result }
   end
+
+  def set_search
+    @customer = WechatUser.find(params[:cid])
+    @agent_id = params[:uid]
+    render 'agent/customer_search_form'
+  end
+
+  def save_customer_search
+    @customer = WechatUser.find(params[:customer_id])
+    @customer.update_attributes(search: params.slice(:city, :price_range).to_json)
+    @agent_id = params[:agent_id]
+    flash[:notice] = "Search successfully saved"
+    render 'agent/customer_search_form'
+  end
 end

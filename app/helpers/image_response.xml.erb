@@ -1,0 +1,9 @@
+<xml>
+<ToUserName><![CDATA[<%= @msg_hash[:from_username] %>]]></ToUserName>
+<FromUserName><![CDATA[<%= @msg_hash[:to_username] %>]]></FromUserName>
+<CreateTime><![CDATA[<%= Time.now.to_i %>]]></CreateTime>
+<MsgType><![CDATA[image]]></MsgType>
+<Image>
+<MediaId><![CDATA[<%= @msg_hash[:body] %>]]></MediaId>
+</Image>
+</xml>

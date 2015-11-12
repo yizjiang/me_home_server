@@ -8,7 +8,13 @@ class WechatController < ApplicationController
   METHOD_MAPPING = {'s' => :home_search,
                     'q' => :ask_question,
                     'a' => :need_agent,
-                    'u' => :update_search
+                    'u' => :update_search,
+                    'cq' => :customer_questions,
+                    'pc' => :agent_request,
+                    'agent_follow' => :followed_by_agent,
+                    'my_client' => :my_client,
+                    'subscribe' => :subscribe
+
   }
 
   def collect_data
@@ -25,9 +31,7 @@ class WechatController < ApplicationController
                  send(methond_sym)
                elsif (service_type = cached_input(:wait_input))
                  delete_redis(:wait_input)
-                 if(@msg_hash[:body]!= 'Y' && @msg_hash[:body] !='y')
-                   set_redis(service_type, @msg_hash[:body])
-                 end
+                 @user_input = @msg_hash[:body]
                  send(service_type.to_sym)
                else
                  default_response
@@ -35,28 +39,25 @@ class WechatController < ApplicationController
     render xml: response
   end
 
-  def test
-    response = multi_reply({from_username: 1234, to_username: 5678, items: [{title: 'house1', body: 'nice home',
-                                                                             pic_url: 'http://www.zillowstatic.com/static-homepage/7512d57/static-homepage/images/backgrounds/1500x675_white_home.jpg',
-                                                                             url: 'www.google.com'},
-                                                                            {title: 'house2', body: 'bay area',
-                                                                             pic_url: 'http://cdn.freshome.com/wp-content/uploads/2013/08/selling-your-home-cedar-shingle-home.jpg',
-                                                                             url: 'www.google.com'}]})
-    render xml: response
-  end
-
   private
 
   def get_message_from_params
+    p "xxx #{params}"
     body = case params['xml']['MsgType']
              when 'text'
                params['xml']['Content']
              when 'event'
-               params['xml']['EventKey']
+               if  params['xml']['Event'] == 'SCAN'
+                 @agent_id = params['xml']['EventKey']
+                 'agent_follow'
+               elsif params['xml']['Event'] == 'subscribe'
+                 'subscribe'
+               else
+                 params['xml']['EventKey']
+               end
              else
                ''
            end
-
     @msg_hash = {from_username: params['xml']['FromUserName'],
                  to_username: params['xml']['ToUserName'],
                  body: body}
@@ -67,6 +68,11 @@ class WechatController < ApplicationController
     text_response
   end
 
+  def subscribe
+    @msg_hash[:body] = '觅家公众号竭诚为您服务'
+    text_response
+  end
+
   def ask_question
     set_redis(:wait_input, :submit_question)
     @msg_hash[:body] = '请输入您想问问的问题'
@@ -74,10 +80,79 @@ class WechatController < ApplicationController
   end
 
   def submit_question
-    p @msg_hash[:body]
     Question.create(open_id: @msg_hash[:from_username], text: @msg_hash[:body])
     @msg_hash[:body] = '问题已提交，您会在24小时内收到专业人士解答'
     text_response
+  end
+
+  def customer_questions
+    question = Question.last
+    set_redis(:wait_input, :answer_question)
+    set_redis(:answer_question, question.id)
+    username = if open_id = question.open_id
+                 WechatUser.find_by_open_id(open_id).nickname
+               else
+                 'xxx'
+               end
+    @msg_hash[:body] = "#{username}提问: #{question.text}"
+    text_response
+  end
+
+  def answer_question
+    question = Question.find(cached_input(:answer_question).to_i)
+    delete_redis(:answer_question)
+    question.create_answer(@msg_hash[:body], 5)  #agent and user mapping.
+    @msg_hash[:body] = "回复已提交"
+    text_response
+  end
+
+  def followed_by_agent
+    user_info = fetch_user_info(@msg_hash[:from_username])
+    p user_info
+    user = WechatUser.find_or_initialize_by_open_id(@msg_hash[:from_username]) do |user|
+      user.agent_id = @agent_id
+      user.nickname = user_info['nickname']
+      user.head_img_url = user_info['headimgurl']
+      user.save
+    end
+    p user
+    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务"
+    text_response
+  end
+
+  def fetch_user_info(open_id)
+    params = {grant_type: 'client_credential',
+              appid: WECHAT_CLIENTID,
+              secret: WECHAT_CLIENTSECRET}
+    response = Typhoeus.get("https://api.weixin.qq.com/cgi-bin/token", params: params)
+    access_token = JSON.parse(response.body)['access_token']
+
+    url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=#{access_token}&openid=#{open_id}&lang=zh_CN"
+    response = Typhoeus.get(url)
+    JSON.parse(response.body)
+  end
+
+  def like_agent
+    wechat_user = WechatUser.find_by_open_id(@msg_hash[:from_username])
+    wechat_user.update_attributes(agent_id: 5) #TODO agent mapping
+    @msg_hash[:body] = 'YlM5aa_RKJ9gTrXiOMTyIf8ulaX-UDde-peoi9Wp9xEVxeMlJdEoqnPADgUH_e1K'
+    image_response
+  end
+
+  def my_client
+    @msg_hash[:items]  = WechatUser.where(agent_id: 5).map do |user|
+      search = if user.search
+                 JSON.parse(user.search)
+               else
+                 {}
+               end
+      {title: user.nickname,
+       body: "城市: #{search['city']}, 价格区间: #{search['price_range']}",
+       pic_url: user.head_img_url,
+       url: "http://7997baf7.ngrok.io/agent/set_search?uid=5&cid=#{user.id}"}
+    end
+    p @msg_hash[:items]
+    article_response
   end
 
   def need_agent
@@ -117,7 +192,12 @@ class WechatController < ApplicationController
   end
 
   def home_search
-    if value = REDIS.get("#{@msg_hash[:from_username]}:home_search")
+    @user_input = if search = WechatUser.find_by_open_id(@msg_hash[:from_username]).search
+                    JSON.parse(search)['city']
+                  else
+                    nil
+                  end
+    if value = @user_input
       searches = value.split(',').map do |value|
         Search.new(regionValue: value)
       end
@@ -132,8 +212,18 @@ class WechatController < ApplicationController
     end
   end
 
+  def agent_request
+    @msg_hash[:body] = "User #{AgentRequest.last.open_id} request agent help in #{AgentRequest.last.region} area"
+    text_response
+  end
+
   def text_response
     file_content = File.open(File.expand_path("./app/helpers/text_response.xml.erb"), "r").read
+    ERB.new(file_content).result(binding)
+  end
+
+  def image_response
+    file_content = File.open(File.expand_path("./app/helpers/image_response.xml.erb"), "r").read
     ERB.new(file_content).result(binding)
   end
 
@@ -146,13 +236,13 @@ class WechatController < ApplicationController
     homes.map do |home|
       {title: "#{home.bed_num} Beds #{home.home_type} at #{home.addr1} #{home.city}",
        body: 'nice home',
-       pic_url: "http://81703363.ngrok.io/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: home.link}
+       pic_url: "http://cb549de3.ngrok.io/#{home.images.first.try(:image_url) || 'default.jpeg'}",
+       url: "#{CLIENT_HOST}/#/home_detail/#{home.id}"}
     end
   end
 
   def set_redis(key, value)
-    REDIS.set("#{@msg_hash[:from_username]}:#{key}", value.to_s)
+    REDIS.setex("#{@msg_hash[:from_username]}:#{key}", 60, value.to_s)
   end
 
   def delete_redis(key)

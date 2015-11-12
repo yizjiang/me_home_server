@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class Question < ActiveRecord::Base
   belongs_to :user
   has_many :answers, foreign_key: 'qid'
@@ -14,15 +16,24 @@ class Question < ActiveRecord::Base
 
   def send_to_wechat(text, replyee_id)
     params = {grant_type: 'client_credential',
-              appid: 'wxd284e53ecd0e2b51',
-              secret: 'a1fd7beec066019b1b9b28efcba1e610'}
+              appid: WECHAT_CLIENTID,
+              secret: WECHAT_CLIENTSECRET}
     response = Typhoeus.get("https://api.weixin.qq.com/cgi-bin/token", params: params)
     access_token = JSON.parse(response.body)['access_token']
 
+
     body = {touser: self.open_id,
             msgtype: 'text',
-            text: {content: "#{User.find(replyee_id).username}: #{text}"}}
+            text: {content: "我们共为您收集了1条经纪人回复，如想了解更多详情，请回复经纪人的编码获取联系方式"}}
 
     Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{access_token}", body: body.to_json)
+
+    body = {touser: self.open_id,
+            msgtype: 'text',
+            text: {content: "#{User.find(replyee_id).agent_extention.agent_identifier}: #{text} "}}
+
+    Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{access_token}", body: body.to_json)
+
+    REDIS.set("#{ self.open_id}:wait_input", :like_agent)
   end
 end

@@ -1,6 +1,6 @@
 namespace :csv do
   desc 'import xls from file'
-  task :import => :environment do
+  task :update => :environment do
     puts 'Enter csv file name under sample/data/'
     file = STDIN.gets.chomp
     home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
@@ -29,17 +29,17 @@ namespace :csv do
                                status: row[23]
         )
 
-        home.build_image_group(row[66])
-        assigned_schools = row[59] ? parse_wierd_input_to_array(row[59])[1..-1] : [] #remove header
-        public_elementary =  parse_wierd_input_to_array(row[60])[1..-1]
-        public_middle =  parse_wierd_input_to_array(row[61])[1..-1]
-        public_high =  parse_wierd_input_to_array(row[62])[1..-1]
-        private_schools =  parse_wierd_input_to_array(row[63])[1..-1]
+#      home.build_image_group(row[66])
+#      assigned_schools = row[59] ? parse_wierd_input_to_array(row[59])[1..-1] : [] #remove header
+#      public_elementary =  parse_wierd_input_to_array(row[60])[1..-1]
+#      public_middle =  parse_wierd_input_to_array(row[61])[1..-1]
+#      public_high =  parse_wierd_input_to_array(row[62])[1..-1]
+#      private_schools =  parse_wierd_input_to_array(row[63])[1..-1]
 
-        home.import_public_record(row[0..2])
-        home.assign_public_schools(assigned_schools)
-        home.other_public_schools(public_elementary + public_middle + public_high)
-        home.assign_private_schools(private_schools)
+#      home.import_public_record(row[0..2])
+#      home.assign_public_schools(assigned_schools)
+#      home.other_public_schools(public_elementary + public_middle + public_high)
+#      home.assign_private_schools(private_schools)
 
       rescue StandardError
         p "error out for item #{index}"

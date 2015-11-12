@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151026012313) do
+ActiveRecord::Schema.define(:version => 20151108213036) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -140,6 +140,15 @@ ActiveRecord::Schema.define(:version => 20151026012313) do
     t.datetime "updated_at",                             :null => false
     t.string   "qr_code"
     t.integer  "agent_extention_id"
+  end
+
+  create_table "wechat_users", :force => true do |t|
+    t.string  "open_id"
+    t.string  "agent_id"
+    t.text    "search"
+    t.integer "user_id"
+    t.string  "nickname"
+    t.string  "head_img_url"
   end
 
 end

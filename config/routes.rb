@@ -11,6 +11,10 @@ MeHome::Application.routes.draw do
 
   resources :session
   resources :question
+
+  get 'agent/set_search', to: 'agent#set_search'
+  post 'agent/save_customer_search', to: 'agent#save_customer_search'
+
   get 'agent/:name', to: 'agent#index'
   post 'agent/save_page_config', to: 'agent#save_page_config'
 
@@ -22,7 +26,6 @@ MeHome::Application.routes.draw do
   post 'question/post_answer', to: 'question#post_answer'
 
   get 'dm/wechat', to: 'wechat#auth'
-  get 'dm/wechat/test', to: 'wechat#test'
   get 'wechat/callback', to: 'wechat#collect_data'
 
   post 'dm/wechat', to: 'wechat#message'
