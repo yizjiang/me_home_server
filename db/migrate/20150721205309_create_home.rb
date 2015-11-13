@@ -13,8 +13,8 @@ class CreateHome < ActiveRecord::Migration
       t.text :description
       t.integer :bed_num
       t.integer :bath_num
-      t.string :indoor_size
-      t.string :lot_size
+      t.integer :indoor_size
+      t.integer :lot_size
       t.string :price
       t.float :unit_price
       t.string :home_type
