@@ -9,6 +9,7 @@ class UserController < ApplicationController
 
     temp_json = JSON.parse result.to_json(include: [:saved_searches, :homes])   #TODO include image in homes
     temp_json.merge!(JSON.parse result.to_json(include: {:questions=> {include: {:answers => {include: :user}}}}))      #TODO what is this shit
+
     if result.agent_extention
       page_config = if result.agent_extention.page_config
                       JSON.parse(result.agent_extention.page_config)
@@ -20,7 +21,28 @@ class UserController < ApplicationController
                else
                  []
                end
-      temp_json.merge!(agent_identifier: result.agent_extention.agent_identifier, published_page_config: {header: page_config['header'], search: search})   #TODO saved search
+
+      if WechatUser.where(user_id: uid).empty?
+        expect_url = "public/agents/#{uid}0.png"
+        unless File.exist?(expect_url)
+          WechatRequest.new.generate_qr_code("#{uid}0")
+        end
+
+        qr_image = {img_url: "agents/#{uid}0.png",
+                    is_followed: false}
+      else
+        expect_url = "public/agents/#{uid}1.png"
+        unless File.exist?(expect_url)
+          WechatRequest.new.generate_qr_code("#{uid}1")
+        end
+        qr_image = {img_url: "agents/#{uid}1.png",
+                    is_followed: true}
+      end
+
+      temp_json.merge!(agent_identifier: result.agent_extention.agent_identifier,
+                       published_page_config: {header: page_config['header'],
+                                               search: search},
+                       qr_image: qr_image)   #TODO saved search
     end
     render json: temp_json.to_json  #TODO write to json method in model
   end

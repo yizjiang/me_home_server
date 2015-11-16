@@ -1,6 +1,11 @@
 class AgentController < ApplicationController
   def index
-    config = JSON.parse AgentExtention.find_by_agent_identifier(params[:name]).page_config
+    config = if page_config = AgentExtention.find_by_agent_identifier(params[:name]).page_config
+               JSON.parse page_config
+             else
+               {}
+             end
+
     search_config = config['search']
 
     if search_config
@@ -36,6 +41,23 @@ class AgentController < ApplicationController
     render json: {header: new_config['header'], home_list: result }
   end
 
+  def upload_qrcode
+    uid = request.headers['HTTP_USER_ID']
+    File.open("./public/agents/#{uid}_qrcode.png", 'wb') do |outfile|
+      outfile.write(params[:file].tempfile.read)
+    end
+    qr_code = "#{SERVER_HOST}/agents/#{uid}_qrcode.png"
+    user = User.find(uid)
+    user.update_attributes(qr_code: qr_code)
+    render json: {url: user.qr_code}
+  end
+
+  def all_customer
+    @customers = WechatUser.where(agent_id: params[:uid])
+    render json: @customers
+    #render 'agent/customers'
+  end
+
   def set_search
     @customer = WechatUser.find(params[:cid])
     @agent_id = params[:uid]
@@ -46,7 +68,11 @@ class AgentController < ApplicationController
     @customer = WechatUser.find(params[:customer_id])
     @customer.update_attributes(search: params.slice(:city, :price_range).to_json)
     @agent_id = params[:agent_id]
-    flash[:notice] = "Search successfully saved"
-    render 'agent/customer_search_form'
+    if params[:api]
+      render json: {}
+    else
+      flash[:notice] = "Search successfully saved"
+      render 'agent/customer_search_form'
+    end
   end
 end

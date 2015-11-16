@@ -13,10 +13,14 @@ MeHome::Application.routes.draw do
   resources :question
 
   get 'agent/set_search', to: 'agent#set_search'
+  #get 'agent/customers', to: 'agent#all_customer'
   post 'agent/save_customer_search', to: 'agent#save_customer_search'
 
   get 'agent/:name', to: 'agent#index'
+  get 'agent/:uid/customers', to: 'agent#all_customer'
+
   post 'agent/save_page_config', to: 'agent#save_page_config'
+  post '/agent/upload_qrcode', to: 'agent#upload_qrcode'
 
   post 'user/save_search', to: 'user#save_search'
   post 'user/submit_question', to: 'user#submit_question'

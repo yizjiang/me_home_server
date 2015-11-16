@@ -11,9 +11,9 @@ class WechatController < ApplicationController
                     'u' => :update_search,
                     'cq' => :customer_questions,
                     'pc' => :agent_request,
-                    'agent_follow' => :followed_by_agent,
+                    'follow_agent' => :followed_by_agent,
                     'my_client' => :my_client,
-                    'subscribe' => :subscribe
+                    'agent_follow' => :agent_follow
 
   }
 
@@ -48,10 +48,19 @@ class WechatController < ApplicationController
                params['xml']['Content']
              when 'event'
                if  params['xml']['Event'] == 'SCAN'
-                 @agent_id = params['xml']['EventKey']
-                 'agent_follow'
+                 @agent_id = params['xml']['EventKey'].to_i/10
+                 if params['xml']['EventKey'].to_i % 10 == 1
+                   'follow_agent'
+                 else
+                   'agent_follow'
+                 end
                elsif params['xml']['Event'] == 'subscribe'
-                 'subscribe'
+                 @agent_id = params['xml']['EventKey'][8..-1].to_i/10
+                 if  params['xml']['EventKey'][8..-1].to_i % 10 == 1
+                   'follow_agent'
+                 else
+                   'agent_follow'
+                 end
                else
                  params['xml']['EventKey']
                end
@@ -68,11 +77,6 @@ class WechatController < ApplicationController
     text_response
   end
 
-  def subscribe
-    @msg_hash[:body] = '觅家公众号竭诚为您服务'
-    text_response
-  end
-
   def ask_question
     set_redis(:wait_input, :submit_question)
     @msg_hash[:body] = '请输入您想问问的问题'
@@ -81,12 +85,12 @@ class WechatController < ApplicationController
 
   def submit_question
     Question.create(open_id: @msg_hash[:from_username], text: @msg_hash[:body])
-    @msg_hash[:body] = '问题已提交，您会在24小时内收到专业人士解答'
+    @msg_hash[:body] = '问题已提交，您会在24小时内收到解答'
     text_response
   end
 
   def customer_questions
-    question = Question.last
+    question = Question.where(accepted_aid: nil).limit(1).first
     set_redis(:wait_input, :answer_question)
     set_redis(:answer_question, question.id)
     username = if open_id = question.open_id
@@ -101,58 +105,74 @@ class WechatController < ApplicationController
   def answer_question
     question = Question.find(cached_input(:answer_question).to_i)
     delete_redis(:answer_question)
-    question.create_answer(@msg_hash[:body], 5)  #agent and user mapping.
+    question.create_answer(@msg_hash[:body], WechatUser.find_by_open_id(@msg_hash[:from_username]).user_id)
     @msg_hash[:body] = "回复已提交"
     text_response
   end
 
-  def followed_by_agent
-    user_info = fetch_user_info(@msg_hash[:from_username])
-    p user_info
-    user = WechatUser.find_or_initialize_by_open_id(@msg_hash[:from_username]) do |user|
-      user.agent_id = @agent_id
+  def agent_follow
+    user = WechatUser.find_or_initialize_by_open_id(@msg_hash[:from_username])
+    user.agent_id = @agent_id
+    unless user.nickname
+      user_info = WechatRequest.new.fetch_user_info(@msg_hash[:from_username])
       user.nickname = user_info['nickname']
       user.head_img_url = user_info['headimgurl']
-      user.save
     end
-    p user
+    user.user_id = @agent_id
+    user.save
+    @msg_hash[:body] = "预祝经纪人#{User.find(@agent_id).agent_extention.agent_identifier}生意兴隆"
+    text_response
+  end
+
+  def followed_by_agent
+    user = WechatUser.find_or_initialize_by_open_id(@msg_hash[:from_username])
+    user.agent_id = @agent_id
+    unless user.nickname
+      user_info = WechatRequest.new.fetch_user_info(@msg_hash[:from_username])
+      user.nickname = user_info['nickname']
+      user.head_img_url = user_info['headimgurl']
+    end
+    user.save
     @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务"
     text_response
   end
 
-  def fetch_user_info(open_id)
-    params = {grant_type: 'client_credential',
-              appid: WECHAT_CLIENTID,
-              secret: WECHAT_CLIENTSECRET}
-    response = Typhoeus.get("https://api.weixin.qq.com/cgi-bin/token", params: params)
-    access_token = JSON.parse(response.body)['access_token']
-
-    url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=#{access_token}&openid=#{open_id}&lang=zh_CN"
-    response = Typhoeus.get(url)
-    JSON.parse(response.body)
-  end
-
   def like_agent
+    aid = AgentExtention.find_by_agent_identifier(@msg_hash[:body]).user_id
     wechat_user = WechatUser.find_by_open_id(@msg_hash[:from_username])
-    wechat_user.update_attributes(agent_id: 5) #TODO agent mapping
-    @msg_hash[:body] = 'YlM5aa_RKJ9gTrXiOMTyIf8ulaX-UDde-peoi9Wp9xEVxeMlJdEoqnPADgUH_e1K'
+    wechat_user.update_attributes(agent_id: aid)
+
+    media_id = REDIS.get("#{aid}_qr_media_id")
+    unless media_id
+      file = "./public/#{User.find(aid).qr_code[SERVER_HOST.length .. -1]}"
+      media_id = WechatRequest.new.upload_image(file)['media_id']
+      REDIS.setex("#{aid}_qr_media_id",259200, media_id)
+    end
+    file = "./public/#{User.find(aid).qr_code[SERVER_HOST.length .. -1]}"
+
+    @msg_hash[:body] = WechatRequest.new.upload_image(file)['media_id']
     image_response
   end
 
   def my_client
-    @msg_hash[:items]  = WechatUser.where(agent_id: 5).map do |user|
-      search = if user.search
-                 JSON.parse(user.search)
-               else
-                 {}
-               end
-      {title: user.nickname,
-       body: "城市: #{search['city']}, 价格区间: #{search['price_range']}",
-       pic_url: user.head_img_url,
-       url: "http://7997baf7.ngrok.io/agent/set_search?uid=5&cid=#{user.id}"}
+    wechat_user = WechatUser.find_by_open_id(@msg_hash[:from_username])
+    if wechat_user.agent_id.to_i == wechat_user.user_id
+      @msg_hash[:items]  = WechatUser.where(agent_id: wechat_user.user_id).order(:search).limit(10).map do |user|
+        search = if user.search
+                   JSON.parse(user.search)
+                 else
+                   {}
+                 end
+        {title: user.nickname,
+         body: "您所要搜索的城市: #{search['city']} 价格区间: #{search['price_range']}",
+         pic_url: user.head_img_url,
+         url: "#{SERVER_HOST}/agent/set_search?uid=5&cid=#{user.id}"}
+      end
+      article_response
+    else
+      @msg_hash[:body] = "您目前并不是经纪人，请登录觅家网站完善信息"
+      text_response
     end
-    p @msg_hash[:items]
-    article_response
   end
 
   def need_agent

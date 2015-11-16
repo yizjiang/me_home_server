@@ -1,0 +1,21 @@
+# encoding: utf-8
+<% @customers.each do |customer| %>
+  <h3><%=customer.nickname %> </h3>
+  <img src=<%= customer.head_img_url%> width='100px'></img>
+  <% search = if customer.search
+                JSON.parse(customer.search)
+              else
+                {}
+              end
+  %>
+
+  <%= form_tag("/agent/save_customer_search", method: "post") do %>
+    <%= label_tag(:city, "城市") %>
+    <%= text_field_tag(:city, search['city']) %>
+    <%= label_tag(:price_range, "价格区间") %>
+    <%= text_field_tag(:price_range, search['price_range']) %>
+    <%= hidden_field_tag(:agent_id, 5) %>
+    <%= hidden_field_tag(:customer_id, customer.id) %>
+    <%= submit_tag("保存") %>
+  <% end %>
+<% end %>

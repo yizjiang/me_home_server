@@ -1,5 +1,6 @@
 # encoding: utf-8
 require 'typhoeus'
+require 'open-uri'
 
 CLIENTID = 'wx18034235da4be445'     #wxd284e53ecd0e2b51
 CLIENTSECRET = '64007b6d52d74fb2858ea90e28f8cd1b'  #a1fd7beec066019b1b9b28efcba1e610
@@ -12,7 +13,7 @@ access_token = JSON.parse(response.body)['access_token']
 
 def upload_image(access_token)
   url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=#{access_token}&type=image"
-  response = Typhoeus.post(url, headers: { 'Content-Type' => "multipart/form-data" }, body: File.open("/Users/yizjiang/Projects/me_home_server/sample/leojyz_qr.jpeg","r"))
+  response = Typhoeus.post(url, headers: { 'Content-Type' => 'multipart/form-data' }, body: {media: File.open("/Users/yizjiang/Projects/me_home_server/sample/leojyz_qr.jpeg","r")})
   p JSON.parse(response.body)
 end
 
@@ -37,8 +38,13 @@ def generate_qr_code(access_token)
       }
   }
   response = Typhoeus.post(url, body: body.to_json)
-  p JSON.parse(response.body)
-
+  ticket = URI::encode (JSON.parse(response.body)['ticket'])
+  p ticket
+  url = "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=#{ticket}"
+  response = Typhoeus.get(url)
+  File.open('b.png', 'wb') do |outfile|
+    outfile.write(response.body)
+  end
 end
 
 def get_qr_code(ticket)
@@ -131,8 +137,8 @@ def publish_menu(access_token)
 end
 
 p access_token
-user_info(access_token)
-#upload_image(access_token)
+#user_info(access_token)
+upload_image(access_token)
 #get_qr_code("gQEP8ToAAAAAAAAAASxodHRwOi8vd2VpeGluLnFxLmNvbS9xL09rTkIyUXJtX0lpQlJ6Wk01VzN5AAIEuMQ/VgMEgDoJAA==")
 #generate_qr_code(access_token)
 #reply(access_token)

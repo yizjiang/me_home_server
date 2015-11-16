@@ -265,6 +265,15 @@ Devise::SessionsController.class_eval do
     respond_to_on_destroy
   end
 
+  def create
+    p 'here'
+    self.resource = warden.authenticate!(auth_options)
+    set_flash_message(:notice, :signed_in) if is_flashing_format?
+    sign_in(resource_name, resource)
+    yield resource if block_given?
+    redirect_to root_url
+  end
+
   def respond_to_on_destroy
     # We actually need to hardcode this as Rails default responder doesn't
     # support returning empty response on GET request
