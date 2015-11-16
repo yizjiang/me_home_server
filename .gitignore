@@ -10,3 +10,5 @@
 /tmp
 .idea/
 /sample
+public/agents/*
+public/homes/*
