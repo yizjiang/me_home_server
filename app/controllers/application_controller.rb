@@ -1,16 +1,18 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   def index
+    redirect_url =  params[:redirect_url] || CLIENT_HOST
+
     if flash[:alert] == 'You are already signed in'
-      redirect_to "#{CLIENT_HOST}?ticket=#{get_ticket_from_uid}"
+      redirect_to "#{redirect_url}?ticket=#{get_ticket_from_uid}"
     end
     if !user_signed_in?
-     redirect_to "#{CLIENT_HOST}"
+     redirect_to "#{redirect_url}"
     end
     ticket = session[:ticket]
     ticket = get_ticket_from_uid unless ticket.present?
     session[:ticket] = ''
-    redirect_to "#{CLIENT_HOST}?ticket=#{ticket}" if ticket.present?
+    redirect_to "#{redirect_url}?ticket=#{ticket}" if ticket.present?
   end
 
   def get_ticket_from_uid

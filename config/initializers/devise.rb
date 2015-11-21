@@ -266,12 +266,12 @@ Devise::SessionsController.class_eval do
   end
 
   def create
-    p 'here'
     self.resource = warden.authenticate!(auth_options)
     set_flash_message(:notice, :signed_in) if is_flashing_format?
     sign_in(resource_name, resource)
     yield resource if block_given?
-    redirect_to root_url
+    p root_url
+    redirect_to root_url + "?redirect_url=#{params[:redirect_url]}"
   end
 
   def respond_to_on_destroy
