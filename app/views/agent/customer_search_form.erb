@@ -10,9 +10,11 @@
 
 <%= form_tag("/agent/save_customer_search", method: "post") do %>
   <%= label_tag(:city, "城市") %>
-  <%= text_field_tag(:city, search['city']) %>
-  <%= label_tag(:price_range, "价格区间") %>
-  <%= text_field_tag(:price_range, search['price_range']) %>
+  <%= text_field_tag(:regionValue, search['regionValue']) %>
+  <%= label_tag(:priceMin, "最低价") %>
+  <%= text_field_tag(:priceMin, search['priceMin']) %>
+  <%= label_tag(:priceMax, "最高价") %>
+  <%= text_field_tag(:priceMax, search['priceMax']) %>
   <%= hidden_field_tag(:agent_id, @agent_id) %>
   <%= hidden_field_tag(:customer_id, @customer.id) %>
   <%= submit_tag("保存") %>

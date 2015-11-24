@@ -78,13 +78,13 @@ def publish_menu(access_token)
         sub_button: [
           {
             type: "click",
-            name: "快速搜索",
+            name: "智能找房",
             key: "s"
           },
 
           {
             type: "click",
-            name: "提问",
+            name: "答疑解惑",
             key: "q"
           },
 
@@ -96,7 +96,7 @@ def publish_menu(access_token)
 
           {
             type: "click",
-            name: "更新快速搜索",
+            name: "更新搜索",
             key: "u"
           }]
       },
@@ -138,8 +138,8 @@ end
 
 p access_token
 #user_info(access_token)
-upload_image(access_token)
+#upload_image(access_token)
 #get_qr_code("gQEP8ToAAAAAAAAAASxodHRwOi8vd2VpeGluLnFxLmNvbS9xL09rTkIyUXJtX0lpQlJ6Wk01VzN5AAIEuMQ/VgMEgDoJAA==")
 #generate_qr_code(access_token)
 #reply(access_token)
-#publish_menu(access_token)
+publish_menu(access_token)

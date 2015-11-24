@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151113044929) do
+ActiveRecord::Schema.define(:version => 20151123011408) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -142,13 +142,21 @@ ActiveRecord::Schema.define(:version => 20151113044929) do
     t.integer  "agent_extention_id"
   end
 
+  create_table "wechat_trackings", :force => true do |t|
+    t.string  "tracking_type"
+    t.integer "wechat_user_id"
+    t.text    "item"
+  end
+
   create_table "wechat_users", :force => true do |t|
-    t.string  "open_id"
-    t.string  "agent_id"
-    t.text    "search"
-    t.integer "user_id"
-    t.string  "nickname"
-    t.string  "head_img_url"
+    t.string   "open_id"
+    t.string   "agent_id"
+    t.text     "search"
+    t.integer  "user_id"
+    t.string   "nickname"
+    t.string   "head_img_url"
+    t.datetime "last_search"
+    t.integer  "search_count"
   end
 
 end

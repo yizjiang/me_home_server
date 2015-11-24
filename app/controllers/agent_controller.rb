@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class AgentController < ApplicationController
   def index
     config = if page_config = AgentExtention.find_by_agent_identifier(params[:name]).page_config
@@ -54,8 +56,7 @@ class AgentController < ApplicationController
 
   def all_customer
     @customers = WechatUser.where(agent_id: params[:uid])
-    render json: @customers
-    #render 'agent/customers'
+    render json: @customers, :include => [:wechat_trackings]
   end
 
   def set_search
@@ -66,13 +67,18 @@ class AgentController < ApplicationController
 
   def save_customer_search
     @customer = WechatUser.find(params[:customer_id])
-    @customer.update_attributes(search: params.slice(:city, :price_range).to_json)
-    @agent_id = params[:agent_id]
-    if params[:api]
-      render json: {}
+    if params[:regionValue].present?
+      @customer.update_attributes(search: params.slice(:regionValue, :priceMin, :priceMax).to_json, last_search: nil)
+      if params[:api]
+        render json: {}
+      else
+        flash[:notice] = "设置已保存"
+        render 'agent/customer_search_form'
+      end
     else
-      flash[:notice] = "Search successfully saved"
+      flash[:notice] = "城市不能为空"
       render 'agent/customer_search_form'
     end
+
   end
 end

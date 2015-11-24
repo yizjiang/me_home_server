@@ -23,6 +23,7 @@ MeHome::Application.routes.draw do
   post '/agent/upload_qrcode', to: 'agent#upload_qrcode'
 
   post 'user/save_search', to: 'user#save_search'
+  delete 'user/remove_search/:id', to: 'user#remove_search'
   post 'user/submit_question', to: 'user#submit_question'
   post 'user/favorite_home', to: 'user#favorite_home'
   post 'user/unfavorite_home', to: 'user#unfavorite_home'

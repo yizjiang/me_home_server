@@ -50,8 +50,27 @@ class UserController < ApplicationController
   def save_search
     uid = request.headers['HTTP_USER_ID']
     user = User.find(uid)
+    home_type = ['Single Family Home', 'Multi-Family Home', 'Condo/Townhome/Row Home/Co-Op']
+    if(params[:single_family] == 'false')
+      home_type -= ['Single Family Home']
+    end
+    if(params[:multi_family] == 'false')
+      home_type -= ['Multi-Family Home']
+    end
+    if(params[:condo] == 'false')
+      home_type -= ['Condo/Townhome/Row Home/Co-Op']
+    end
+    params[:home_type] = home_type
     user.create_search(params)
+    if(user.saved_searches.count > 10)
+      user.saved_searches.first.delete
+    end
     render json: user.to_json(include: [:saved_searches])
+  end
+
+  def remove_search
+    SavedSearch.find(params[:id].to_i).destroy
+    render json: []
   end
 
   def favorite_home

@@ -270,8 +270,7 @@ Devise::SessionsController.class_eval do
     set_flash_message(:notice, :signed_in) if is_flashing_format?
     sign_in(resource_name, resource)
     yield resource if block_given?
-    p root_url
-    redirect_to root_url + "?redirect_url=#{params[:redirect_url]}"
+    redirect_to root_url + "?redirect_url=#{params[:redirect_url] || CLIENT_HOST}"
   end
 
   def respond_to_on_destroy

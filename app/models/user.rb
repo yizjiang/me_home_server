@@ -38,7 +38,7 @@ class User < ActiveRecord::Base
   end
 
   def create_search(query)
-    SavedSearch.find_or_create_by_search_query_and_uid(JSON(query.slice(*%w(regionValue priceMin priceMax))), self.id) do |search|
+    SavedSearch.find_or_create_by_search_query_and_uid(JSON(query.slice(*%w(regionValue priceMin priceMax home_type bedNum))), self.id) do |search|
       search.uid = self.id
     end
   end

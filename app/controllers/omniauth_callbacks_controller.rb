@@ -13,7 +13,7 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
   end
 
   def encrypt_uid(uid)       #TODO
-    return "eqon2#{uid}xfk9"
+    return "58172#{uid}1429"
   end
 
   alias_method :twitter, :all

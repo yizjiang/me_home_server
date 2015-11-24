@@ -3,7 +3,7 @@
 #require '../../lib/wechat/response_command'
 
 class WechatController < ApplicationController
-  before_filter :get_message_from_params, :if => lambda {request.post?}
+  before_filter :get_message_from_params, :if => lambda { request.post? }
 
   METHOD_MAPPING = {'s' => :home_search,
                     'q' => :ask_question,
@@ -67,14 +67,28 @@ class WechatController < ApplicationController
              else
                ''
            end
+
     @msg_hash = {from_username: params['xml']['FromUserName'],
                  to_username: params['xml']['ToUserName'],
                  body: body}
+    @wechat_user = WechatUser.find_or_initialize_by_open_id(@msg_hash[:from_username])
   end
 
   def default_response
-    @msg_hash[:body] = '对不起，以下消息 ' + @msg_hash[:body] + ' 无法自动回复，稍后会有人与您联系'
-    text_response
+    searches = @msg_hash[:body].split(',').map do |region|
+      Search.new(regionValue: region)
+    end
+
+    homes = Home.search(searches, 10, Time.at(-284061600))
+    if (homes.count > 0)
+      latest = homes.map { |h| h.last_refresh_at }.max + 1
+      @wechat_user.update_attributes(search: {regionValue: @msg_hash[:body], priceMin: '', priceMax: ''}.to_json, last_search: latest, search_count: (@wechat_user.search_count || 0) + 1)
+      @msg_hash[:items] = home_search_items(homes)
+      article_response
+    else
+      @msg_hash[:body] = '对不起，以下消息 ' + @msg_hash[:body] + ' 无法自动回复，稍后会有人与您联系'
+      text_response
+    end
   end
 
   def ask_question
@@ -91,15 +105,21 @@ class WechatController < ApplicationController
 
   def customer_questions
     question = Question.where(accepted_aid: nil).limit(1).first
-    set_redis(:wait_input, :answer_question)
-    set_redis(:answer_question, question.id)
-    username = if open_id = question.open_id
-                 WechatUser.find_by_open_id(open_id).nickname
-               else
-                 'xxx'
-               end
-    @msg_hash[:body] = "#{username}提问: #{question.text}"
-    text_response
+    if question
+      set_redis(:wait_input, :answer_question)
+      set_redis(:answer_question, question.id)
+      username = if open_id = question.open_id
+                   WechatUser.find_by_open_id(open_id).nickname
+                 else
+                   'xxx'
+                 end
+      @msg_hash[:body] = "#{username}提问: #{question.text}"
+      text_response
+    else
+      @msg_hash[:body] = "目前没有客户问题"
+      text_response
+    end
+
   end
 
   def answer_question
@@ -111,42 +131,39 @@ class WechatController < ApplicationController
   end
 
   def agent_follow
-    user = WechatUser.find_or_initialize_by_open_id(@msg_hash[:from_username])
-    user.agent_id = @agent_id
-    unless user.nickname
+    @wechat_user.agent_id = @agent_id
+    unless  @wechat_user.nickname
       user_info = WechatRequest.new.fetch_user_info(@msg_hash[:from_username])
-      user.nickname = user_info['nickname']
-      user.head_img_url = user_info['headimgurl']
+      @wechat_user.nickname = user_info['nickname']
+      @wechat_user.head_img_url = user_info['headimgurl']
     end
-    user.user_id = @agent_id
-    user.save
+    @wechat_user.user_id = @agent_id
+    @wechat_user.save
     @msg_hash[:body] = "预祝经纪人#{User.find(@agent_id).agent_extention.agent_identifier}生意兴隆"
     text_response
   end
 
   def followed_by_agent
-    user = WechatUser.find_or_initialize_by_open_id(@msg_hash[:from_username])
-    user.agent_id = @agent_id
-    unless user.nickname
+    @wechat_user.agent_id = @agent_id
+    unless  @wechat_user.nickname
       user_info = WechatRequest.new.fetch_user_info(@msg_hash[:from_username])
-      user.nickname = user_info['nickname']
-      user.head_img_url = user_info['headimgurl']
+      @wechat_user.nickname = user_info['nickname']
+      @wechat_user.head_img_url = user_info['headimgurl']
     end
-    user.save
+    @wechat_user.save
     @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务"
     text_response
   end
 
   def like_agent
     aid = AgentExtention.find_by_agent_identifier(@msg_hash[:body]).user_id
-    wechat_user = WechatUser.find_by_open_id(@msg_hash[:from_username])
-    wechat_user.update_attributes(agent_id: aid)
+    @wechat_user.update_attributes(agent_id: aid)
 
     media_id = REDIS.get("#{aid}_qr_media_id")
     unless media_id
       file = "./public/#{User.find(aid).qr_code[SERVER_HOST.length .. -1]}"
       media_id = WechatRequest.new.upload_image(file)['media_id']
-      REDIS.setex("#{aid}_qr_media_id",259200, media_id)
+      REDIS.setex("#{aid}_qr_media_id", 259200, media_id)
     end
     file = "./public/#{User.find(aid).qr_code[SERVER_HOST.length .. -1]}"
 
@@ -155,18 +172,17 @@ class WechatController < ApplicationController
   end
 
   def my_client
-    wechat_user = WechatUser.find_by_open_id(@msg_hash[:from_username])
-    if wechat_user.agent_id.to_i == wechat_user.user_id
-      @msg_hash[:items]  = WechatUser.where(agent_id: wechat_user.user_id).order(:search).limit(10).map do |user|
+    if  @wechat_user.agent_id.to_i == @wechat_user.user_id
+      @msg_hash[:items] = WechatUser.where(agent_id: @wechat_user.user_id).order('search_count DESC').limit(10).map do |user|
         search = if user.search
                    JSON.parse(user.search)
                  else
                    {}
                  end
-        {title: user.nickname,
-         body: "您所要搜索的城市: #{search['city']} 价格区间: #{search['price_range']}",
+        {title: "#{user.nickname}的需求: 城市: #{search['regionValue']} 价格: #{search['priceMin']} - #{search['priceMax']}",
+         body: '',
          pic_url: user.head_img_url,
-         url: "#{SERVER_HOST}/agent/set_search?uid=5&cid=#{user.id}"}
+         url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.user_id}&cid=#{user.id}"}
       end
       article_response
     else
@@ -177,17 +193,17 @@ class WechatController < ApplicationController
 
   def need_agent
     if agent = cached_input(:need_agent)
-      @msg_hash[:body] = "您现在经纪人的需求是 #{agent}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市（用逗号分隔）"
+      @msg_hash[:body] = "您现在经纪人的需求是 #{agent}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市"
       set_redis(:wait_input, :agent_confirm)
       set_redis(:agent_confirm, agent)
       text_response
     elsif search = cached_input(:home_search)
-      @msg_hash[:body] = "您现在的搜索城市是 #{search}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市（用逗号分隔）"
+      @msg_hash[:body] = "您现在的搜索城市是 #{search}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市"
       set_redis(:wait_input, :agent_confirm)
       set_redis(:agent_confirm, search)
       text_response
     else
-      @msg_hash[:body] = '请输入您想要负责哪些城市的经纪人（城市用逗号分隔）'
+      @msg_hash[:body] = '请输入您想要负责哪些城市的经纪人'
       set_redis(:wait_input, :agent_confirm)
       text_response
     end
@@ -206,34 +222,50 @@ class WechatController < ApplicationController
   end
 
   def update_search
-    @msg_hash[:body] = "您现在的搜索地区是 #{ cached_input(:home_search)}, 请输入新的搜索条件"
-    set_redis(:wait_input, :home_search)
-    text_response
+    @msg_hash[:items] = [{title: "请点击您的头像设置智能搜索条件",
+                          body: '',
+                          pic_url: @wechat_user.head_img_url,
+                          url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.agent_id}&cid=#{@wechat_user.id}"}]
+    article_response
   end
 
   def home_search
-    @user_input = if search = WechatUser.find_by_open_id(@msg_hash[:from_username]).search
-                    JSON.parse(search)['city']
-                  else
-                    nil
-                  end
-    if value = @user_input
-      searches = value.split(',').map do |value|
-        Search.new(regionValue: value)
-      end
-      homes = Home.search(searches, 10/searches.count) # fair divide?
+    last_search = @wechat_user.last_search
+    search = if search = @wechat_user.search
+               JSON.parse(search)
+             else
+               {}
+             end
 
-      @msg_hash[:items] = home_search_items(homes)
-      article_response
+    if !search.empty?
+      searches = search['regionValue'].split(',').map do |region|
+        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'])
+      end
+
+      homes = Home.search(searches, 10, last_search || Time.at(-284061600)) # fair divide?
+      if (homes.count > 0)
+        latest = homes.map { |h| h.last_refresh_at }.max + 1
+        @wechat_user.update_attributes(last_search: latest, search_count: (@wechat_user.search_count || 0) + 1)
+        @msg_hash[:items] = home_search_items(homes)
+        article_response
+      else
+        @wechat_user.update_attributes(search_count: (@wechat_user.search_count || 0) + 1)
+        @msg_hash[:body] = "您所搜索的地区还没有房源更新"
+        text_response
+      end
+
     else
-      set_redis(:wait_input, :home_search)
-      @msg_hash[:body] = '对不起, 您还未设置快速搜索，请输入您所需要房源的地区，用逗号隔开'
-      text_response
+      @msg_hash[:items] = [{title: "请点击您的头像设置智能搜索条件",
+                           body: '',
+                           pic_url: @wechat_user.head_img_url,
+                           url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.agent_id}&cid=#{@wechat_user.id}"}]
+      article_response
     end
   end
 
-  def agent_request
-    @msg_hash[:body] = "User #{AgentRequest.last.open_id} request agent help in #{AgentRequest.last.region} area"
+  def agent_request  #TODO
+    #@msg_hash[:body] = "User #{AgentRequest.last.open_id} request agent help in #{AgentRequest.last.region} area"
+    @msg_hash[:body] = "目前没有客户有经纪人需求"
     text_response
   end
 
@@ -254,10 +286,10 @@ class WechatController < ApplicationController
 
   def home_search_items(homes)
     homes.map do |home|
-      {title: "#{home.bed_num} Beds #{home.home_type} at #{home.addr1} #{home.city}",
+      {title: "位于#{home.addr1} #{home.city}的 #{home.bed_num} 卧室 #{home.home_type}，售价：#{home.price}美金",
        body: 'nice home',
-       pic_url: "http://cb549de3.ngrok.io/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/#/home_detail/#{home.id}"}
+       pic_url: "#{SERVER_HOST}/#{home.images.first.try(:image_url) || 'default.jpeg'}",
+       url: "http://dbe55589.ngrok.io/?wid=#{@wechat_user.id}#/home_detail/#{home.id}"}
     end
   end
 

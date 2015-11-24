@@ -26,6 +26,6 @@ class ApplicationController < ActionController::Base
   end
 
   def encrypt_uid(uid)       #TODO
-    return "eqon2#{uid}xfk9"
+    return "74651#{uid}1329"
   end
 end

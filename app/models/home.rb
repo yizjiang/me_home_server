@@ -21,17 +21,24 @@ class Home < ActiveRecord::Base
   has_many :favorite_homes, foreign_key: 'home_id'
   has_many :users, through: :favorite_homes
 
-  def self.search(searches, limit = nil)
+  def self.search(searches, limit = nil, last_refresh = Time.at(-284061600))
     unless searches.is_a? Array
       searches = [searches]
     end
-
     result = []
     searches.each do |search|
       if(region = search.region)
-        result.push(*where('(city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ?', "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active').limit(limit))
+        homes = where('last_refresh_at > ? and (city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ? and bed_num > ? and home_type in (?)',
+                       last_refresh, "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active', search.bed_num, search.home_type).order('last_refresh_at DESC').limit(limit)
+        limit -= homes.count
+        p homes.count
+        p limit
+        result.push(*homes)
+        if limit == 0
+          break
+        end
       else
-        result.push(*where('price < ? and price > ? and status = ?', search.price_max, search.price_min, 'Active').limit(limit))
+        result.push(*where('last_refresh_at > ? and price < ? and price > ? and status = ?', last_refresh, search.price_max, search.price_min, 'Active').order('last_refresh_at DESC').limit(limit))
       end
     end
     result
