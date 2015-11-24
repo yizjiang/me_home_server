@@ -1,12 +1,7 @@
-<a href= <%="#{CLIENT_HOST}"%> > Go Back </a>
-
 <% if user_signed_in? %>
-  <% current_user.attributes.each do |k, v| %>
-    <%= k %>  is <%= v %>
-  <br>
-  <% end %>
-  <%= link_to 'Edit profile', edit_user_registration_path %> |
-  <%= link_to "Logout", destroy_user_session_path, method: :delete %>
+  <p>您真的要离我们而去？</p>
+  <p>请点击注销键退出</p>
+  <%= link_to "注销", destroy_user_session_path, method: :delete %>
 <% else %>
   <% redirect_to "#{CLIENT_HOST}" %>
 <% end %>

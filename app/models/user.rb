@@ -5,6 +5,7 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable
 
   validates :username, presence: true
+
   has_one :auth_provider, class_name: AuthProvider
   # Setup accessible (or protected) attributes for your model
   attr_accessible :email, :password, :username, :password_confirmation, :remember_me, :auth_provider_id, :qr_code,
@@ -28,13 +29,17 @@ class User < ActiveRecord::Base
   end
 
   def create_agent_extension(identifier, license_id)
-    agent_ex = AgentExtention.find_or_create_by_agent_identifier(identifier).id
-    self.agent_extention_id = agent_ex
+    if identifier.present? && license_id.present?
+      agent_ex = AgentExtention.find_or_create_by_agent_identifier_and_license_id(identifier, license_id).id
+      self.agent_extention_id = agent_ex
+    end
   end
 
   def assign_agent_extension
-    agent_ex = AgentExtention.find(self.agent_extention_id)
-    agent_ex.update_attributes(user_id: self.id)
+    if self.agent_extention_id
+      agent_ex = AgentExtention.find(self.agent_extention_id)
+      agent_ex.update_attributes(user_id: self.id)
+    end
   end
 
   def create_search(query)
@@ -66,13 +71,15 @@ class User < ActiveRecord::Base
   end
 
   def self.new_with_session(params, session)
+    p "xxx #{params}"
     if session["devise.user_attributes"]
-      agent_identifier,agent_license_id = agent_params(params)
+      agent_identifier,agent_license_id = params[:agent_identifier], params[:agent_license_id]
+      p "xxx #{agent_identifier} #{agent_license_id}"
       user = new(session["devise.user_attributes"], without_protection: true) do |user|
         user.attributes = params
         user.valid?
       end
-      if agent_identifier && agent_license_id
+      if agent_identifier.present? && agent_license_id.present?
         user.create_agent_extension(agent_identifier, agent_license_id)
       end
       user

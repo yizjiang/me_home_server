@@ -28,11 +28,16 @@ class Home < ActiveRecord::Base
     result = []
     searches.each do |search|
       if(region = search.region)
-        homes = where('last_refresh_at > ? and (city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ? and bed_num > ? and home_type in (?)',
-                       last_refresh, "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active', search.bed_num, search.home_type).order('last_refresh_at DESC').limit(limit)
-        limit -= homes.count
-        p homes.count
-        p limit
+        if(region.multibyte?)
+          homes_cn = HomeCn.where('city LIKE ?', "%#{region}%")
+          homes = where('id in (?) and last_refresh_at > ? and price < ? and price > ? and status = ? and bed_num > ? and home_type in (?)',
+                        homes_cn.pluck(:id), last_refresh, search.price_max, search.price_min, 'Active', search.bed_num, search.home_type).order('last_refresh_at DESC').limit(limit)
+        else
+          homes = where('last_refresh_at > ? and (city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ? and bed_num > ? and home_type in (?)',
+                        last_refresh, "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active', search.bed_num, search.home_type).order('last_refresh_at DESC').limit(limit)
+        end
+
+        limit -= homes.count if limit
         result.push(*homes)
         if limit == 0
           break
@@ -51,6 +56,7 @@ class Home < ActiveRecord::Base
     result[:public_schools] = self.schools.other_public
     result[:private_schools] = self.schools.private
     result[:chinese_description] = self.home_cn.try(:description)
+    result[:short_desc] = self.home_cn.try(:short_desc)
     result
   end
 

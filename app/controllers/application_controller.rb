@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   def index
-    redirect_url =  params[:redirect_url] || CLIENT_HOST
+    redirect_url =  params[:redirect_url] || File.join(CLIENT_HOST, 'auth_callback')
 
     if flash[:alert] == 'You are already signed in'
       redirect_to "#{redirect_url}?ticket=#{get_ticket_from_uid}"
