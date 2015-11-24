@@ -1,15 +1,15 @@
 development:
-  client_url: <%= ENV['CLIENT_URL'] || 'http://localhost:3031' %>
-  server_url: <%= ENV['SERVER_URL'] || 'http://427114b7.ngrok.io' %>
+  client_url: <%= ENV['CLIENT_URL'] || 'http://client.meejia.com' %>
+  server_url: <%= ENV['SERVER_URL'] || 'http://api.meejia.com' %>
 
 test:
   client_url: http://localhost:3031
   server_url: http://localhost:3032
 
 staging:
-  client_url: <%= ENV['CLIENT_URL'] || 'http://www.usreclub.com:3001' %>
-  server_url: <%= ENV['SERVER_URL'] || 'http://www.usreclub.com:3002' %>
+  client_url: <%= ENV['CLIENT_URL'] || 'http://client.usreclub.com' %>
+  server_url: <%= ENV['SERVER_URL'] || 'http://api.usreclub.com' %>
 
 production:
-  client_url: <%= ENV['CLIENT_URL'] || 'http://www.meejia.com:3001' %>
-  server_url: <%= ENV['SERVER_URL'] || 'http://www.meejia.com:3002' %>
+  client_url: <%= ENV['CLIENT_URL'] || 'http://client.meejia.com' %>
+  server_url: <%= ENV['SERVER_URL'] || 'http://api.meejia.com' %>
