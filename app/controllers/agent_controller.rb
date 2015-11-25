@@ -21,7 +21,7 @@ class AgentController < ApplicationController
   end
 
   def save_page_config
-    agent_extention = User.find(request.headers['HTTP_USER_ID']).agent_extention
+    agent_extention = User.find(request.headers['HTTP_UID']).agent_extention
     new_config = if agent_extention.page_config
                    JSON.parse(agent_extention.page_config)
                  else
@@ -44,7 +44,7 @@ class AgentController < ApplicationController
   end
 
   def upload_qrcode
-    uid = request.headers['HTTP_USER_ID']
+    uid = request.headers['HTTP_UID']
     File.open("./public/agents/#{uid}_qrcode.png", 'wb') do |outfile|
       outfile.write(params[:file].tempfile.read)
     end

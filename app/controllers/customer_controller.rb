@@ -4,7 +4,7 @@ class CustomerController < ApplicationController
   end
 
   def connect
-    uid = request.headers['HTTP_USER_ID']
+    uid = request.headers['HTTP_UID']
     aid = User.find(uid).agent_extention.agent_identifier
     request = AgentRequest.find(params[:rid])
     request.update_attributes(agent_identifier_list: aid) # TODO add to list

@@ -48,7 +48,7 @@ class UserController < ApplicationController
   end
 
   def save_search
-    uid = request.headers['HTTP_USER_ID']
+    uid = request.headers['HTTP_UID']
     user = User.find(uid)
     home_type = ['Single Family Home', 'Multi-Family Home', 'Condo/Townhome/Row Home/Co-Op']
     if(params[:single_family] == 'false')
@@ -74,21 +74,21 @@ class UserController < ApplicationController
   end
 
   def favorite_home
-    uid = request.headers['HTTP_USER_ID']
+    uid = request.headers['HTTP_UID']
     user = User.find(uid)
     user.add_favorite(params[:home_id])
     render json: user.to_json(include: [:homes])
   end
 
   def unfavorite_home
-    uid = request.headers['HTTP_USER_ID']
+    uid = request.headers['HTTP_UID']
     user = User.find(uid)
     user.remove_favorite(params[:home_id])
     render json: user.to_json(include: [:homes])
   end
 
   def submit_question
-    uid = request.headers['HTTP_USER_ID']
+    uid = request.headers['HTTP_UID']
     user = User.find(uid)
     user.create_question(params)
     render json: user.to_json(include: [:questions])    #TODO pagination
