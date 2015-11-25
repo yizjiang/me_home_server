@@ -1,2 +1,4 @@
-WECHAT_CLIENTID = ENV['CLIENT_ID'] || 'wx18034235da4be445'
-WECHAT_CLIENTSECRET =ENV['CLIENT_SECRET'] || '64007b6d52d74fb2858ea90e28f8cd1b'
+wechat_config = YAML.load(ERB.new(File.read('./config/wechat_platform.yml')).result)[Rails.env]
+
+WECHAT_CLIENTID = wechat_config['client_id']
+WECHAT_CLIENTSECRET =wechat_config['client_secret']
