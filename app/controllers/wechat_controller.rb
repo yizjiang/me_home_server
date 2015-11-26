@@ -13,7 +13,8 @@ class WechatController < ApplicationController
                     'pc' => :agent_request,
                     'follow_agent' => :followed_by_agent,
                     'my_client' => :my_client,
-                    'agent_follow' => :agent_follow
+                    'agent_follow' => :agent_follow,
+                    'agent_assist' => :agent_assist
 
   }
 
@@ -40,6 +41,14 @@ class WechatController < ApplicationController
   end
 
   private
+
+  def agent_assist
+    @msg_hash[:items] = [{title: "觅家竭诚邀请中国的房产经纪人和具有美国执照的经纪人联手一起为客户找到满意的家和地产投资。具体的合作协议和申请手续还在准备中。如果您有意项和建议，请加二维码联系。",
+                          body: '',
+                          pic_url: "#{SERVER_HOST}/agent_assitant.jpg",
+                          url: "#{SERVER_HOST}/agent_assitant.jpg"}]
+    article_response
+  end
 
   def get_message_from_params
     p "xxx #{params}"

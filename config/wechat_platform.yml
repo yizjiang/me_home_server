@@ -11,5 +11,5 @@ staging:
   client_secret: a1fd7beec066019b1b9b28efcba1e610
 
 production:
-  client_id:
-  client_secret:
+  client_id: wx8f6251caa9d36d5b
+  client_secret: b270c00cbd25f31830224f5c54f2363e

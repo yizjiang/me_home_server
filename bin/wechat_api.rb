@@ -2,8 +2,17 @@
 require 'typhoeus'
 require 'open-uri'
 
-CLIENTID = 'wxd284e53ecd0e2b51' #'wx18034235da4be445'
-CLIENTSECRET = 'a1fd7beec066019b1b9b28efcba1e610' #'64007b6d52d74fb2858ea90e28f8cd1b'
+#wx18034235da4be445
+#64007b6d52d74fb2858ea90e28f8cd1b
+
+#wxd284e53ecd0e2b51
+#a1fd7beec066019b1b9b28efcba1e610
+
+#wx8f6251caa9d36d5b
+#b270c00cbd25f31830224f5c54f2363e
+
+CLIENTID = 'wx8f6251caa9d36d5b'
+CLIENTSECRET = 'b270c00cbd25f31830224f5c54f2363e'
 params = {grant_type: 'client_credential',
           appid: CLIENTID,
           secret: CLIENTSECRET}
@@ -121,13 +130,9 @@ def publish_menu(access_token)
       },
 
       {
-        name: "合作伙伴",
-        sub_button: [
-          {
-            type: "view",
-            name: "我的页面",
-            url: "http://usreclub.com:3001/#"
-          }]
+        name: '合作伙伴',
+        type: "click",
+        key: 'agent_assist'
       }
 
     ]
