@@ -2,8 +2,8 @@
 require 'typhoeus'
 require 'open-uri'
 
-CLIENTID = 'wx18034235da4be445'     #wxd284e53ecd0e2b51
-CLIENTSECRET = '64007b6d52d74fb2858ea90e28f8cd1b'  #a1fd7beec066019b1b9b28efcba1e610
+CLIENTID = 'wxd284e53ecd0e2b51' #'wx18034235da4be445'
+CLIENTSECRET = 'a1fd7beec066019b1b9b28efcba1e610' #'64007b6d52d74fb2858ea90e28f8cd1b'
 params = {grant_type: 'client_credential',
           appid: CLIENTID,
           secret: CLIENTSECRET}

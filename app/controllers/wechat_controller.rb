@@ -289,7 +289,7 @@ class WechatController < ApplicationController
       {title: "位于#{home.addr1} #{home.city}的 #{home.bed_num} 卧室 #{home.home_type}，售价：#{home.price}美金",
        body: 'nice home',
        pic_url: "#{SERVER_HOST}/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "http://dbe55589.ngrok.io/?wid=#{@wechat_user.id}#/home_detail/#{home.id}"}
+       url: "#{CLIENT_HOST}/?wid=#{@wechat_user.id}#/home_detail/#{home.id}"}
     end
   end
 
