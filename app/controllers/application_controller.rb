@@ -1,6 +1,19 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
+
+  def wechat_login
+    redirect_url = File.join(CLIENT_HOST, 'auth_callback')
+    ticket = REDIS.get('wechat_login')
+    if ticket.present?
+      REDIS.del('wechat_login')
+      redirect_to "#{redirect_url}?ticket=#{ticket}"
+    else
+      redirect_to '/users/login'
+    end
+  end
+
   def index
+    p 'in application index'
     redirect_url = File.join(CLIENT_HOST, 'auth_callback')
 
     if flash[:alert] == 'You are already signed in'
@@ -12,6 +25,8 @@ class ApplicationController < ActionController::Base
     ticket = session[:ticket]
     ticket = get_ticket_from_uid unless ticket.present?
     session[:ticket] = ''
+    p "xxx #{ticket}"
+    p "#{redirect_url}?ticket=#{ticket}"
     redirect_to "#{redirect_url}?ticket=#{ticket}" if ticket.present?
   end
 

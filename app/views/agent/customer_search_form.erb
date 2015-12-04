@@ -15,6 +15,8 @@
   <%= text_field_tag(:priceMin, search['priceMin']) %>
   <%= label_tag(:priceMax, "最高价") %>
   <%= text_field_tag(:priceMax, search['priceMax']) %>
+  <%= label_tag(:bedNum, "房间数") %>
+  <%= text_field_tag(:bedNum, search['bedNum']) %>
   <%= hidden_field_tag(:agent_id, @agent_id) %>
   <%= hidden_field_tag(:customer_id, @customer.id) %>
   <%= submit_tag("保存") %>

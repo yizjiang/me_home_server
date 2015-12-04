@@ -12,6 +12,7 @@ MeHome::Application.routes.draw do
   resources :session
   resources :question
 
+  get 'wechat_login', to: 'application#wechat_login'
   get 'agent/set_search', to: 'agent#set_search'
   #get 'agent/customers', to: 'agent#all_customer'
   post 'agent/save_customer_search', to: 'agent#save_customer_search'
@@ -22,6 +23,7 @@ MeHome::Application.routes.draw do
   post 'agent/save_page_config', to: 'agent#save_page_config'
   post '/agent/upload_qrcode', to: 'agent#upload_qrcode'
 
+  post 'user/metric_tracking', to: 'user#metric_tracking'
   post 'user/save_search', to: 'user#save_search'
   delete 'user/remove_search/:id', to: 'user#remove_search'
   post 'user/submit_question', to: 'user#submit_question'

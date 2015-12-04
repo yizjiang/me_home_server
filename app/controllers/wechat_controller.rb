@@ -14,7 +14,9 @@ class WechatController < ApplicationController
                     'follow_agent' => :followed_by_agent,
                     'my_client' => :my_client,
                     'agent_follow' => :agent_follow,
-                    'agent_assist' => :agent_assist
+                    'agent_assist' => :agent_assist,
+                    'login' => :login,
+                    'fav' => :my_favorite
 
   }
 
@@ -58,17 +60,23 @@ class WechatController < ApplicationController
              when 'event'
                if  params['xml']['Event'] == 'SCAN'
                  @agent_id = params['xml']['EventKey'].to_i/10
-                 if params['xml']['EventKey'].to_i % 10 == 1
+                 event_id = params['xml']['EventKey'].to_i % 10
+                 if event_id == 1
                    'follow_agent'
-                 else
+                 elsif event_id == 0
                    'agent_follow'
+                 elsif event_id == 3
+                   'login'
                  end
                elsif params['xml']['Event'] == 'subscribe'
                  @agent_id = params['xml']['EventKey'][8..-1].to_i/10
-                 if  params['xml']['EventKey'][8..-1].to_i % 10 == 1
+                 event_id = params['xml']['EventKey'][8..-1].to_i % 10
+                 if event_id == 1
                    'follow_agent'
-                 else
+                 elsif event_id == 0
                    'agent_follow'
+                 elsif event_id == 3
+                   'login'
                  end
                else
                  params['xml']['EventKey']
@@ -112,6 +120,35 @@ class WechatController < ApplicationController
     text_response
   end
 
+
+  def login
+    set_wechat_user_info
+    unless uid = @wechat_user.user_id
+      user = create_user
+      @wechat_user.user_id = user.id
+    else
+      user = User.find(uid)
+    end
+    @wechat_user.save
+
+    uid ||= @wechat_user.user_id
+
+    REDIS.setex('wechat_login', 30, TicketGenerator.encrypt_uid(uid))     #TODO
+    @msg_hash[:body] = "欢迎#{@wechat_user.nickname}登陆觅家\n 请点击网页上的确认键完成登陆，或者输入如下Email和密码: #{user.email}/meejia101"
+    text_response
+  end
+
+  def create_user
+    username = @wechat_user.nickname.parameterize.underscore
+    while User.where('username = ?', username).pluck(:username).length > 0
+      username = username + Random.rand(1000).to_s
+    end
+
+    user = User.new(email: "#{username}@meejia.com", username: username, password: 'meejia101')
+    user.save(validate: false)
+    user
+  end
+
   def customer_questions
     question = Question.where(accepted_aid: nil).limit(1).first
     if question
@@ -141,27 +178,25 @@ class WechatController < ApplicationController
 
   def agent_follow
     @wechat_user.agent_id = @agent_id
-    unless  @wechat_user.nickname
-      user_info = WechatRequest.new.fetch_user_info(@msg_hash[:from_username])
-      @wechat_user.nickname = user_info['nickname']
-      @wechat_user.head_img_url = user_info['headimgurl']
-    end
     @wechat_user.user_id = @agent_id
-    @wechat_user.save
+    set_wechat_user_info
     @msg_hash[:body] = "预祝经纪人#{User.find(@agent_id).agent_extention.agent_identifier}生意兴隆"
     text_response
   end
 
   def followed_by_agent
     @wechat_user.agent_id = @agent_id
+    set_wechat_user_info
+    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务"
+    text_response
+  end
+
+  def set_wechat_user_info
     unless  @wechat_user.nickname
       user_info = WechatRequest.new.fetch_user_info(@msg_hash[:from_username])
       @wechat_user.nickname = user_info['nickname']
       @wechat_user.head_img_url = user_info['headimgurl']
     end
-    @wechat_user.save
-    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务"
-    text_response
   end
 
   def like_agent
@@ -238,6 +273,18 @@ class WechatController < ApplicationController
     article_response
   end
 
+  def my_favorite
+    homes = User.find(@wechat_user.user_id).homes
+    if homes.count > 0
+      @msg_hash[:items] = home_search_items(homes)
+      article_response
+    else
+      @msg_hash[:body] = '您还没有红心房源'
+      text_response
+    end
+
+  end
+
   def home_search
     last_search = @wechat_user.last_search
     search = if search = @wechat_user.search
@@ -248,7 +295,7 @@ class WechatController < ApplicationController
 
     if !search.empty?
       searches = search['regionValue'].split(',').map do |region|
-        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'])
+        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'])
       end
 
       homes = Home.search(searches, 10, last_search || Time.at(-284061600)) # fair divide?
@@ -294,11 +341,12 @@ class WechatController < ApplicationController
   end
 
   def home_search_items(homes)
+    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
     homes.map do |home|
       {title: "位于#{home.addr1} #{home.city}的 #{home.bed_num} 卧室 #{home.home_type}，售价：#{home.price}美金",
        body: 'nice home',
        pic_url: "#{SERVER_HOST}/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/?wid=#{@wechat_user.id}#/home_detail/#{home.id}"}
+       url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
     end
   end
 

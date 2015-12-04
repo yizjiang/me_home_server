@@ -14,7 +14,14 @@ class Search
                    1000000000
                 end
     @bed_num = attributes[:bedNum] || 0
-    @home_type = attributes[:home_type] || ['Single Family Home', 'Multi-Family Home', 'Condo/Townhome/Row Home/Co-Op']
+    home_type_attr = if attributes[:home_type].is_a? Array
+                       attributes[:home_type]
+                     elsif attributes[:home_type].is_a? Hash
+                       attributes[:home_type].values
+                     else
+                       nil
+                     end
+    @home_type = home_type_attr || ['Single Family Home', 'Multi-Family Home', 'Condo/Townhome/Row Home/Co-Op']
     if(attributes[:single_family] == 'false')
       @home_type -= ['Single Family Home']
     end

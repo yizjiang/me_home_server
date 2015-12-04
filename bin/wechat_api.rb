@@ -11,8 +11,8 @@ require 'open-uri'
 #wx8f6251caa9d36d5b
 #b270c00cbd25f31830224f5c54f2363e
 
-CLIENTID = 'wx8f6251caa9d36d5b'
-CLIENTSECRET = 'b270c00cbd25f31830224f5c54f2363e'
+CLIENTID = 'wx18034235da4be445'
+CLIENTSECRET = '64007b6d52d74fb2858ea90e28f8cd1b'
 params = {grant_type: 'client_credential',
           appid: CLIENTID,
           secret: CLIENTSECRET}
@@ -42,16 +42,17 @@ def generate_qr_code(access_token)
       {
         scene:
           {
-            scene_id: '5'
+            scene_id: '3'
           }
       }
   }
   response = Typhoeus.post(url, body: body.to_json)
+  p response.body
   ticket = URI::encode (JSON.parse(response.body)['ticket'])
   p ticket
   url = "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=#{ticket}"
   response = Typhoeus.get(url)
-  File.open('b.png', 'wb') do |outfile|
+  File.open('service_account.png', 'wb') do |outfile|
     outfile.write(response.body)
   end
 end
@@ -89,6 +90,12 @@ def publish_menu(access_token)
             type: "click",
             name: "智能找房",
             key: "s"
+          },
+
+          {
+            type: "click",
+            name: "红心房源",
+            key: "fav"
           },
 
           {

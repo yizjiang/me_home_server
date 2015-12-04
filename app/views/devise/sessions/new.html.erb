@@ -13,4 +13,8 @@
   <div class="field"><div><%= f.submit "Sign in" %></div>
 <% end %>
 
+<h3>微信登陆: 扫描后请点击确定</h3>
+<%= image_tag('service_account.png', size: "150x150") %>
+<%= link_to '<button type="button">确定</button>'.html_safe, '/wechat_login' %>
+<br/>
 <%= render "devise/shared/links" %>

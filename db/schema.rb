@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151124175859) do
+ActiveRecord::Schema.define(:version => 20151204181805) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -91,6 +91,11 @@ ActiveRecord::Schema.define(:version => 20151124175859) do
     t.text   "description"
     t.text   "short_desc"
     t.string "city"
+    t.string "indoor_size"
+    t.string "lot_size"
+    t.string "price"
+    t.string "unit_price"
+    t.string "home_type"
   end
 
   create_table "images", :force => true do |t|

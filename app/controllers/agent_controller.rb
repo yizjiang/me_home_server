@@ -68,7 +68,7 @@ class AgentController < ApplicationController
   def save_customer_search
     @customer = WechatUser.find(params[:customer_id])
     if params[:regionValue].present?
-      @customer.update_attributes(search: params.slice(:regionValue, :priceMin, :priceMax).to_json, last_search: nil)
+      @customer.update_attributes(search: params.slice(:regionValue, :priceMin, :priceMax, :bedNum).to_json, last_search: nil)
       if params[:api]
         render json: {}
       else

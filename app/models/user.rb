@@ -17,6 +17,7 @@ class User < ActiveRecord::Base
   has_many :homes, through: :favorite_homes
   has_many :answers, foreign_key: 'uid'
   has_one :agent_extention
+  has_one :wechat_user, foreign_key: 'user_id'
 
   after_create :assign_agent_extension, if: lambda{self.agent_extention_id.present?}
 
