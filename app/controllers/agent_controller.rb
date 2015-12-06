@@ -55,8 +55,18 @@ class AgentController < ApplicationController
   end
 
   def all_customer
-    @customers = WechatUser.where(agent_id: params[:uid])
-    render json: @customers, :include => [:wechat_trackings]
+    @customers = WechatUser.where(agent_id: params[:uid]).includes(:wechat_trackings, :user).map do |wuser|
+                    favorites = wuser.user.homes.map do |home|
+                      home.as_json(addr_only: true)
+                    end
+                    customer_hash = wuser.as_json.merge(favorites: favorites)
+                    home_ids = wuser.wechat_trackings.pluck(:item).map{|id| id.to_i}
+                    interest_homes = Home.select([:id, :addr1, :city]).where( "id in (?)", home_ids).map do |home|
+                      home.as_json(addr_only: true)
+                    end
+                    customer_hash.merge(interest: interest_homes)
+    end
+    render json: @customers
   end
 
   def set_search

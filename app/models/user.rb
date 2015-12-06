@@ -14,7 +14,11 @@ class User < ActiveRecord::Base
   has_many :saved_searches, foreign_key: 'uid'
   has_many :questions, foreign_key: 'uid'
   has_many :favorite_homes, foreign_key: 'uid'
-  has_many :homes, through: :favorite_homes
+  has_many :homes, through: :favorite_homes do
+    def just_address
+      select([:id, :addr1])
+    end
+  end
   has_many :answers, foreign_key: 'uid'
   has_one :agent_extention
   has_one :wechat_user, foreign_key: 'user_id'

@@ -49,21 +49,28 @@ class Home < ActiveRecord::Base
     result
   end
 
-  def as_json
-    result = super
-    result[:images] = self.images
-    result[:assigned_school] = self.schools.assigned
-    result[:public_schools] = self.schools.other_public
-    result[:private_schools] = self.schools.private
-    result[:chinese_description] = self.home_cn.try(:description)
-    result[:short_desc] = self.home_cn.try(:short_desc)
-    if home_cn = self.home_cn
-      result[:indoor_size] = home_cn.indoor_size
-      result[:lot_size] = home_cn.lot_size
-      result[:short_desc] = home_cn.short_desc
-      result[:price] = home_cn.price
-      result[:unit_price] = home_cn.unit_price
+  def as_json(options=nil)
+    options ||= {}
+    if options[:addr_only]
+      options.merge!(only: [:id, :addr1, :city])
+      result = super(options)
+    else
+      result = super(options)
+      result[:images] = self.images
+      result[:assigned_school] = self.schools.assigned
+      result[:public_schools] = self.schools.other_public
+      result[:private_schools] = self.schools.private
+      result[:chinese_description] = self.home_cn.try(:description)
+      result[:short_desc] = self.home_cn.try(:short_desc)
+      if home_cn = self.home_cn
+        result[:indoor_size] = home_cn.indoor_size
+        result[:lot_size] = home_cn.lot_size
+        result[:short_desc] = home_cn.short_desc
+        result[:price] = home_cn.price
+        result[:unit_price] = home_cn.unit_price
+      end
     end
+
     result
   end
 
