@@ -1,5 +1,4 @@
 root = "/home/meejia/me_home_server"
-root = '/Users/yizjiang/Projects/me_home_server'
 working_directory root
 
 worker_processes 2
