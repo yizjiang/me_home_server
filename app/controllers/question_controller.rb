@@ -1,7 +1,7 @@
 class QuestionController < ApplicationController
   def index
     uid = request.headers['HTTP_UID']
-    render json: Question.unanswered(uid)
+    render json: Question.unanswered(uid, Time.now - 3600 * 24)
   end
 
   def post_answer

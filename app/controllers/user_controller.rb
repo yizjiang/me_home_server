@@ -63,7 +63,7 @@ class UserController < ApplicationController
     end
     params[:home_type] = home_type
     user.create_search(params)
-    if(user.saved_searches.count > 10)
+    if(user.saved_searches.count > 5)
       user.saved_searches.first.delete
     end
     render json: user.to_json(include: [:saved_searches])

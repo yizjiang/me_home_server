@@ -11,9 +11,9 @@
 <%= form_tag("/agent/save_customer_search", method: "post") do %>
   <%= label_tag(:city, "城市") %>
   <%= text_field_tag(:regionValue, search['regionValue']) %>
-  <%= label_tag(:priceMin, "最低价") %>
+  <%= label_tag(:priceMin, "最低价（万）") %>
   <%= text_field_tag(:priceMin, search['priceMin']) %>
-  <%= label_tag(:priceMax, "最高价") %>
+  <%= label_tag(:priceMax, "最高价（万）") %>
   <%= text_field_tag(:priceMax, search['priceMax']) %>
   <%= label_tag(:bedNum, "房间数") %>
   <%= text_field_tag(:bedNum, search['bedNum']) %>

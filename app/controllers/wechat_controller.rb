@@ -150,7 +150,7 @@ class WechatController < ApplicationController
   end
 
   def customer_questions
-    question = Question.where(accepted_aid: nil).limit(1).first
+    question = Question.unanswered(@wechat_user.user_id, Time.now - 3600).first
     if question
       set_redis(:wait_input, :answer_question)
       set_redis(:answer_question, question.id)

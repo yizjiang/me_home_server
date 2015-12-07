@@ -4,16 +4,17 @@ class Search
   def initialize(attributes)
     @region = attributes[:regionValue] || ''
     @price_min = if attributes[:priceMin].present?
-                   attributes[:priceMin]
+                   attributes[:priceMin].to_f * 10000
                  else
                    0
                  end
     @price_max = if attributes[:priceMax].present?
-                   attributes[:priceMax]
+                   attributes[:priceMax].to_f * 10000
                  else
                    1000000000
                 end
-    @bed_num = attributes[:bedNum] || 0
+    @bed_num = attributes[:bedNum] || 1
+    @bed_num = @bed_num.to_i
     home_type_attr = if attributes[:home_type].is_a? Array
                        attributes[:home_type]
                      elsif attributes[:home_type].is_a? Hash

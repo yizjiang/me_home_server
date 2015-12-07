@@ -31,10 +31,10 @@ class Home < ActiveRecord::Base
         if(region.multibyte?)
           homes_cn = HomeCn.where('city LIKE ?', "%#{region}%")
           homes = where('id in (?) and last_refresh_at > ? and price < ? and price > ? and status = ? and bed_num > ? and home_type in (?)',
-                        homes_cn.pluck(:id), last_refresh, search.price_max, search.price_min, 'Active', search.bed_num, search.home_type).order('last_refresh_at DESC').limit(limit)
+                        homes_cn.pluck(:id), last_refresh, search.price_max, search.price_min, 'Active', search.bed_num - 1, search.home_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :images).limit(limit)
         else
           homes = where('last_refresh_at > ? and (city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ? and bed_num > ? and home_type in (?)',
-                        last_refresh, "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active', search.bed_num, search.home_type).order('last_refresh_at DESC').limit(limit)
+                        last_refresh, "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active', search.bed_num - 1, search.home_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :images).limit(limit)
         end
 
         limit -= homes.count if limit
@@ -43,7 +43,7 @@ class Home < ActiveRecord::Base
           break
         end
       else
-        result.push(*where('last_refresh_at > ? and price < ? and price > ? and status = ?', last_refresh, search.price_max, search.price_min, 'Active').order('last_refresh_at DESC').limit(limit))
+        result.push(*where('last_refresh_at > ? and price < ? and price > ? and status = ?', last_refresh, search.price_max, search.price_min, 'Active').includes(:home_cn, :schools, :images).order('last_refresh_at DESC').limit(limit))
       end
     end
     result
@@ -57,6 +57,7 @@ class Home < ActiveRecord::Base
     else
       result = super(options)
       result[:images] = self.images
+      #TODO more efficient query
       result[:assigned_school] = self.schools.assigned
       result[:public_schools] = self.schools.other_public
       result[:private_schools] = self.schools.private
