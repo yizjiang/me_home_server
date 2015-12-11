@@ -1,6 +1,6 @@
 namespace :csv do
   desc 'import xls from file'
-  task :import => :environment do
+  task :update => :environment do
     puts 'Enter csv file name under sample/data/'
     file = STDIN.gets.chomp
     home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
