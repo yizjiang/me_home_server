@@ -7,10 +7,10 @@ namespace :csv do
     home[1..-1].each_with_index do |row, index|
       begin
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
-        uniq_condition = {addr1: row[3],
-                          city: row[4],
-                          state: row[5],
-                          zipcode: row[6]}
+        uniq_condition = {addr1: row[3].lstrip.rstrip,
+                          city: row[4].lstrip.rstrip,
+                          state: row[5].lstrip.rstrip,
+                          zipcode: row[6].lstrip.rstrip}
         home = Home.where(uniq_condition).first_or_create
         home.update_attributes(county: row[7],
                                last_refresh_at: time_before_now(row[8]),
