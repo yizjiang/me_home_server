@@ -80,30 +80,30 @@ class Home < ActiveRecord::Base
     result
   end
 
-  def assign_schools(schools, assigned, type)
+  def assign_schools(schools, assigned)
     schools.each do |school|
-      record = School.where(name: school[0], grade: school[2], school_type: type).first_or_create
-      record.student_teacher_ratio= school[3]
-      record.rating= school[4]
+      record = School.where(name: school[0], grade: school[2], school_type: school[6]).first_or_create
+      record.student_teacher_ratio = school[3]
+      record.rating = school[4].to_f
+      record.parent_rating = school[5].to_f    
       record.save
 
-      if assigned
-        assignment = HomeSchoolAssignment.where(home_id: self.id, school_id: record.id).first_or_create
-        assignment.update_attributes(distance: record[1], assigned: assigned)
-      end
+      assignment = HomeSchoolAssignment.where(home_id: self.id, school_id: record.id).first_or_create
+      assignment.update_attributes(distance: school[1], assigned: assigned)
+ 
     end
   end
 
   def assign_public_schools(schools)
-    assign_schools(schools, true, 'public')
+   assign_schools(schools, true)
   end
 
   def assign_private_schools(schools)
-    assign_schools(schools, false, 'private')
+    assign_schools(schools, false)
   end
 
-  def other_public_schools(schools)
-    assign_schools(schools, false, 'public')
+  def other_schools(schools)
+    assign_schools(schools, false)
   end
 
   def build_image_group(images)
