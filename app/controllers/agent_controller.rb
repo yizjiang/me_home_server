@@ -2,7 +2,8 @@
 
 class AgentController < ApplicationController
   def index
-    config = if page_config = AgentExtention.find_by_agent_identifier(params[:name]).page_config
+    agent_extention = AgentExtention.find_by_agent_identifier(params[:name])
+    config = if page_config =agent_extention.page_config
                JSON.parse page_config
              else
                {}
@@ -11,13 +12,18 @@ class AgentController < ApplicationController
     search_config = config['search']
 
     if search_config
-    searches = search_config.map{|_, v| Search.new(JSON.parse(v).with_indifferent_access.reject{|_, v| v.empty?})}
+    search = JSON.parse search_config['0']
+    searches = search['regionValue'].split(',').map do |s|
+      criteria = search.clone
+      criteria['regionValue'] = s
+      Search.new(criteria.with_indifferent_access.reject{|_, v| v.empty?})
+    end
 
     result = Home.search(searches).map do |home|
       home.as_json
     end
     end
-    render json: {header: config['header'], home_list: result }
+    render json: {header: config['header'], home_list: result, qr_image: agent_extention.user.qr_code, head_image: agent_extention.user.wechat_user.try(:head_img_url) }
   end
 
   def save_page_config
@@ -35,7 +41,15 @@ class AgentController < ApplicationController
     agent_extention.update_attributes(page_config: new_config.to_json)
 
     search_config = JSON.parse(agent_extention.page_config)['search']
-    searches = search_config.map{|_, v| Search.new(JSON.parse(v).with_indifferent_access.reject{|_, v| v.empty?})}
+
+    if search_config
+      search = JSON.parse search_config['0']
+      searches = search['regionValue'].split(',').map do |s|
+        criteria = search.clone
+        criteria['regionValue'] = s
+        Search.new(criteria.with_indifferent_access.reject{|_, v| v.empty?})
+      end
+    end
 
     result = Home.search(searches).map do |home|
       home.as_json
@@ -89,6 +103,11 @@ class AgentController < ApplicationController
       flash[:notice] = "城市不能为空"
       render 'agent/customer_search_form'
     end
+
+  end
+
+  private
+  def get_searches
 
   end
 end

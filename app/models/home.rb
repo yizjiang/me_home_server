@@ -6,17 +6,7 @@ class Home < ActiveRecord::Base
   has_many :home_school_assignments
   has_one :home_cn, foreign_key: 'id'
 
-  has_many :schools, through: :home_school_assignments do
-    def assigned
-      where("home_school_assignments.assigned = ?", true)
-    end
-    def other_public
-      where("home_school_assignments.assigned = ? && school_type = ?", false, 'public')
-    end
-    def private
-      where("home_school_assignments.assigned = ? && school_type = ?", false, 'private')
-    end
-  end
+  has_many :schools, through: :home_school_assignments
 
   has_many :favorite_homes, foreign_key: 'home_id'
   has_many :users, through: :favorite_homes
@@ -30,11 +20,11 @@ class Home < ActiveRecord::Base
       if(region = search.region)
         if(region.multibyte?)
           homes_cn = HomeCn.where('city LIKE ?', "%#{region}%")
-          homes = where('id in (?) and last_refresh_at > ? and price < ? and price > ? and status = ? and bed_num > ? and home_type in (?)',
-                        homes_cn.pluck(:id), last_refresh, search.price_max, search.price_min, 'Active', search.bed_num - 1, search.home_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :images).limit(limit)
+          homes = where('id in (?) and last_refresh_at > ? and price < ? and price > ? and status = ? and bed_num > ? and indoor_size > ? and year_built > ? and home_type in (?)',
+                        homes_cn.pluck(:id), last_refresh, search.price_max, search.price_min, 'Active', search.bed_num - 1, search.indoor_size, search.year_built, search.home_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :home_school_assignments, :images).limit(limit)
         else
-          homes = where('last_refresh_at > ? and (city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ? and bed_num > ? and home_type in (?)',
-                        last_refresh, "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active', search.bed_num - 1, search.home_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :images).limit(limit)
+          homes = where('last_refresh_at > ? and (city LIKE ? or zipcode LIKE ?) and price < ? and price > ? and status = ? and bed_num > ? and indoor_size > ? and year_built > ? and home_type in (?)',
+                        last_refresh, "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active', search.bed_num - 1, search.indoor_size, search.year_built, search.home_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :home_school_assignments, :images).limit(limit)
         end
 
         limit -= homes.count if limit
@@ -43,10 +33,25 @@ class Home < ActiveRecord::Base
           break
         end
       else
-        result.push(*where('last_refresh_at > ? and price < ? and price > ? and status = ?', last_refresh, search.price_max, search.price_min, 'Active').includes(:home_cn, :schools, :images).order('last_refresh_at DESC').limit(limit))
+        result.push(*where('last_refresh_at > ? and price < ? and price > ? and indoor_size > ? and year_built > ? and status = ?', last_refresh, search.price_max, search.price_min, search.indoor_size, search.year_built, 'Active').includes(:home_cn, :home_school_assignments, :schools, :images).order('last_refresh_at DESC').limit(limit))
       end
     end
     result
+  end
+
+  def get_assigned_schools
+    school_ids = self.home_school_assignments.select{|hs|hs.assigned == true}.map(&:school_id)
+    self.schools.select{|s| school_ids.include?(s.id)}
+  end
+
+  def get_private_schools
+    school_ids = self.home_school_assignments.select{|hs|hs.assigned == false}.map(&:school_id)
+    self.schools.select{|s| school_ids.include?(s.id) && s.school_type == 'private'}
+  end
+
+  def get_other_public_schools
+    school_ids = self.home_school_assignments.select{|hs|hs.assigned == false}.map(&:school_id)
+    self.schools.select{|s| school_ids.include?(s.id) && s.school_type == 'public'}
   end
 
   def as_json(options=nil)
@@ -57,10 +62,10 @@ class Home < ActiveRecord::Base
     else
       result = super(options)
       result[:images] = self.images
-      #TODO more efficient query
-      result[:assigned_school] = self.schools.assigned
-      result[:public_schools] = self.schools.other_public
-      result[:private_schools] = self.schools.private
+      result[:assigned_school] = self.get_assigned_schools
+      result[:public_schools] = self.get_other_public_schools
+      result[:private_schools] = self.get_private_schools
+      result[:schools] = self.schools
       result[:chinese_description] = self.home_cn.try(:description)
       result[:short_desc] = self.home_cn.try(:short_desc)
       if home_cn = self.home_cn

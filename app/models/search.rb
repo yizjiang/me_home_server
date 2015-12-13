@@ -1,5 +1,5 @@
 class Search
-  attr_accessor :region, :price_min, :price_max, :bed_num, :home_type
+  attr_accessor :region, :price_min, :price_max, :bed_num, :home_type, :indoor_size, :year_built
 
   def initialize(attributes)
     @region = attributes[:regionValue] || ''
@@ -15,6 +15,13 @@ class Search
                 end
     @bed_num = attributes[:bedNum] || 1
     @bed_num = @bed_num.to_i
+    @indoor_size = attributes[:indoor_size] || 0
+    @year_built = if attributes[:home_age]
+                    Time.now.year - attributes[:home_age].to_i
+                  else
+                    1900
+                  end
+
     home_type_attr = if attributes[:home_type].is_a? Array
                        attributes[:home_type]
                      elsif attributes[:home_type].is_a? Hash

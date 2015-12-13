@@ -102,19 +102,20 @@ def publish_menu(access_token)
             type: "click",
             name: "答疑解惑",
             key: "q"
-          },
+          }
 
-          {
-            type: "click",
-            name: "联系经纪人",
-            key: "a"
-          },
-
-          {
-            type: "click",
-            name: "更新搜索",
-            key: "u"
-          }]
+          #{
+          #  type: "click",
+          #  name: "房产经纪人",
+          #  key: "a"
+          #},
+          #
+          #{
+          #  type: "click",
+          #  name: "贷款经纪人",
+          #  key: "l"
+          #}
+        ]
       },
       {
         name: "专业经纪人",

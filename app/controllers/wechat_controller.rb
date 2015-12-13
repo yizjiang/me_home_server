@@ -9,6 +9,7 @@ class WechatController < ApplicationController
                     'q' => :ask_question,
                     'a' => :need_agent,
                     'u' => :update_search,
+                    'U' => :update_search,
                     'cq' => :customer_questions,
                     'pc' => :agent_request,
                     'follow_agent' => :followed_by_agent,
@@ -16,7 +17,8 @@ class WechatController < ApplicationController
                     'agent_follow' => :agent_follow,
                     'agent_assist' => :agent_assist,
                     'login' => :login,
-                    'fav' => :my_favorite
+                    'fav' => :my_favorite,
+                    'l' => :loan_agent
 
   }
 
@@ -106,6 +108,11 @@ class WechatController < ApplicationController
       @msg_hash[:body] = '对不起，以下消息 ' + @msg_hash[:body] + ' 无法自动回复，稍后会有人与您联系'
       text_response
     end
+  end
+
+  def loan_agent
+    @msg_hash[:body] = '服务暂时没有开通'
+    text_response
   end
 
   def ask_question
@@ -236,21 +243,23 @@ class WechatController < ApplicationController
   end
 
   def need_agent
-    if agent = cached_input(:need_agent)
-      @msg_hash[:body] = "您现在经纪人的需求是 #{agent}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市"
-      set_redis(:wait_input, :agent_confirm)
-      set_redis(:agent_confirm, agent)
-      text_response
-    elsif search = cached_input(:home_search)
-      @msg_hash[:body] = "您现在的搜索城市是 #{search}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市"
-      set_redis(:wait_input, :agent_confirm)
-      set_redis(:agent_confirm, search)
-      text_response
-    else
-      @msg_hash[:body] = '请输入您想要负责哪些城市的经纪人'
-      set_redis(:wait_input, :agent_confirm)
-      text_response
-    end
+    @msg_hash[:body] = '服务暂时没有开通'
+    text_response
+    #if agent = cached_input(:need_agent)
+    #  @msg_hash[:body] = "您现在经纪人的需求是 #{agent}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市"
+    #  set_redis(:wait_input, :agent_confirm)
+    #  set_redis(:agent_confirm, agent)
+    #  text_response
+    #elsif search = cached_input(:home_search)
+    #  @msg_hash[:body] = "您现在的搜索城市是 #{search}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市"
+    #  set_redis(:wait_input, :agent_confirm)
+    #  set_redis(:agent_confirm, search)
+    #  text_response
+    #else
+    #  @msg_hash[:body] = '请输入您想要负责哪些城市的经纪人'
+    #  set_redis(:wait_input, :agent_confirm)
+    #  text_response
+    #end
   end
 
   def agent_confirm
@@ -306,7 +315,7 @@ class WechatController < ApplicationController
         article_response
       else
         @wechat_user.update_attributes(search_count: (@wechat_user.search_count || 0) + 1)
-        @msg_hash[:body] = "您所搜索的地区还没有房源更新"
+        @msg_hash[:body] = "您所搜索的地区还没有房源更新, 请回复'u'更新搜索条件"
         text_response
       end
 

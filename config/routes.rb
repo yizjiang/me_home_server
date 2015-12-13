@@ -12,6 +12,7 @@ MeHome::Application.routes.draw do
   resources :session
   resources :question
 
+  get 'all_city', to: 'region#all_city'
   get 'wechat_login', to: 'application#wechat_login'
   get 'agent/set_search', to: 'agent#set_search'
   #get 'agent/customers', to: 'agent#all_customer'

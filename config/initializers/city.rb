@@ -1,0 +1,1 @@
+ALL_CITY = YAML.load(ERB.new(File.read('./config/city.yml')).result)

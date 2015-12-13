@@ -9,4 +9,8 @@ class RegionController < ApplicationController
     end
    render json: regions
   end
+
+  def all_city
+    render json: ALL_CITY[params[:area]]
+  end
 end
