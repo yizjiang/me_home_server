@@ -11,6 +11,8 @@ class RegionController < ApplicationController
   end
 
   def all_city
-    render json: ALL_CITY[params[:area]]
+    result = ALL_CITY[params[:area]].clone
+    result = result.push(*(Home.pluck(:zipcode).uniq.map(&:to_s)))
+    render json: result
   end
 end

@@ -1,20 +1,24 @@
-<h2>Sign in</h2>
+<h2 class='login_h2'>登 陆</h2>
 <%= form_for(resource, as: resource_name, url: new_user_session_path(resource_name) + "?redirect_url=#{params[:redirect_url]}") do |f| %>
-  <div class="field"><%= f.label :email %><br />
-  <%= f.email_field :email, autofocus: true %></div>
+  <div class="field"><span class='input-group-addon'></span>
+  <%= f.email_field :email, autofocus: true, placeholder: '邮箱', :class => 'login_input' %>
+</div>
 
-  <div><%= f.label :password %><br />
-    <%= f.password_field :password, autocomplete: "off" %></div>
+  <div><span class='input-group-addon'></span>
+    <%= f.password_field :password, autocomplete: "off", placeholder: '密码', :class => 'login_input' %></div>
 
   <% if devise_mapping.rememberable? -%>
-    <div><%= f.check_box :remember_me %> <%= f.label :remember_me %></div>
+    <div class="login_checkbox"><%= f.check_box :remember_me %> <%= f.label :remember_me %></div>
   <% end -%>
 
-  <div class="field"><div><%= f.submit "Sign in" %></div>
+  <div class="field"><div><%= f.submit  "登 陆", :class => 'login_btn' %></div>
 <% end %>
 
-<h3 class="wechat_login">微信登陆: 扫描后请点击确定</h3>
-<%= image_tag('service_account.png', size: "150x150") %>
-<%= link_to '<button type="button">确定</button>'.html_safe, '/wechat_login' %>
+<h3 class="wechat_login">
+	<span class='wechat_icon'></span>
+	<span class='wechat_h3'>微信登陆: 扫描后请点击确定</span>
+</h3>
+<%= image_tag('service_account.png', size: "150x150") %><br/>
+<%= link_to '<button type="button" class="login_btn">确 定</button>'.html_safe, '/wechat_login' %>
 <br/>
 <%= render "devise/shared/links" %>

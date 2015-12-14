@@ -12,12 +12,82 @@
  *= require_tree .
  */
 
+h2.login_h2{
+	text-align: center;
+	font-weight: 100;
+}
+
+#new_user{
+	text-align: center;
+}
+
+input.login_input{
+	width: 50%;
+	height: 30px;
+	line-height: 30px;
+	font-size: 16px;
+	padding: 0 5px;
+	border-radius: 5px;
+	outline: none;
+	border: none;
+	border: 1px solid #ccc;
+}
+
+div.login_checkbox{
+	text-align: left;
+	width: calc(50% + 10px);
+	margin-left: calc(25% - 5px);
+	margin-top: 5px;
+}
+
+.login_btn{
+	width: calc(50% + 10px);
+	height: 30px;
+	line-height: 30px;
+	font-size: 16px;
+	background-color: #74c005;
+	border: 0;
+	border-radius: 5px;
+	color: white;
+	padding: 0;
+	outline: none;
+}
+
+span.wechat_icon{
+	background: url('./wechat.png');
+	background-size: cover;
+	display: inline-block;
+	vertical-align: top;
+	width: 20px;
+	height: 20px;
+}
+
+span.wechat_h3{
+	display: inline-block;
+	vertical-align: top;
+	font-size: 14px;
+	line-height: 20px;
+	color: #666;
+	font-weight: 100;
+}
+
 .tw_login {
   width: 20px;
   height: 20px
 }
 
-
 .wechat_login{
-  background-color: greenyellow;
+  text-align: center;
+}
+
+a.signup_alink{
+	text-decoration: none;
+	display: block;
+	padding: 5px;
+	font-size: 14px;
+}
+
+a.signup_alink:focus,a.signup_alink:active,a.signup_alink:visited,a.signup_alink:hover{
+	background-color: transparent;
+	color: #333;
 }
