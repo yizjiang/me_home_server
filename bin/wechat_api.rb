@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'typhoeus'
 require 'open-uri'
-
+require 'json'
 #wx18034235da4be445
 #64007b6d52d74fb2858ea90e28f8cd1b
 
@@ -11,8 +11,8 @@ require 'open-uri'
 #wx8f6251caa9d36d5b
 #b270c00cbd25f31830224f5c54f2363e
 
-CLIENTID = 'wx18034235da4be445'
-CLIENTSECRET = '64007b6d52d74fb2858ea90e28f8cd1b'
+CLIENTID = 'wxd284e53ecd0e2b51'
+CLIENTSECRET = 'a1fd7beec066019b1b9b28efcba1e610'
 params = {grant_type: 'client_credential',
           appid: CLIENTID,
           secret: CLIENTSECRET}
@@ -153,6 +153,6 @@ p access_token
 #user_info(access_token)
 #upload_image(access_token)
 #get_qr_code("gQEP8ToAAAAAAAAAASxodHRwOi8vd2VpeGluLnFxLmNvbS9xL09rTkIyUXJtX0lpQlJ6Wk01VzN5AAIEuMQ/VgMEgDoJAA==")
-#generate_qr_code(access_token)
+generate_qr_code(access_token)
 #reply(access_token)
-publish_menu(access_token)
+#publish_menu(access_token)

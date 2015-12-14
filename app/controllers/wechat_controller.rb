@@ -185,8 +185,9 @@ class WechatController < ApplicationController
 
   def agent_follow
     @wechat_user.agent_id = @agent_id
-    @wechat_user.user_id = @agent_id
+    @wechat_user.user_id = @agent_id  
     set_wechat_user_info
+    @wechat_user.save
     @msg_hash[:body] = "预祝经纪人#{User.find(@agent_id).agent_extention.agent_identifier}生意兴隆"
     text_response
   end
@@ -194,6 +195,7 @@ class WechatController < ApplicationController
   def followed_by_agent
     @wechat_user.agent_id = @agent_id
     set_wechat_user_info
+    @wechat_user.save
     @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务"
     text_response
   end
