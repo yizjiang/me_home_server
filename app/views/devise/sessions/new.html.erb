@@ -18,7 +18,14 @@
 	<span class='wechat_icon'></span>
 	<span class='wechat_h3'>微信登陆: 扫描后请点击确定</span>
 </h3>
-<%= image_tag('service_account.png', size: "150x150") %><br/>
+<img src="../shared_qr/login.png", height="150" width="150")></img><br/>
+
+<h3 class="wechat_login">
+  <span class='wechat_icon'></span>
+  <span class='wechat_h3'>经纪人微信登陆: 扫描后请点击确定</span>
+</h3>
+<img src="../shared_qr/agent_login.png", height="150" width="150")></img><br/>
+
 <%= link_to '<button type="button" class="login_btn">确 定</button>'.html_safe, '/wechat_login' %>
 <br/>
 <%= render "devise/shared/links" %>

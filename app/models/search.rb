@@ -29,15 +29,18 @@ class Search
                      else
                        nil
                      end
-    @home_type = home_type_attr || ['Single Family Home', 'Multi-Family Home', 'Condo/Townhome/Row Home/Co-Op']
+    @home_type = home_type_attr || Home.pluck(:home_type).uniq
     if(attributes[:single_family] == 'false')
       @home_type -= ['Single Family Home']
     end
     if(attributes[:multi_family] == 'false')
-      @home_type -= ['Multi-Family Home']
+      @home_type -= ['Multi Family Home']
     end
     if(attributes[:condo] == 'false')
-      @home_type -= ['Condo/Townhome/Row Home/Co-Op']
+      @home_type -= ['Condominium']
+    end
+    if(attributes[:townhouse] == 'false')
+      @home_type -= ['Townhouse']
     end
   end
 end

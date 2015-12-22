@@ -1,6 +1,8 @@
 development:
-  client_id: wx18034235da4be445
-  client_secret: 64007b6d52d74fb2858ea90e28f8cd1b
+  agent_client_id: wx18034235da4be445
+  agent_client_secret: 64007b6d52d74fb2858ea90e28f8cd1b
+  client_id: wx8f2bdf36a0d0448a
+  client_secret: d4624c36b6795d1d99dcf0547af5443d
 
 test:
   client_id: wx18034235da4be445

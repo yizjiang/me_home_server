@@ -35,7 +35,7 @@ class User < ActiveRecord::Base
 
   def create_agent_extension(identifier, license_id)
     if identifier.present? && license_id.present?
-      agent_ex = AgentExtention.find_or_create_by_agent_identifier_and_license_id(identifier, license_id).id
+      agent_ex = AgentExtention.find_or_create_by_agent_identifier_and_license_id(identifier.parameterize.underscore, license_id).id
       self.agent_extention_id = agent_ex
     end
   end
@@ -50,6 +50,9 @@ class User < ActiveRecord::Base
   def create_search(query)
     SavedSearch.find_or_create_by_search_query_and_uid(JSON(query.slice(*%w(regionValue priceMin priceMax home_type bedNum))), self.id) do |search|
       search.uid = self.id
+    end
+    if(saved_searches.count > 5)
+      saved_searches.first.delete
     end
   end
 

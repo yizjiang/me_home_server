@@ -1,13 +1,22 @@
 class WechatRequest
   attr_accessor :access_token
-  def initialize
-    @access_token = get_access_token
+  def initialize(agent_account = false)
+    @access_token = get_access_token(agent_account)
   end
 
-  def get_access_token
+  def get_access_token(agent_account)
+    if agent_account
+      p 'xx agent access'
+      client_id = AGENT_WECHAT_CLIENTID
+      client_secret = AGENT_WECHAT_CLIENTSECRET
+    else
+      p 'xx general access'
+      client_id = WECHAT_CLIENTID
+      client_secret = WECHAT_CLIENTSECRET
+    end
     params = {grant_type: 'client_credential',
-              appid: WECHAT_CLIENTID,
-              secret: WECHAT_CLIENTSECRET}
+              appid: client_id,
+              secret: client_secret}
     response = Typhoeus.get("https://api.weixin.qq.com/cgi-bin/token", params: params)
     JSON.parse(response.body)['access_token']
   end

@@ -16,6 +16,10 @@ class WechatController < ApplicationController
                     'my_client' => :my_client,
                     'agent_follow' => :agent_follow,
                     'agent_assist' => :agent_assist,
+                    'agent_signup' => :agent_signup,
+                    'update_qr' => :update_qr,
+                    'update_identifier' => :update_identifier,
+                    'license' => :agent_license,
                     'login' => :login,
                     'fav' => :my_favorite,
                     'l' => :loan_agent
@@ -59,6 +63,8 @@ class WechatController < ApplicationController
     body = case params['xml']['MsgType']
              when 'text'
                params['xml']['Content']
+             when 'image'
+               params['xml']['PicUrl']
              when 'event'
                if  params['xml']['Event'] == 'SCAN'
                  @agent_id = params['xml']['EventKey'].to_i/10
@@ -69,6 +75,8 @@ class WechatController < ApplicationController
                    'agent_follow'
                  elsif event_id == 3
                    'login'
+                 elsif event_id == 4
+                   'agent_signup'
                  end
                elsif params['xml']['Event'] == 'subscribe'
                  @agent_id = params['xml']['EventKey'][8..-1].to_i/10
@@ -79,6 +87,8 @@ class WechatController < ApplicationController
                    'agent_follow'
                  elsif event_id == 3
                    'login'
+                 elsif event_id == 4
+                   'agent_signup'
                  end
                else
                  params['xml']['EventKey']
@@ -127,9 +137,25 @@ class WechatController < ApplicationController
     text_response
   end
 
+  def upload_agent_qr_code
+    user = @wechat_user.user
+    user.update_attributes(qr_code:  @msg_hash[:body])
+    uid = user.id
+    expect_file = "public/agents/#{uid}1.png"
+    unless File.exist?(expect_file)
+      WechatRequest.new.generate_qr_code("#{uid}1")
+    end
+
+    @msg_hash[:items] = [{title: '注册成功，您可以分享如下二维码',
+                          body: '微信用户扫描此二维码后会成为您的房产客户，您可以跟踪客户的购房进展',
+                          pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
+                          url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
+    article_response
+  end
 
   def login
     set_wechat_user_info
+    p "xxx #{@wechat_user.inspect}"
     unless uid = @wechat_user.user_id
       user = create_user
       @wechat_user.user_id = user.id
@@ -142,6 +168,48 @@ class WechatController < ApplicationController
 
     REDIS.setex('wechat_login', 30, TicketGenerator.encrypt_uid(uid))     #TODO
     @msg_hash[:body] = "欢迎#{@wechat_user.nickname}登陆觅家\n 请点击网页上的确认键完成登陆，或者输入如下Email和密码: #{user.email}/meejia101"
+    text_response
+  end
+
+  def update_qr
+    set_redis(:wait_input, :upload_agent_qr_code)
+    @msg_hash[:body] = '请上传新的二维码联系方式'
+    text_response
+  end
+
+  def update_identifier
+    set_redis(:wait_input, :update_identifier_record)
+    @msg_hash[:body] = "您现在的编码是 #{@wechat_user.user.agent_extention.agent_identifier}, 请输入您想要更新的编码"
+    text_response
+  end
+
+  def agent_signup
+    set_wechat_user_info(true)
+    unless uid = @wechat_user.user_id
+      user = create_user
+      @wechat_user.user_id = user.id
+      @wechat_user.agent_id = user.id
+    else
+      user = User.find(uid)
+    end
+    extention = AgentExtention.find_or_create_by_user_id_and_agent_identifier_and_license_id(user.id, user.username, 'xxxx')
+    p "xxx #{extention}"
+    user.agent_extention_id = extention.id
+    user.save
+    @wechat_user.save
+    set_redis(:wait_input, :agent_license)
+    @msg_hash[:body] = "您登陆的Email和密码是: #{user.email}/meejia101，经纪人编码是#{extention.agent_identifier}, 请输入您的经纪人序列号进行验证"
+    text_response
+  end
+
+
+  def agent_license
+    extention = @wechat_user.user.agent_extention
+    if extention
+      extention.update_attributes(license_id: @msg_hash[:body])
+    end
+    set_redis(:wait_input, :upload_agent_qr_code)
+    @msg_hash[:body] = "经纪人序列号已保存，您可以请上传您的二维码联系方式"
     text_response
   end
 
@@ -188,21 +256,44 @@ class WechatController < ApplicationController
     @wechat_user.user_id = @agent_id  
     set_wechat_user_info
     @wechat_user.save
-    @msg_hash[:body] = "预祝经纪人#{User.find(@agent_id).agent_extention.agent_identifier}生意兴隆"
-    text_response
+    user = @wechat_user.user
+    if user.qr_code
+      uid = user.id
+      expect_file = "public/agents/#{uid}1.png"
+      unless File.exist?(expect_file)
+        WechatRequest.new.generate_qr_code("#{uid}1")
+      end
+
+      @msg_hash[:items] = [{title: '请分享此二维码给您的客户',
+                            body: '',
+                            pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
+                            url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
+      article_response
+    else
+      set_redis(:wait_input, :upload_agent_qr_code)
+      @msg_hash[:body] = "请上传您的二维码完善联系方式"
+      text_response
+    end
+
   end
 
   def followed_by_agent
     @wechat_user.agent_id = @agent_id
     set_wechat_user_info
+    unless uid = @wechat_user.user_id
+      user = create_user
+      @wechat_user.user_id = user.id
+    else
+      user = User.find(uid)
+    end
     @wechat_user.save
-    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务"
+    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务。您可以输入如下Email和密码: #{user.email}/meejia101登录meejia.com"
     text_response
   end
 
-  def set_wechat_user_info
+  def set_wechat_user_info(is_agent = false)
     unless  @wechat_user.nickname
-      user_info = WechatRequest.new.fetch_user_info(@msg_hash[:from_username])
+      user_info = WechatRequest.new(is_agent).fetch_user_info(@msg_hash[:from_username])
       @wechat_user.nickname = user_info['nickname']
       @wechat_user.head_img_url = user_info['headimgurl']
     end
@@ -232,7 +323,7 @@ class WechatController < ApplicationController
                  else
                    {}
                  end
-        {title: "#{user.nickname}的需求: 城市: #{search['regionValue']} 价格: #{search['priceMin']} - #{search['priceMax']}",
+        {title: "#{user.nickname} 城市：#{search['regionValue']} 价格: #{search['priceMin']} - #{search['priceMax']} 累计搜索:#{user.search_count}次",
          body: '',
          pic_url: user.head_img_url,
          url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.user_id}&cid=#{user.id}"}
@@ -245,23 +336,8 @@ class WechatController < ApplicationController
   end
 
   def need_agent
-    @msg_hash[:body] = '服务暂时没有开通'
-    text_response
-    #if agent = cached_input(:need_agent)
-    #  @msg_hash[:body] = "您现在经纪人的需求是 #{agent}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市"
-    #  set_redis(:wait_input, :agent_confirm)
-    #  set_redis(:agent_confirm, agent)
-    #  text_response
-    #elsif search = cached_input(:home_search)
-    #  @msg_hash[:body] = "您现在的搜索城市是 #{search}。您想根据此条件获取经纪人吗？请回复Y/y或者更新您想要的城市"
-    #  set_redis(:wait_input, :agent_confirm)
-    #  set_redis(:agent_confirm, search)
-    #  text_response
-    #else
-    #  @msg_hash[:body] = '请输入您想要负责哪些城市的经纪人'
-    #  set_redis(:wait_input, :agent_confirm)
-    #  text_response
-    #end
+    @msg_hash[:items] = agent_search_items
+    article_response
   end
 
   def agent_confirm
@@ -291,9 +367,8 @@ class WechatController < ApplicationController
       article_response
     else
       @msg_hash[:body] = '您还没有红心房源'
-      text_response
+      text_responsen
     end
-
   end
 
   def home_search
@@ -317,7 +392,7 @@ class WechatController < ApplicationController
         article_response
       else
         @wechat_user.update_attributes(search_count: (@wechat_user.search_count || 0) + 1)
-        @msg_hash[:body] = "您所搜索的地区还没有房源更新, 请回复'u'更新搜索条件"
+        @msg_hash[:body] = "您所搜索的地区还没有房源更新, 请回复u或点击更新搜索获取更多房源"
         text_response
       end
 
@@ -349,6 +424,16 @@ class WechatController < ApplicationController
   def article_response
     file_content = File.open(File.expand_path("./app/helpers/article_response.xml.erb"), "r").read
     ERB.new(file_content).result(binding)
+  end
+
+  def agent_search_items
+    agents = User.where('agent_extention_id is NOT NULL').includes(:agent_extention, :wechat_user).limit(10)
+    agents.map do |agent|
+      {title: "#{agent.wechat_user.try(:nickname)}",
+       body: 'nice home',
+       pic_url: "#{agent.wechat_user.try(:head_img_url)}",
+       url: "#{CLIENT_HOST}/agents/#{agent.agent_extention.try(:agent_identifier)}"}
+    end
   end
 
   def home_search_items(homes)

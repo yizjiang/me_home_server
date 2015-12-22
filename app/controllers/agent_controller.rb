@@ -23,7 +23,9 @@ class AgentController < ApplicationController
       home.as_json
     end
     end
-    render json: {header: config['header'], home_list: result, qr_image: agent_extention.user.qr_code, head_image: agent_extention.user.wechat_user.try(:head_img_url) }
+    render json: {header: config['header'], home_list: result,
+                  qr_image: agent_extention.user.qr_code,
+                  head_image: agent_extention.user.wechat_user.try(:head_img_url) }
   end
 
   def save_page_config
@@ -91,6 +93,8 @@ class AgentController < ApplicationController
 
   def save_customer_search
     @customer = WechatUser.find(params[:customer_id])
+    user = User.find(@customer.user_id)
+    user.create_search(params)
     if params[:regionValue].present?
       @customer.update_attributes(search: params.slice(:regionValue, :priceMin, :priceMax, :bedNum).to_json, last_search: nil)
       if params[:api]

@@ -12,6 +12,14 @@ MeHome::Application.routes.draw do
   resources :session
   resources :question
 
+  devise_for :users, path_names: {sign_in: "login", sign_out: "logout"},
+             controllers: {omniauth_callbacks: "omniauth_callbacks"}
+  devise_for :users do get '/users/logout' => 'devise/sessions#destroy' end
+  devise_for :users do get '/users/sign_out' => 'devise/sessions#destroy' end
+  devise_for :users do post '/users/sign_in' => 'login#create' end
+
+  #post 'users/sign_in', to: 'login#create'
+
   get 'all_city', to: 'region#all_city'
   get 'wechat_login', to: 'application#wechat_login'
   get 'agent/set_search', to: 'agent#set_search'
@@ -40,9 +48,4 @@ MeHome::Application.routes.draw do
 
   get 'customers', to: 'customer#index'
   post 'customers/connect', to: 'customer#connect'
-
-  devise_for :users, path_names: {sign_in: "login", sign_out: "logout"},
-             controllers: {omniauth_callbacks: "omniauth_callbacks"}
-  devise_for :users do get '/users/logout' => 'devise/sessions#destroy' end
-  devise_for :users do get '/users/sign_out' => 'devise/sessions#destroy' end
 end

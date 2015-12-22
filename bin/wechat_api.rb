@@ -2,8 +2,8 @@
 require 'typhoeus'
 require 'open-uri'
 require 'json'
-#wx18034235da4be445
-#64007b6d52d74fb2858ea90e28f8cd1b
+#wx18034235da4be445     wx8f2bdf36a0d0448a
+#64007b6d52d74fb2858ea90e28f8cd1b     d4624c36b6795d1d99dcf0547af5443d
 
 #wxd284e53ecd0e2b51
 #a1fd7beec066019b1b9b28efcba1e610
@@ -11,8 +11,9 @@ require 'json'
 #wx8f6251caa9d36d5b
 #b270c00cbd25f31830224f5c54f2363e
 
-CLIENTID = 'wxd284e53ecd0e2b51'
-CLIENTSECRET = 'a1fd7beec066019b1b9b28efcba1e610'
+CLIENTID = 'wx18034235da4be445'
+CLIENTSECRET = '64007b6d52d74fb2858ea90e28f8cd1b'
+
 params = {grant_type: 'client_credential',
           appid: CLIENTID,
           secret: CLIENTSECRET}
@@ -36,8 +37,7 @@ end
 def generate_qr_code(access_token)
   url = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=#{access_token}"
   body = {
-    expire_seconds: 604800,
-    action_name: "QR_SCENE",
+    action_name: "QR_LIMIT_SCENE",
     action_info:
       {
         scene:
@@ -47,12 +47,10 @@ def generate_qr_code(access_token)
       }
   }
   response = Typhoeus.post(url, body: body.to_json)
-  p response.body
   ticket = URI::encode (JSON.parse(response.body)['ticket'])
-  p ticket
   url = "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=#{ticket}"
   response = Typhoeus.get(url)
-  File.open('service_account.png', 'wb') do |outfile|
+  File.open('agent_login.png', 'wb') do |outfile|
     outfile.write(response.body)
   end
 end
@@ -84,14 +82,20 @@ def publish_menu(access_token)
   body = {
     button: [
       {
-        name: "尊贵的买家",
-        sub_button: [
-          {
-            type: "click",
-            name: "智能找房",
-            key: "s"
-          },
+        name: '找房',
+        type: 'click',
+        key: 's'
+      },
 
+      {
+        name: '找经纪人',
+        type: 'click',
+        key: 'a'
+      },
+
+      {
+        name: "我的觅家",
+        sub_button: [
           {
             type: "click",
             name: "红心房源",
@@ -100,8 +104,14 @@ def publish_menu(access_token)
 
           {
             type: "click",
-            name: "答疑解惑",
+            name: "提问",
             key: "q"
+          },
+
+          {
+            type: "click",
+            name: "更新智能搜索",
+            key: "u"
           }
 
           #{
@@ -115,35 +125,40 @@ def publish_menu(access_token)
           #  name: "贷款经纪人",
           #  key: "l"
           #}
-        ]
-      },
-      {
-        name: "专业经纪人",
-        sub_button: [
-          {
-            type: "click",
-            name: "我的客户",
-            key: "my_client"
-          },
-          {
-            type: "click",
-            name: "普通咨询",
-            key: "cq"
-          },
-          {
-            type: "click",
-            name: "潜在买家",
-            key: "pc"
-          }]
-      },
 
-      {
-        name: '合作伙伴',
-        type: "click",
-        key: 'agent_assist'
-      }
+        ]}
+      ]
 
-    ]
+
+      #{
+      #  name: '客户统计',
+      #  type: 'click',
+      #  key: 'my_client'
+      #},
+      #
+      #{
+      #  name: '普通咨询',
+      #  type: 'click',
+      #  key: 'cq'
+      #},
+      #
+      #{
+      #  name: '我',
+      #  sub_button: [
+      #        {
+      #          type: "click",
+      #          name: "主页设置",
+      #          key: "agent_page"
+      #        },
+      #
+      #        {
+      #          type: "click",
+      #          name: "更改联系方式",
+      #          key: "update_qr"
+      #        }
+      #  ]
+      #
+      #}]
   }
   response = Typhoeus.post(url, body: body.to_json)
   p response.body

@@ -1,6 +1,6 @@
 development:
   client_url: <%= ENV['CLIENT_URL'] || 'http://localhost:3031' %>    #'http://022d869f.ngrok.io'
-  server_url: <%= ENV['SERVER_URL'] || 'http://localhost:3032' %>
+  server_url: <%= ENV['SERVER_URL'] || 'http://cfb27b39.ngrok.io' %>
 
 test:
   client_url: http://localhost:3031
