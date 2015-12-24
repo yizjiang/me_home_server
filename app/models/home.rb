@@ -39,19 +39,32 @@ class Home < ActiveRecord::Base
     result
   end
 
+  def schools_with_distance(schools)
+    School.find(schools.map(&:school_id)).map do |school|
+      school.serializable_hash.merge(distance: schools.select{|s| s.school_id == school.id}.first.distance)
+    end
+  end
+
   def get_assigned_schools
-    school_ids = self.home_school_assignments.select{|hs|hs.assigned == true}.map(&:school_id)
-    self.schools.select{|s| school_ids.include?(s.id)}
+    schools = self.home_school_assignments.select{|hs|hs.assigned == true}
+    School.find(schools.map(&:school_id)).map do |school|
+      school.serializable_hash.merge(distance: schools.select{|s| s.school_id == school.id}.first.distance)
+    end
   end
 
   def get_private_schools
-    school_ids = self.home_school_assignments.select{|hs|hs.assigned == false}.map(&:school_id)
-    self.schools.select{|s| school_ids.include?(s.id) && s.school_type == 'private'}
+    schools = self.home_school_assignments.select{|hs|hs.assigned == false}
+    School.where("id in (?) AND school_type = ?", schools.map(&:school_id), 'private').map do |school|
+      school.serializable_hash.merge(distance: schools.select{|s| s.school_id == school.id}.first.distance)
+    end
+
   end
 
   def get_other_public_schools
-    school_ids = self.home_school_assignments.select{|hs|hs.assigned == false}.map(&:school_id)
-    self.schools.select{|s| school_ids.include?(s.id) && s.school_type == 'public'}
+    schools = self.home_school_assignments.select{|hs|hs.assigned == false}
+    School.where("id in (?) AND school_type = ?", schools.map(&:school_id), 'public').map do |school|
+      school.serializable_hash.merge(distance: schools.select{|s| s.school_id == school.id}.first.distance)
+    end
   end
 
   def as_json(options=nil)
@@ -65,7 +78,6 @@ class Home < ActiveRecord::Base
       result[:assigned_school] = self.get_assigned_schools
       result[:public_schools] = self.get_other_public_schools
       result[:private_schools] = self.get_private_schools
-      result[:schools] = self.schools
       result[:chinese_description] = self.home_cn.try(:description)
       result[:short_desc] = self.home_cn.try(:short_desc)
       if home_cn = self.home_cn

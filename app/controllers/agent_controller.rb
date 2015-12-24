@@ -2,6 +2,7 @@
 
 class AgentController < ApplicationController
   def index
+    home_list = []
     agent_extention = AgentExtention.find_by_agent_identifier(params[:name])
     config = if page_config =agent_extention.page_config
                JSON.parse page_config
@@ -12,18 +13,24 @@ class AgentController < ApplicationController
     search_config = config['search']
 
     if search_config
-    search = JSON.parse search_config['0']
-    searches = search['regionValue'].split(',').map do |s|
-      criteria = search.clone
-      criteria['regionValue'] = s
-      Search.new(criteria.with_indifferent_access.reject{|_, v| v.empty?})
+      search = JSON.parse search_config['0']
+      searches = search['regionValue'].split(',').map do |s|
+        criteria = search.clone
+        criteria['regionValue'] = s
+        Search.new(criteria.with_indifferent_access.reject{|_, v| v.empty?})
+      end
+
+      home_list = Home.search(searches).map do |home|
+        home.as_json
+      end
     end
 
-    result = Home.search(searches).map do |home|
-      home.as_json
+    header_config = config['header']
+    unless header_config
+      header_config = {name: agent_extention.user.try(:wechat_user).try(:nickname)}
     end
-    end
-    render json: {header: config['header'], home_list: result,
+
+    render json: {header: header_config, home_list: home_list,
                   qr_image: agent_extention.user.qr_code,
                   head_image: agent_extention.user.wechat_user.try(:head_img_url) }
   end

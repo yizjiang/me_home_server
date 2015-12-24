@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class Search
   attr_accessor :region, :price_min, :price_max, :bed_num, :home_type, :indoor_size, :year_built
 
@@ -41,6 +43,15 @@ class Search
     end
     if(attributes[:townhouse] == 'false')
       @home_type -= ['Townhouse']
+    end
+    if(attributes[:business] == 'false')
+      @home_type -= ['Business']
+    end
+    if(attributes[:land] == 'false')
+      @home_type -= ['Land']
+    end
+    if(attributes[:farm] == 'false')
+      @home_type -= ['Farm']
     end
   end
 end

@@ -16,7 +16,7 @@ class WechatController < ApplicationController
                     'my_client' => :my_client,
                     'agent_follow' => :agent_follow,
                     'agent_assist' => :agent_assist,
-                    'agent_signup' => :agent_signup,
+                    'agent_login' => :agent_login,
                     'update_qr' => :update_qr,
                     'update_identifier' => :update_identifier,
                     'license' => :agent_license,
@@ -36,12 +36,12 @@ class WechatController < ApplicationController
   end
 
   def message
-    response = if methond_sym = METHOD_MAPPING[@msg_hash[:body]]
-                 send(methond_sym)
-               elsif (service_type = cached_input(:wait_input))
+    response = if (service_type = cached_input(:wait_input))
                  delete_redis(:wait_input)
                  @user_input = @msg_hash[:body]
                  send(service_type.to_sym)
+               elsif methond_sym = METHOD_MAPPING[@msg_hash[:body]]
+                 send(methond_sym)
                else
                  default_response
                end
@@ -74,9 +74,11 @@ class WechatController < ApplicationController
                  elsif event_id == 0
                    'agent_follow'
                  elsif event_id == 3
-                   'login'
-                 elsif event_id == 4
-                   'agent_signup'
+                   if params['xml']['ToUserName'] == ACCOUNT_ID
+                     'login'
+                   else
+                     'agent_login'
+                   end
                  end
                elsif params['xml']['Event'] == 'subscribe'
                  @agent_id = params['xml']['EventKey'][8..-1].to_i/10
@@ -86,9 +88,11 @@ class WechatController < ApplicationController
                  elsif event_id == 0
                    'agent_follow'
                  elsif event_id == 3
-                   'login'
-                 elsif event_id == 4
-                   'agent_signup'
+                   if params['xml']['ToUserName'] == ACCOUNT_ID
+                     'login'
+                   else
+                     'agent_login'
+                   end
                  end
                else
                  params['xml']['EventKey']
@@ -146,8 +150,8 @@ class WechatController < ApplicationController
       WechatRequest.new.generate_qr_code("#{uid}1")
     end
 
-    @msg_hash[:items] = [{title: '注册成功，您可以分享如下二维码',
-                          body: '微信用户扫描此二维码后会成为您的房产客户，您可以跟踪客户的购房进展',
+    @msg_hash[:items] = [{title: "恭喜您成为觅家经纪人，您登陆的Email和密码是: #{user.email}/meejia101，经纪人编码是#{user.agent_extention.agent_identifier}",
+                          body: '您可以分享如下二维码给您的现有或潜在客户，您可以通过觅家跟踪客户的购房进展',
                           pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
                           url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
     article_response
@@ -155,7 +159,6 @@ class WechatController < ApplicationController
 
   def login
     set_wechat_user_info
-    p "xxx #{@wechat_user.inspect}"
     unless uid = @wechat_user.user_id
       user = create_user
       @wechat_user.user_id = user.id
@@ -183,7 +186,7 @@ class WechatController < ApplicationController
     text_response
   end
 
-  def agent_signup
+  def agent_login
     set_wechat_user_info(true)
     unless uid = @wechat_user.user_id
       user = create_user
@@ -192,14 +195,23 @@ class WechatController < ApplicationController
     else
       user = User.find(uid)
     end
-    extention = AgentExtention.find_or_create_by_user_id_and_agent_identifier_and_license_id(user.id, user.username, 'xxxx')
-    p "xxx #{extention}"
-    user.agent_extention_id = extention.id
-    user.save
     @wechat_user.save
-    set_redis(:wait_input, :agent_license)
-    @msg_hash[:body] = "您登陆的Email和密码是: #{user.email}/meejia101，经纪人编码是#{extention.agent_identifier}, 请输入您的经纪人序列号进行验证"
-    text_response
+    extention = AgentExtention.find_by_user_id(user.id)
+    if extention
+      uid ||= user.id
+
+      REDIS.setex('wechat_login', 30, TicketGenerator.encrypt_uid(uid))
+
+      @msg_hash[:body] = "您登陆的Email和密码是: #{user.email}/meejia101，经纪人编码是#{extention.agent_identifier}, 请点击网页上的确定键完成登陆"
+      text_response
+    else
+      extention = AgentExtention.create(user_id: user.id, agent_identifier: user.username, license_id: 'xxx')
+      user.agent_extention_id = extention.id
+      user.save
+      set_redis(:wait_input, :agent_license, 60 * 60)
+      @msg_hash[:body] = "感谢您选择成为觅家经纪人，请输入您的经纪人序列号进行验证"
+      text_response
+    end
   end
 
 
@@ -208,8 +220,8 @@ class WechatController < ApplicationController
     if extention
       extention.update_attributes(license_id: @msg_hash[:body])
     end
-    set_redis(:wait_input, :upload_agent_qr_code)
-    @msg_hash[:body] = "经纪人序列号已保存，您可以请上传您的二维码联系方式"
+    set_redis(:wait_input, :upload_agent_qr_code, 60 * 60)
+    @msg_hash[:body] = "经纪人序列号已保存，请上传您的二维码联系方式以便我们为您联系客户"
     text_response
   end
 
@@ -227,7 +239,7 @@ class WechatController < ApplicationController
   def customer_questions
     question = Question.unanswered(@wechat_user.user_id, Time.now - 3600).first
     if question
-      set_redis(:wait_input, :answer_question)
+      set_redis(:wait_input, :answer_question, 3600)
       set_redis(:answer_question, question.id)
       username = if open_id = question.open_id
                    WechatUser.find_by_open_id(open_id).nickname
@@ -263,9 +275,8 @@ class WechatController < ApplicationController
       unless File.exist?(expect_file)
         WechatRequest.new.generate_qr_code("#{uid}1")
       end
-
-      @msg_hash[:items] = [{title: '请分享此二维码给您的客户',
-                            body: '',
+      @msg_hash[:items] = [{title: "恭喜您成为觅家经纪人，您登陆的Email和密码是: #{user.email}/meejia101，经纪人编码是#{user.agent_extention.agent_identifier}",
+                            body: '您可以分享如下二维码给您的现有或潜在客户，您可以通过觅家跟踪客户的购房进展',
                             pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
                             url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
       article_response
@@ -300,34 +311,30 @@ class WechatController < ApplicationController
   end
 
   def like_agent
-    aid = AgentExtention.find_by_agent_identifier(@msg_hash[:body]).user_id
-    @wechat_user.update_attributes(agent_id: aid)
-
-    media_id = REDIS.get("#{aid}_qr_media_id")
-    unless media_id
-      file = "./public/#{User.find(aid).qr_code[SERVER_HOST.length .. -1]}"
-      media_id = WechatRequest.new.upload_image(file)['media_id']
-      REDIS.setex("#{aid}_qr_media_id", 259200, media_id)
-    end
-    file = "./public/#{User.find(aid).qr_code[SERVER_HOST.length .. -1]}"
-
-    @msg_hash[:body] = WechatRequest.new.upload_image(file)['media_id']
-    image_response
+    agent = AgentExtention.find_by_agent_identifier(@msg_hash[:body]).user
+    @wechat_user.update_attributes(agent_id: agent.id)
+    @msg_hash[:items] = [{title: "#{agent.wechat_user.nickname}非常荣幸为您服务",
+                          body: '点击二维码查看经纪人页面',
+                          pic_url: agent.qr_code,
+                          url: "#{CLIENT_HOST}/agent/#{@msg_hash[:body]}"}]
+    article_response
   end
 
   def my_client
     if  @wechat_user.agent_id.to_i == @wechat_user.user_id
-      @msg_hash[:items] = WechatUser.where(agent_id: @wechat_user.user_id).order('search_count DESC').limit(10).map do |user|
-        search = if user.search
-                   JSON.parse(user.search)
-                 else
-                   {}
-                 end
-        {title: "#{user.nickname} 城市：#{search['regionValue']} 价格: #{search['priceMin']} - #{search['priceMax']} 累计搜索:#{user.search_count}次",
-         body: '',
-         pic_url: user.head_img_url,
-         url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.user_id}&cid=#{user.id}"}
-      end
+      @msg_hash[:items] =
+        WechatUser.where("agent_id = ? AND agent_id != user_id", @wechat_user.user_id)
+        .order('search_count DESC').limit(10).map do |user|
+          search = if user.search
+                     JSON.parse(user.search)
+                   else
+                     {}
+                   end
+          {title: "#{user.nickname} 城市：#{search['regionValue']} 价格: #{search['priceMin']} - #{search['priceMax']} 累计搜索:#{user.search_count}次",
+           body: '',
+           pic_url: user.head_img_url,
+           url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.user_id}&cid=#{user.id}"}
+        end
       article_response
     else
       @msg_hash[:body] = "您目前并不是经纪人，请登录觅家网站完善信息"
@@ -430,9 +437,9 @@ class WechatController < ApplicationController
     agents = User.where('agent_extention_id is NOT NULL').includes(:agent_extention, :wechat_user).limit(10)
     agents.map do |agent|
       {title: "#{agent.wechat_user.try(:nickname)}",
-       body: 'nice home',
+       body: '',
        pic_url: "#{agent.wechat_user.try(:head_img_url)}",
-       url: "#{CLIENT_HOST}/agents/#{agent.agent_extention.try(:agent_identifier)}"}
+       url: "#{CLIENT_HOST}/agent/#{agent.agent_extention.try(:agent_identifier)}"}
     end
   end
 
@@ -446,8 +453,8 @@ class WechatController < ApplicationController
     end
   end
 
-  def set_redis(key, value)
-    REDIS.setex("#{@msg_hash[:from_username]}:#{key}", 60, value.to_s)
+  def set_redis(key, value, expired_time = 60)
+    REDIS.setex("#{@msg_hash[:from_username]}:#{key}", expired_time, value.to_s)
   end
 
   def delete_redis(key)

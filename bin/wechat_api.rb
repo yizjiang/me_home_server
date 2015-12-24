@@ -42,7 +42,7 @@ def generate_qr_code(access_token)
       {
         scene:
           {
-            scene_id: '3'
+            scene_id: '4'
           }
       }
   }
