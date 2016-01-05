@@ -19,5 +19,9 @@ staging:
   account_id: gh_964f73f6cc1d
 
 production:
-  client_id: wx8f6251caa9d36d5b
-  client_secret: b270c00cbd25f31830224f5c54f2363e
+ agent_client_id: wx5e622928e310ed65
+ agent_client_secret: d4624c36b6795d1d99dcf0547af5443d
+ agent_account_id: gh_8af470e7103b
+ client_id: wx42c66995c4432421
+ client_secret: d4624c36b6795d1d99dcf0547af5443d
+ account_id: gh_28362e2ac543
