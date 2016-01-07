@@ -31,27 +31,32 @@ class Search
                      else
                        nil
                      end
-    @home_type = home_type_attr || Home.pluck(:home_type).uniq
+    #@home_type = home_type_attr || Home.pluck(:home_type).uniq
+    @home_type =  Home.pluck(:meejia_type).uniq
     if(attributes[:single_family] == 'false')
       @home_type -= ['Single Family Home']
     end
     if(attributes[:multi_family] == 'false')
-      @home_type -= ['Multi Family Home']
+      @home_type -= ['Duplex', 'Triplex', 'Fourplex']
     end
     if(attributes[:condo] == 'false')
-      @home_type -= ['Condominium']
+      @home_type -= ['Apartment', 'Condominium']
     end
     if(attributes[:townhouse] == 'false')
       @home_type -= ['Townhouse']
     end
     if(attributes[:business] == 'false')
-      @home_type -= ['Business']
+      @home_type -= ['Mixed Use']
     end
     if(attributes[:land] == 'false')
-      @home_type -= ['Land']
+      @home_type -= ['Residential Land', 'Residential Lot', 'Land']
     end
     if(attributes[:farm] == 'false')
-      @home_type -= ['Farm']
+      @home_type -= ['Farms', 'Ranches']
     end
+    if(attributes[:other] == 'false')
+      @home_type -= ['-', 'Mobile Home', 'Manufactured Home', nil]
+    end
+    p "xxx #{@home_type}"
   end
 end
