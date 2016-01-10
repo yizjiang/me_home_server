@@ -8,7 +8,7 @@ class UserController < ApplicationController
       return
     end
 
-    temp_json = JSON.parse result.to_json(include: [:saved_searches, :homes])   #TODO include image in homes
+    temp_json = result.as_json
     temp_json.merge!(JSON.parse result.to_json(include: {:questions=> {include: {:answers => {include: :user}}}}))      #TODO what is this shit
 
     if result.agent_extention
@@ -51,18 +51,8 @@ class UserController < ApplicationController
   def save_search
     uid = request.headers['HTTP_UID']
     user = User.find(uid)
-    home_type = ['Single Family Home', 'Multi-Family Home', 'Condo/Townhome/Row Home/Co-Op']
-    if(params[:single_family] == 'false')
-      home_type -= ['Single Family Home']
-    end
-    if(params[:multi_family] == 'false')
-      home_type -= ['Multi-Family Home']
-    end
-    if(params[:condo] == 'false')
-      home_type -= ['Condo/Townhome/Row Home/Co-Op']
-    end
-    params[:home_type] = home_type
-    user.create_search(params)
+    search = Search.new(params.with_indifferent_access.reject{|_, v| v.empty?})
+    user.create_search(search.search_query)
     render json: user.to_json(include: [:saved_searches])
   end
 

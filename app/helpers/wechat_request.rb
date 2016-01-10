@@ -6,11 +6,9 @@ class WechatRequest
 
   def get_access_token(agent_account)
     if agent_account
-      p 'xx agent access'
       client_id = AGENT_WECHAT_CLIENTID
       client_secret = AGENT_WECHAT_CLIENTSECRET
     else
-      p 'xx general access'
       client_id = WECHAT_CLIENTID
       client_secret = WECHAT_CLIENTSECRET
     end

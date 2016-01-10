@@ -101,9 +101,10 @@ class AgentController < ApplicationController
   def save_customer_search
     @customer = WechatUser.find(params[:customer_id])
     user = User.find(@customer.user_id)
-    user.create_search(params)
+    search = Search.new(params.with_indifferent_access.reject{|_, v| v.empty?})
+    user.create_search(search.search_query)
     if params[:regionValue].present?
-      @customer.update_attributes(search: params.slice(:regionValue, :priceMin, :priceMax, :bedNum).to_json, last_search: nil)
+      @customer.update_attributes(search: search.search_query.to_json, last_search: nil)
       if params[:api]
         render json: {}
       else
@@ -115,6 +116,25 @@ class AgentController < ApplicationController
       render 'agent/customer_search_form'
     end
 
+  end
+
+  def active_agents
+    agents = []
+    want_num_agent = 4
+    agent_ids = AgentExtention.pluck(:user_id)
+
+    if uid = request.headers['HTTP_UID']
+      user = User.find(uid)
+      if agent_id = user.wechat_user.agent_id
+        want_num_agent = 3
+        agents << User.find(agent_id.to_i).as_json(include_details: false)
+        agent_ids -= [agent_id.to_i]
+      end
+    end
+    agent_ids = agent_ids.sample(want_num_agent)
+
+    agents = agents + User.find(agent_ids).map{|agent| agent.as_json(include_details: false)}
+    render json: agents
   end
 
   private

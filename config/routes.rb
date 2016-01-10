@@ -27,6 +27,9 @@ MeHome::Application.routes.draw do
   post 'agent/save_customer_search', to: 'agent#save_customer_search'
 
   get 'agent/:name', to: 'agent#index'
+  get 'agents', to: 'agent#active_agents'
+
+
   get 'agent/:uid/customers', to: 'agent#all_customer'
 
   post 'agent/save_page_config', to: 'agent#save_page_config'

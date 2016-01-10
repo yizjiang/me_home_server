@@ -82,12 +82,19 @@ class WechatController < ApplicationController
                  end
                elsif params['xml']['Event'] == 'subscribe'
                  @agent_id = params['xml']['EventKey'][8..-1].to_i/10
-                 event_id = params['xml']['EventKey'][8..-1].to_i % 10
+                 event_id = params['xml']['EventKey']
+                 event_id = event_id[8..-1].to_i % 10  if event_id.present?
                  if event_id == 1
                    'follow_agent'
                  elsif event_id == 0
                    'agent_follow'
                  elsif event_id == 3
+                   if params['xml']['ToUserName'] == ACCOUNT_ID
+                     'login'
+                   else
+                     'agent_login'
+                   end
+                 else
                    if params['xml']['ToUserName'] == ACCOUNT_ID
                      'login'
                    else
@@ -159,7 +166,8 @@ class WechatController < ApplicationController
 
   def login
     set_wechat_user_info
-    unless uid = @wechat_user.user_id
+    uid = @wechat_user.user_id
+    if uid.nil? || uid == 0
       user = create_user
       @wechat_user.user_id = user.id
     else
@@ -188,7 +196,8 @@ class WechatController < ApplicationController
 
   def agent_login
     set_wechat_user_info(true)
-    unless uid = @wechat_user.user_id
+    uid = @wechat_user.user_id
+    if uid.nil? || uid == 0
       user = create_user
       @wechat_user.user_id = user.id
       @wechat_user.agent_id = user.id

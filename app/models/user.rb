@@ -25,6 +25,17 @@ class User < ActiveRecord::Base
 
   after_create :assign_agent_extension, if: lambda{self.agent_extention_id.present?}
 
+  def as_json(options=nil)
+    options ||= {}
+    result = super(options)
+    unless options[:include_details] == false
+      result[:homes] = self.homes
+      result[:saved_searches] = self.saved_searches
+    end
+    result[:wechat_user] = self.wechat_user
+    result
+  end
+
   def agent_license_id
     ''
   end
@@ -48,7 +59,7 @@ class User < ActiveRecord::Base
   end
 
   def create_search(query)
-    SavedSearch.find_or_create_by_search_query_and_uid(JSON(query.slice(*%w(regionValue priceMin priceMax home_type bedNum))), self.id) do |search|
+    SavedSearch.find_or_create_by_search_query_and_uid(JSON(query), self.id) do |search|
       search.uid = self.id
     end
     if(saved_searches.count > 5)

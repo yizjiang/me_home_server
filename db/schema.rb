@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151211071636) do
+ActiveRecord::Schema.define(:version => 20160105192822) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -59,7 +59,7 @@ ActiveRecord::Schema.define(:version => 20151211071636) do
   create_table "home_school_assignments", :force => true do |t|
     t.integer "home_id"
     t.integer "school_id"
-    t.float   "distance"
+    t.string  "distance"
     t.boolean "assigned"
   end
 
@@ -72,7 +72,7 @@ ActiveRecord::Schema.define(:version => 20151211071636) do
     t.integer  "zipcode"
     t.datetime "last_refresh_at"
     t.datetime "created_at"
-    t.string   "link"
+    t.string   "realtor_link"
     t.text     "description"
     t.integer  "bed_num"
     t.integer  "bath_num"
@@ -85,6 +85,13 @@ ActiveRecord::Schema.define(:version => 20151211071636) do
     t.string   "neighborhood"
     t.integer  "stores"
     t.string   "status"
+    t.datetime "added_to_site"
+    t.string   "home_style"
+    t.string   "redfin_link"
+    t.string   "listing_agent"
+    t.string   "listed_by"
+    t.string   "meejia_type"
+    t.string   "geo_point"
   end
 
   create_table "homes_cn", :force => true do |t|
@@ -126,10 +133,11 @@ ActiveRecord::Schema.define(:version => 20151211071636) do
   create_table "schools", :force => true do |t|
     t.string  "name"
     t.string  "grade"
-    t.float   "student_teacher_ratio"
+    t.string  "student_teacher_ratio"
     t.float   "rating"
     t.string  "school_type"
     t.integer "address_id"
+    t.float   "parent_rating"
   end
 
   create_table "users", :force => true do |t|
