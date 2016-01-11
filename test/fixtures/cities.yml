@@ -1,0 +1,35 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  population: 1
+  income: 1.5
+  above_bachelor: MyString
+  crime: 1.5
+  us_crime: 1.5
+  unemploy: MyString
+  state_unemploy: MyString
+  hispanics: MyString
+  asian: MyString
+  caucasion: MyString
+  black: MyString
+  PMI: 1.5
+  created_at: 
+  updated_at: 
+
+two:
+  name: MyString
+  population: 1
+  income: 1.5
+  above_bachelor: MyString
+  crime: 1.5
+  us_crime: 1.5
+  unemploy: MyString
+  state_unemploy: MyString
+  hispanics: MyString
+  asian: MyString
+  caucasion: MyString
+  black: MyString
+  PMI: 1.5
+  created_at: 
+  updated_at: 
