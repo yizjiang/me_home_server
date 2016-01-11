@@ -32,6 +32,7 @@ class User < ActiveRecord::Base
       result[:homes] = self.homes
       result[:saved_searches] = self.saved_searches
     end
+    result[:agent_extention] = self.agent_extention
     result[:wechat_user] = self.wechat_user
     result
   end
