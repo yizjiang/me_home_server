@@ -2,6 +2,8 @@
 
 one:
   name: MyString
+  state:MyString
+  county:MyString
   population: 1
   income: 1.5
   above_bachelor: MyString
@@ -19,6 +21,8 @@ one:
 
 two:
   name: MyString
+  state:MyString
+  county:MyString
   population: 1
   income: 1.5
   above_bachelor: MyString
