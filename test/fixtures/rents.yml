@@ -1,0 +1,31 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  metro: MyString
+  state: MyString
+  city: MyString
+  studio: 1.5
+  one_bed: 1.5
+  two_bed: 1.5
+  three_bed: 1.5
+  four_bed: 1.5
+  five_bed: 1.5
+  six_bed: 1.5
+  reported: 2016-01-17
+  created_at: 
+  updated_at: 
+
+two:
+  metro: MyString
+  state: MyString
+  city: MyString
+  studio: 1.5
+  one_bed: 1.5
+  two_bed: 1.5
+  three_bed: 1.5
+  four_bed: 1.5
+  five_bed: 1.5
+  six_bed: 1.5
+  reported: 2016-01-17
+  created_at: 
+  updated_at: 
