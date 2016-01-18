@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160105192822) do
+ActiveRecord::Schema.define(:version => 20160110202527) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -49,6 +49,24 @@ ActiveRecord::Schema.define(:version => 20160105192822) do
     t.string "access_token"
     t.string "access_token_secret"
     t.string "external_id"
+  end
+
+  create_table "cities", :force => true do |t|
+    t.string   "name"
+    t.integer  "population"
+    t.float    "income"
+    t.string   "above_bachelor"
+    t.float    "crime"
+    t.float    "us_crime"
+    t.string   "unemploy"
+    t.string   "state_unemploy"
+    t.string   "hispanics"
+    t.string   "asian"
+    t.string   "caucasion"
+    t.string   "black"
+    t.float    "PMI"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
   end
 
   create_table "favorite_homes", :force => true do |t|

@@ -458,7 +458,7 @@ class WechatController < ApplicationController
     homes.map do |home|
       {title: "位于#{home.addr1} #{home.city}的 #{home.bed_num} 卧室 #{home.home_type}，售价：#{home.price}美金",
        body: 'nice home',
-       pic_url: "#{SERVER_HOST}/#{home.images.first.try(:image_url) || 'default.jpeg'}",
+       pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
     end
   end
