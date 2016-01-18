@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160110202527) do
+ActiveRecord::Schema.define(:version => 20160117192722) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -67,6 +67,8 @@ ActiveRecord::Schema.define(:version => 20160110202527) do
     t.float    "PMI"
     t.datetime "created_at",     :null => false
     t.datetime "updated_at",     :null => false
+    t.string   "state"
+    t.string   "county"
   end
 
   create_table "favorite_homes", :force => true do |t|
@@ -141,6 +143,22 @@ ActiveRecord::Schema.define(:version => 20160110202527) do
     t.integer  "accepted_aid"
     t.string   "open_id"
     t.datetime "created_at"
+  end
+
+  create_table "rents", :force => true do |t|
+    t.string   "metro"
+    t.string   "state"
+    t.string   "city"
+    t.float    "studio"
+    t.float    "one_bed"
+    t.float    "two_bed"
+    t.float    "three_bed"
+    t.float    "four_bed"
+    t.float    "five_bed"
+    t.float    "six_bed"
+    t.date     "reported"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "saved_searches", :force => true do |t|

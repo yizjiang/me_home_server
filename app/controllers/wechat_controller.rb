@@ -369,10 +369,11 @@ class WechatController < ApplicationController
   end
 
   def update_search
+    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
     @msg_hash[:items] = [{title: "请点击您的头像设置智能搜索条件",
                           body: '',
                           pic_url: @wechat_user.head_img_url,
-                          url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.agent_id}&cid=#{@wechat_user.id}"}]
+                          url: "#{CLIENT_HOST}?ticket=#{ticket}#/dashboard"}]
     article_response
   end
 

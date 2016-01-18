@@ -1,3 +1,28 @@
+# encoding: utf-8
+
+RENT_MAPPING = {19=>"nineteen",
+  18=>"eighteen",
+  17=>"seventeen",
+  16=>"sixteen",
+  15=>"fifteen",
+  14=>"fourteen",
+  13=>"thirteen",
+  12=>"twelve",
+  11 => "eleven",
+  10 => "ten",
+  9 => "nine",
+  8 => "eight",
+  7 => "seven",
+  6 => "six",
+  5 => "five",
+  4 => "four",
+  3 => "three",
+  2 => "two",
+  1 => "one"
+}
+
+PROPERTY_TAX = 0.012
+
 class Home < ActiveRecord::Base
   attr_accessible *column_names
   has_many :images
@@ -82,6 +107,9 @@ class Home < ActiveRecord::Base
       result[:short_desc] = self.home_cn.try(:short_desc)
       result[:city_info] = City.find_by_name(self.city)
       result[:public_records] = self.public_records
+      result[:monthly_rent] = self.cal_money
+      result[:property_tax] = wrap_money((self.price * PROPERTY_TAX).round)
+
       if home_cn = self.home_cn
         result[:indoor_size] = home_cn.indoor_size
         result[:lot_size] = home_cn.lot_size
@@ -92,6 +120,20 @@ class Home < ActiveRecord::Base
     end
 
     result
+  end
+
+  def wrap_money(num)
+    if(num > 10000)
+      num = "#{(num/10000).round(1)}万美元"
+    else
+      num = "#{(num/1000).round}千美元"
+    end
+    return num
+  end
+
+  def cal_money
+    monthly_rent = (Rent.find_by_city(self.city).send("#{RENT_MAPPING[self.bed_num]}_bed".to_sym) * self.indoor_size.to_i).round
+    wrap_money(monthly_rent)
   end
 
   def assign_schools(schools, assigned)
