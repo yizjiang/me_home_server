@@ -176,9 +176,28 @@ class Home < ActiveRecord::Base
     end
   end
 
+  
   def import_public_record(record)
-    PublicRecord.where(source: record[0], property_id: record[1], file_id: record[2]).first_or_create do |pr|
-      pr.home_id = self.id
+    PublicRecord.where(source: record[0], property_id: record[1], file_id: record[2], record_date: record[3], event: record[4],\
+ price: record[5].delete('$').delete(',')).first_or_create do |pr|
+         pr.home_id = self.id
     end
   end
+
+ def import_history_record(records)
+    records.each do |record|
+      #p "inside import history_record"                                                                                         
+      p record[3]
+       if record[3].include? 'Sold'
+         p " find sold"
+            PublicRecord.where(source: record[0], property_id: record[1], file_id: nil, record_date: record[2], event: record[3\
+], price: record[4].delete('$').delete(',')).first_or_create do |pr|
+              pr.home_id = self.id
+           end
+           return
+       end
+    end
+  end
+
+
 end
