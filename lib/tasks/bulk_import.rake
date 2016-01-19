@@ -16,7 +16,6 @@ namespace :csv do
                           zipcode: row[6].lstrip.rstrip}
           home = Home.where(uniq_condition).first_or_create
           
-
           home.update_attributes(county: row[7],
                                last_refresh_at: time_before_now(row[8]),
 			       added_to_site: row[9],
@@ -48,10 +47,14 @@ namespace :csv do
            #private_schools = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: [] 
 
           # import assigned school last, so it will not overwrite it.
-          home.import_public_record(row[0..2])
+          #home.import_public_record(row[0..2])
+          home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
           home.other_schools(elementary_schools + middle_schools + high_schools)
           home.assign_public_schools(assigned_schools)
           #home.assign_private_schools(private_schools)
+  
+          home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
+          home.import_history_record(home_history)
         end
 
       rescue StandardError
@@ -77,6 +80,7 @@ namespace :csv do
       end
     end
   end
+
 
   def time_before_now(time)  # time is hour
     Time.now - time.to_i * 3600
