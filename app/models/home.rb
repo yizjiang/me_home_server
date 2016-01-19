@@ -132,8 +132,16 @@ class Home < ActiveRecord::Base
   end
 
   def cal_money
-    monthly_rent = (Rent.find_by_city(self.city).send("#{RENT_MAPPING[self.bed_num]}_bed".to_sym) * self.indoor_size.to_i).round
-    wrap_money(monthly_rent)
+    monthly_rent = ''
+    if self.bed_num && self.bed_num != 0
+      begin
+        monthly_rent = (Rent.find_by_city(self.city).send("#{RENT_MAPPING[self.bed_num]}_bed".to_sym) * self.indoor_size.to_i).round
+        return  wrap_money(monthly_rent)
+      rescue
+        return ''
+      end
+    end
+    return monthly_rent
   end
 
   def assign_schools(schools, assigned)
