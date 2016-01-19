@@ -186,23 +186,24 @@ class Home < ActiveRecord::Base
 
   
   def import_public_record(record)
-    PublicRecord.where(source: record[0], property_id: record[1], file_id: record[2], record_date: record[3], event: record[4],\
- price: record[5].delete('$').delete(',')).first_or_create do |pr|
-         pr.home_id = self.id
-    end
+       history_record =  PublicRecord.where(source: record[0], property_id: record[1], home_id: self.id).first_or_create
+       history_record.record_date = record[3]
+       history_record.file_id = record[2]
+       history_record.event = record[4]
+       history_record.price = record[5].delete('$').delete(',')
+       history_record.save
   end
 
  def import_history_record(records)
     records.each do |record|
-      #p "inside import history_record"                                                                                         
       p record[3]
        if record[3].include? 'Sold'
-         p " find sold"
-            PublicRecord.where(source: record[0], property_id: record[1], file_id: nil, record_date: record[2], event: record[3\
-], price: record[4].delete('$').delete(',')).first_or_create do |pr|
-              pr.home_id = self.id
-           end
-           return
+          history_record =  PublicRecord.where(source: record[0], property_id: record[1],home_id: self.id).first_or_create
+          history_record.record_date = record[2]
+          history_record.event = record[3]
+          history_record.price = record[4].delete('$').delete(',')
+          history_record.save
+          return
        end
     end
   end
