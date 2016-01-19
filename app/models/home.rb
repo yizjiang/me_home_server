@@ -196,7 +196,6 @@ class Home < ActiveRecord::Base
 
  def import_history_record(records)
     records.each do |record|
-      p record[3]
        if record[3].include? 'Sold'
           history_record =  PublicRecord.where(source: record[0], property_id: record[1],home_id: self.id).first_or_create
           history_record.record_date = record[2]
