@@ -15,4 +15,4 @@ staging:
 production:
   client_url: <%= ENV['CLIENT_URL'] || 'http://client.meejia.com' %>
   server_url: <%= ENV['SERVER_URL'] || 'http://api.meejia.com' %>
-  cdn_url: <%= ENV['CDN_URL'] || 'http://image.meejia.com' %>
+  cdn_url: <%= ENV['CDN_URL'] || 'http://cloud.meejia.com' %>
