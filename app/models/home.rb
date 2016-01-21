@@ -125,7 +125,15 @@ class Home < ActiveRecord::Base
   def get_latest_record
     records = self.public_records
     index = -records.length
-    return records[index]
+    record = records[index]
+    return {} unless record
+    record[:event] = if record[:event].include?('Sold')
+                       '售出'
+                     else
+                      '还未成交'
+                     end
+
+    return record
   end
 
   def wrap_money(num)
