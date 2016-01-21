@@ -17,7 +17,7 @@ class AgentController < ApplicationController
       searches = search['regionValue'].split(',').map do |s|
         criteria = search.clone
         criteria['regionValue'] = s
-        Search.new(criteria.with_indifferent_access.reject{|_, v| v.empty?})
+        Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})
       end
 
       home_list = Home.search(searches).map do |home|
@@ -56,7 +56,7 @@ class AgentController < ApplicationController
       searches = search['regionValue'].split(',').map do |s|
         criteria = search.clone
         criteria['regionValue'] = s
-        Search.new(criteria.with_indifferent_access.reject{|_, v| v.empty?})
+        Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})       #home num is a number
       end
     end
 
@@ -101,7 +101,7 @@ class AgentController < ApplicationController
   def save_customer_search
     @customer = WechatUser.find(params[:customer_id])
     user = User.find(@customer.user_id)
-    search = Search.new(params.with_indifferent_access.reject{|_, v| v.empty?})
+    search = Search.new(params.with_indifferent_access.reject{|_, v| v.to_s.empty?})
     user.create_search(search.search_query)
     if params[:regionValue].present?
       @customer.update_attributes(search: search.search_query.to_json, last_search: nil)

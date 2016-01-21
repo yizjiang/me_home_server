@@ -106,10 +106,10 @@ class Home < ActiveRecord::Base
       result[:chinese_description] = self.home_cn.try(:description)
       result[:short_desc] = self.home_cn.try(:short_desc)
       result[:city_info] = City.find_by_name(self.city)
-      result[:public_records] = self.public_records
+      result[:public_record] = get_latest_record || {}
       result[:monthly_rent] = self.cal_money
       result[:property_tax] = wrap_money((self.price * PROPERTY_TAX).round)
-
+      result[:origin_price] = self.price
       if home_cn = self.home_cn
         result[:indoor_size] = home_cn.indoor_size
         result[:lot_size] = home_cn.lot_size
@@ -120,6 +120,12 @@ class Home < ActiveRecord::Base
     end
 
     result
+  end
+
+  def get_latest_record
+    records = self.public_records
+    index = -records.length
+    return records[index]
   end
 
   def wrap_money(num)

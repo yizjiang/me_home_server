@@ -51,7 +51,7 @@ class UserController < ApplicationController
   def save_search
     uid = request.headers['HTTP_UID']
     user = User.find(uid)
-    search = Search.new(params.with_indifferent_access.reject{|_, v| v.empty?})
+    search = Search.new(params.with_indifferent_access.reject{|_, v| v.to_s.empty?})
     user.create_search(search.search_query)
     render json: user.to_json(include: [:saved_searches])
   end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160117192722) do
+ActiveRecord::Schema.define(:version => 20160119033454) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -95,7 +95,7 @@ ActiveRecord::Schema.define(:version => 20160117192722) do
     t.string   "realtor_link"
     t.text     "description"
     t.integer  "bed_num"
-    t.integer  "bath_num"
+    t.float    "bath_num"
     t.string   "indoor_size"
     t.string   "lot_size"
     t.float    "price"
@@ -135,6 +135,9 @@ ActiveRecord::Schema.define(:version => 20160117192722) do
     t.string  "property_id"
     t.string  "file_id"
     t.integer "home_id"
+    t.date    "record_date"
+    t.string  "event"
+    t.float   "price"
   end
 
   create_table "questions", :force => true do |t|
