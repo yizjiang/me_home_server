@@ -1,6 +1,5 @@
 # encoding: utf-8
-
-HOME_TYPE = ["Single Family Home", "Condominium", "Townhouse", "Duplex", "-", "Mixed Use", "Residential Land", "Apartment", "Mobile Home", "Residential Lot", "Farms", "Ranches", "Fourplex", "Triplex", "Manufactured Home", "Land", nil]
+HOME_TYPE = Home.pluck(:meejia_type).uniq
 class Search
   attr_accessor :region, :price_min, :price_max, :bed_num, :home_type, :indoor_size, :year_built, :search_query
 
@@ -52,7 +51,7 @@ class Search
       @home_type -= ['Single Family Home']
     end
     if(attributes[:multi_family] == 'false')
-      @home_type -= ['Duplex', 'Triplex', 'Fourplex']
+      @home_type -= ['Multi Family Home', 'Duplex', 'Triplex', 'Fourplex']
     end
     if(attributes[:condo] == 'false')
       @home_type -= ['Apartment', 'Condominium']
@@ -70,7 +69,7 @@ class Search
       @home_type -= ['Farms', 'Ranches']
     end
     if(attributes[:other] == 'false')
-      @home_type -= ['-', 'Mobile Home', 'Manufactured Home', nil]
+      @home_type -= ['-', 'Mobile Home', 'Manufactured Home', 'Other', nil]
     end
     @search_query[:home_type] = @home_type
   end
