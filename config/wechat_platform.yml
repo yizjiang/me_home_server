@@ -11,6 +11,15 @@ test:
   client_secret: 64007b6d52d74fb2858ea90e28f8cd1b
 
 staging:
+ agent_client_id: wx5e622928e310ed65
+ agent_client_secret: d4624c36b6795d1d99dcf0547af5443d
+ agent_account_id: gh_8af470e7103b
+ client_id: wx42c66995c4432421
+ client_secret: d4624c36b6795d1d99dcf0547af5443d
+ account_id: gh_28362e2ac543
+
+
+production:
   agent_client_id: wxa0c0023c75216f37
   agent_client_secret: 06b19a67b9f1c3369e6f0f255b5952e3
   agent_account_id: gh_d1aa5283eea7
@@ -18,10 +27,4 @@ staging:
   client_secret: a1fd7beec066019b1b9b28efcba1e610
   account_id: gh_964f73f6cc1d
 
-production:
- agent_client_id: wx5e622928e310ed65
- agent_client_secret: d4624c36b6795d1d99dcf0547af5443d
- agent_account_id: gh_8af470e7103b
- client_id: wx42c66995c4432421
- client_secret: d4624c36b6795d1d99dcf0547af5443d
- account_id: gh_28362e2ac543
+
