@@ -2,15 +2,16 @@ development:
   adapter: mysql2
   encoding: utf8mb4
   reconnect: false
-  database: me_home
+  database: meejia
   pool: 50
   username: root
+  password: password
 
 test:
   adapter: mysql2
   encoding: utf8mb4
   reconnect: false
-  database: me_home
+  database: meejia
   pool: 50
   username: root
 

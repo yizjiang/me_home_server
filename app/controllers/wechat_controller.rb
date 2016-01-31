@@ -22,7 +22,9 @@ class WechatController < ApplicationController
                     'license' => :agent_license,
                     'login' => :login,
                     'fav' => :my_favorite,
-                    'l' => :loan_agent
+                    'l' => :loan_agent,
+                    'agent_page' => :agent_page,
+                    'meejia_qr_code' => :meejia_qr_code
 
   }
 
@@ -36,12 +38,12 @@ class WechatController < ApplicationController
   end
 
   def message
-    response = if (service_type = cached_input(:wait_input))
+    response = if methond_sym = METHOD_MAPPING[@msg_hash[:body]]
+                 send(methond_sym)
+               elsif (service_type = cached_input(:wait_input))
                  delete_redis(:wait_input)
                  @user_input = @msg_hash[:body]
                  send(service_type.to_sym)
-               elsif methond_sym = METHOD_MAPPING[@msg_hash[:body]]
-                 send(methond_sym)
                else
                  default_response
                end
@@ -333,18 +335,25 @@ class WechatController < ApplicationController
     if  @wechat_user.agent_id.to_i == @wechat_user.user_id
       @msg_hash[:items] =
         WechatUser.where("agent_id = ? AND agent_id != user_id", @wechat_user.user_id)
-        .order('search_count DESC').limit(10).map do |user|
-          search = if user.search
-                     JSON.parse(user.search)
-                   else
-                     {}
-                   end
-          {title: "#{user.nickname} 城市：#{search['regionValue']} 价格: #{search['priceMin']} - #{search['priceMax']} 累计搜索:#{user.search_count}次",
-           body: '',
-           pic_url: user.head_img_url,
-           url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.user_id}&cid=#{user.id}"}
+        .order('search_count DESC').limit(10)
+      if  @msg_hash[:items].length > 0
+        @msg_hash[:items] = @msg_hash[:items].map do |user|
+        search = if user.search
+                   JSON.parse(user.search)
+                 else
+                   {}
+                 end
+        {title: "#{user.nickname} 城市：#{search['regionValue']} 价格: #{search['priceMin']} - #{search['priceMax']} 累计搜索:#{user.search_count}次",
+         body: '',
+         pic_url: user.head_img_url,
+         url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.user_id}&cid=#{user.id}"}
         end
-      article_response
+        article_response
+      else
+        @msg_hash[:body] = "您目前还没有客户，请分享二维码发展客户"
+        text_response
+      end
+
     else
       @msg_hash[:body] = "您目前并不是经纪人，请登录觅家网站完善信息"
       text_response
@@ -366,6 +375,15 @@ class WechatController < ApplicationController
     @msg_hash[:body] = '您的需求已提交，我们会在24小时内给您回复'
     delete_redis(:agent_confirm)
     text_response
+  end
+
+  def agent_page
+    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
+    @msg_hash[:items] = [{title: "请点击您的头像设置您的主页",
+                          body: '',
+                          pic_url: @wechat_user.head_img_url,
+                          url: "#{CLIENT_HOST}?ticket=#{ticket}#/agent"}]
+    article_response
   end
 
   def update_search
@@ -462,6 +480,15 @@ class WechatController < ApplicationController
        pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
     end
+  end
+
+  def meejia_qr_code
+    uid = @wechat_user.user.id
+    @msg_hash[:items] = [{title: '这是您的觅家二维码',
+                          body: '您可以分享如下二维码给您的现有或潜在客户，您可以通过觅家跟踪客户的购房进展',
+                          pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
+                          url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
+     article_response
   end
 
   def set_redis(key, value, expired_time = 60)

@@ -167,6 +167,3 @@ DEPENDENCIES
   typhoeus
   uglifier (>= 1.0.3)
   unicorn
-
-BUNDLED WITH
-   1.10.6
