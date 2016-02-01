@@ -120,13 +120,13 @@ class AgentController < ApplicationController
 
   def active_agents
     agents = []
-    want_num_agent = 4
+    want_num_agent = 2
     agent_ids = AgentExtention.pluck(:user_id)
 
     if uid = request.headers['HTTP_UID']
       user = User.find(uid)
       if agent_id = user.wechat_user.agent_id
-        want_num_agent = 3
+        want_num_agent = 1
         agents << User.find(agent_id.to_i).as_json(include_details: false)
         agent_ids -= [agent_id.to_i]
       end
