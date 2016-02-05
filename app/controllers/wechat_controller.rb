@@ -83,6 +83,7 @@ class WechatController < ApplicationController
                    end
                  end
                elsif params['xml']['Event'] == 'subscribe'
+                 @from_search = false
                  @agent_id = params['xml']['EventKey'][8..-1].to_i/10
                  event_id = params['xml']['EventKey']
                  event_id = event_id[8..-1].to_i % 10  if event_id.present?
@@ -97,6 +98,7 @@ class WechatController < ApplicationController
                      'agent_login'
                    end
                  else
+                   @from_search = true
                    if params['xml']['ToUserName'] == ACCOUNT_ID
                      'login'
                    else
@@ -159,7 +161,7 @@ class WechatController < ApplicationController
       WechatRequest.new.generate_qr_code("#{uid}1")
     end
 
-    @msg_hash[:items] = [{title: "恭喜您成为觅家经纪人，您登陆的Email和密码是: #{user.email}/meejia101，经纪人编码是#{user.agent_extention.agent_identifier}",
+    @msg_hash[:items] = [{title: "二维码已更新",
                           body: '您可以分享如下二维码给您的现有或潜在客户，您可以通过觅家跟踪客户的购房进展',
                           pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
                           url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
@@ -179,8 +181,14 @@ class WechatController < ApplicationController
 
     uid ||= @wechat_user.user_id
 
+    if @from_search
+      confirm_string = "欢迎#{@wechat_user.nickname}关注觅家\n 您可以访问#{CLIENT_HOST}查看更多精彩内容"
+    else
+      confirm_string = "欢迎#{@wechat_user.nickname}登陆觅家\n 请点击网页上的确认键 或输入如下Email和密码: #{user.email}/meejia2016 完成登陆。"
+    end
+
     REDIS.setex('wechat_login', 30, TicketGenerator.encrypt_uid(uid))     #TODO
-    @msg_hash[:body] = "欢迎#{@wechat_user.nickname}登陆觅家\n 请点击网页上的确认键完成登陆，或者输入如下Email和密码: #{user.email}/meejia101"
+    @msg_hash[:body] = confirm_string
     text_response
   end
 
@@ -213,7 +221,7 @@ class WechatController < ApplicationController
 
       REDIS.setex('wechat_login', 30, TicketGenerator.encrypt_uid(uid))
 
-      @msg_hash[:body] = "您登陆的Email和密码是: #{user.email}/meejia101，经纪人编码是#{extention.agent_identifier}, 请点击网页上的确定键完成登陆"
+      @msg_hash[:body] = "您登陆的Email和密码是: #{user.email}/meejia2016，经纪人编码是#{extention.agent_identifier}, 请点击网页上的确定键完成登陆"
       text_response
     else
       extention = AgentExtention.create(user_id: user.id, agent_identifier: user.username, license_id: 'xxx')
@@ -242,7 +250,7 @@ class WechatController < ApplicationController
       username = username + Random.rand(1000).to_s
     end
 
-    user = User.new(email: "#{username}@meejia.com", username: username, password: 'meejia101')
+    user = User.new(email: "#{username}@meejia.com", username: username, password: 'meejia2016')
     user.save(validate: false)
     user
   end
@@ -286,7 +294,7 @@ class WechatController < ApplicationController
       unless File.exist?(expect_file)
         WechatRequest.new.generate_qr_code("#{uid}1")
       end
-      @msg_hash[:items] = [{title: "恭喜您成为觅家经纪人，您登陆的Email和密码是: #{user.email}/meejia101，经纪人编码是#{user.agent_extention.agent_identifier}",
+      @msg_hash[:items] = [{title: "恭喜您成为觅家经纪人，您登陆的Email和密码是: #{user.email}/meejia2016，经纪人编码是#{user.agent_extention.agent_identifier}",
                             body: '您可以分享如下二维码给您的现有或潜在客户，您可以通过觅家跟踪客户的购房进展',
                             pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
                             url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
@@ -309,7 +317,7 @@ class WechatController < ApplicationController
       user = User.find(uid)
     end
     @wechat_user.save
-    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务。您可以输入如下Email和密码: #{user.email}/meejia101登录meejia.com"
+    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务。您可以输入如下Email和密码: #{user.email}/meejia2016 登录meejia.com"
     text_response
   end
 
@@ -388,11 +396,28 @@ class WechatController < ApplicationController
 
   def update_search
     ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
-    @msg_hash[:items] = [{title: "请点击您的头像设置智能搜索条件",
-                          body: '',
-                          pic_url: @wechat_user.head_img_url,
-                          url: "#{CLIENT_HOST}?ticket=#{ticket}#/dashboard"}]
-    article_response
+
+    if search = @wechat_user.search
+      title = ''
+      search = JSON.parse(search)
+      mapping = {regionValue: '地区', bedNum: '房间数', priceMin: '最低价', priceMax: '最高价'}
+
+      search.each do |k,v|
+        title += "#{mapping[k.to_sym]}: #{v}, " if mapping.include?(k.to_sym)
+      end
+
+      @msg_hash[:items] = [{title: title,
+                            body: '请点击您的头像设置智能搜索条件',
+                            pic_url: @wechat_user.head_img_url,
+                            url: "#{CLIENT_HOST}?ticket=#{ticket}#/dashboard"}]
+      article_response
+    else
+      @msg_hash[:items] = [{title: "请点击您的头像设置智能搜索条件",
+                            body: '',
+                            pic_url: @wechat_user.head_img_url,
+                            url: "#{CLIENT_HOST}?ticket=#{ticket}#/dashboard"}]
+      article_response
+    end
   end
 
   def my_favorite

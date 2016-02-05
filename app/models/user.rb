@@ -37,6 +37,18 @@ class User < ActiveRecord::Base
     result
   end
 
+  def flatten_wechat_user
+    wechat_user = self.wechat_user.as_json
+    if wechat_user['search']
+      search = JSON.parse(wechat_user['search'])
+    else
+      search = {}
+    end
+    wechat_user.merge!(parsed_search: search)
+    wechat_user.delete(:search)
+    return  wechat_user
+  end
+
   def agent_license_id
     ''
   end

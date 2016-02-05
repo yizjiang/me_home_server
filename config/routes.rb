@@ -41,7 +41,6 @@ MeHome::Application.routes.draw do
   post 'user/submit_question', to: 'user#submit_question'
   post 'user/favorite_home', to: 'user#favorite_home'
   post 'user/unfavorite_home', to: 'user#unfavorite_home'
-
   post 'question/post_answer', to: 'question#post_answer'
 
   get 'dm/wechat', to: 'wechat#auth'

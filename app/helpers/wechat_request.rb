@@ -1,5 +1,6 @@
 class WechatRequest
   attr_accessor :access_token
+
   def initialize(agent_account = false)
     @access_token = get_access_token(agent_account)
   end
@@ -21,7 +22,7 @@ class WechatRequest
 
   def upload_image(file)
     url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=#{@access_token}&type=image"
-    response = Typhoeus.post(url, headers: { 'Content-Type' => 'multipart/form-data' }, body: {media: File.open(file,"r")})
+    response = Typhoeus.post(url, headers: {'Content-Type' => 'multipart/form-data'}, body: {media: File.open(file, "r")})
     JSON.parse(response.body)
   end
 
@@ -46,6 +47,17 @@ class WechatRequest
       outfile.write(response.body)
     end
     return "/public/agents/#{scene_id}.png"
+  end
+
+  def send_articles (opts)
+    body = {touser: opts[:to_user],
+            msgtype: 'news',
+            news: {
+              articles: opts[:body]
+            }
+    }
+
+    Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{@access_token}", body: body.to_json)
   end
 
   def fetch_user_info(open_id)

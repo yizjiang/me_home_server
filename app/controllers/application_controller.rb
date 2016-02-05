@@ -13,7 +13,6 @@ class ApplicationController < ActionController::Base
   end
 
   def index
-    p 'in application index'
     redirect_url = File.join(CLIENT_HOST, 'auth_callback')
 
     if flash[:alert] == 'You are already signed in'
@@ -25,8 +24,6 @@ class ApplicationController < ActionController::Base
     ticket = session[:ticket]
     ticket = get_ticket_from_uid unless ticket.present?
     session[:ticket] = ''
-    p "xxx #{ticket}"
-    p "#{redirect_url}?ticket=#{ticket}"
     redirect_to "#{redirect_url}?ticket=#{ticket}" if ticket.present?
   end
 
@@ -36,11 +33,7 @@ class ApplicationController < ActionController::Base
     end
     if session['warden.user.user.key']
        uid = session['warden.user.user.key'][0][0]
-       return encrypt_uid(uid)
+       return TicketGenerator.encrypt_uid(uid)
     end
-  end
-
-  def encrypt_uid(uid)       #TODO
-    return "74651#{uid}1329"
   end
 end

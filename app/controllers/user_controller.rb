@@ -1,6 +1,11 @@
 class UserController < ApplicationController
 
   def index
+    temp_json = get_user_json(params)
+    render json: temp_json.to_json  #TODO write to json method in model
+  end
+
+  def get_user_json(params)
     uid =  params[:uid].present? ? params[:uid] : session[:uid]
     result = uid.present? ? User.find(uid) : {}
     unless result
@@ -18,7 +23,7 @@ class UserController < ApplicationController
                       {}
                     end
       search = if page_config['search']
-                page_config['search'].map{|_, v| JSON.parse(v)}
+                 page_config['search'].map{|_, v| JSON.parse(v)}
                else
                  []
                end
@@ -45,7 +50,7 @@ class UserController < ApplicationController
                                                search: search},
                        qr_image: qr_image)   #TODO saved search
     end
-    render json: temp_json.to_json  #TODO write to json method in model
+    return temp_json
   end
 
   def save_search
