@@ -3,7 +3,8 @@ namespace :csv do
   task :import => :environment do
     puts 'Enter csv file name under sample/data/'
     file = STDIN.gets.chomp
-    home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
+#    home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
+    home = CSV.read("./sample/data/#{file}.csv")
     home[1..-1].each_with_index do |row, index|
       begin
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
