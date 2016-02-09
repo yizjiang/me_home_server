@@ -161,7 +161,7 @@ class WechatController < ApplicationController
       WechatRequest.new.generate_qr_code("#{uid}1")
     end
 
-    @msg_hash[:items] = [{title: "二维码已更新",
+    @msg_hash[:items] = [{title: "经纪人#{@wechat_user.nickname}为您觅家",
                           body: '您可以分享如下二维码给您的现有或潜在客户，您可以通过觅家跟踪客户的购房进展',
                           pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
                           url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
