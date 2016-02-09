@@ -3,17 +3,27 @@ namespace :csv do
   task :update => :environment do
     puts 'Enter csv file name under sample/data/'
     file = STDIN.gets.chomp
-    home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
+#    home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
+    home = CSV.read("./sample/data/#{file}.csv")
     home[1..-1].each_with_index do |row, index|
       begin
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
+
         if !(row[7].nil? || row[7].empty?)
-           uniq_condition = {addr1: row[3].lstrip.rstrip,
-                          city: row[4].lstrip.rstrip,
-                          state: row[5].lstrip.rstrip,
-                          zipcode: row[6].lstrip.rstrip}
-           home = Home.where(uniq_condition).first_or_create
-           home.update_attributes(county: row[7],
+          home_city = row[4].lstrip.rstrip
+          home_state = row[5].lstrip.rstrip
+          home_zip = row[6].lstrip.rstrip
+          home_county = row[7].lstrip.rstrip
+          if (home_city.nil? || home_state.nil? || home_county.nil?)
+              p row
+          end
+	  uniq_condition = {addr1: row[3].lstrip.rstrip,
+                          city: home_city,
+                          state: home_state,
+                          zipcode: home_zip}
+          home = Home.where(uniq_condition).first_or_create
+          
+          home.update_attributes(county: home_county,
                                last_refresh_at: time_before_now(row[8]),
 			       added_to_site: row[9],
                                redfin_link: row[10],
@@ -35,24 +45,25 @@ namespace :csv do
 			       listed_by: row[27]
            )
 
-#          home.build_image_group(row[25])  #[66]
+#           home.build_image_group(row[25])  #[66]
 
            assigned_schools = row[28] ? parse_wierd_input_to_array(row[28])[1..-1] : [] #remove header
            elementary_schools = row[29] ?  parse_wierd_input_to_array(row[29])[1..-1] : [] 
            middle_schools =  row[30] ? parse_wierd_input_to_array(row[30])[1..-1]: [] 
            high_schools =  row[31] ? parse_wierd_input_to_array(row[31])[1..-1]: [] 
-#          private_schools = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: [] 
+           #private_schools = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: [] 
 
-        # import assigned school last, so it will not overwrite it.
-          home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
+          # import assigned school last, so it will not overwrite it.
           #home.import_public_record(row[0..2])
-          home.other_schools(elementary_schools + middle_schools + high_schools)
-          home.assign_public_schools(assigned_schools)
-#         home.assign_private_schools(private_schools)
+          home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
+          home.other_schools(elementary_schools + middle_schools + high_schools, home_city, home_county, home_state)
+          home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
+          #home.assign_private_schools(private_schools)
+  
           home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
           home.import_history_record(home_history)
-       end
-      
+        end
+
       rescue StandardError
         p "error out for item #{index}"
       end
@@ -60,13 +71,6 @@ namespace :csv do
     end
   end
 
-  task :college => :environment do
-    univ = CSV.read('./sample/college.csv')
-    univ[1..-1].each_with_index do |row, index|
-      School.importer(row)
-    end
-
-  end
 
   # add validation
   def parse_wierd_input_to_array(input)
@@ -76,6 +80,7 @@ namespace :csv do
       end
     end
   end
+
 
   def time_before_now(time)  # time is hour
     Time.now - time.to_i * 3600
