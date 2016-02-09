@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160119033454) do
+ActiveRecord::Schema.define(:version => 20160209073126) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -169,14 +169,42 @@ ActiveRecord::Schema.define(:version => 20160119033454) do
     t.integer "uid"
   end
 
+  create_table "school_images", :force => true do |t|
+    t.string   "image_url"
+    t.integer  "school_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
   create_table "schools", :force => true do |t|
-    t.string  "name"
-    t.string  "grade"
-    t.string  "student_teacher_ratio"
-    t.float   "rating"
-    t.string  "school_type"
-    t.integer "address_id"
-    t.float   "parent_rating"
+    t.string   "name"
+    t.string   "grade"
+    t.string   "student_teacher_ratio"
+    t.float    "rating"
+    t.string   "school_type"
+    t.float    "parent_rating"
+    t.string   "addr1"
+    t.string   "addr2"
+    t.string   "city"
+    t.string   "county"
+    t.string   "state"
+    t.integer  "zipcode"
+    t.string   "phone"
+    t.string   "url"
+    t.string   "mail"
+    t.integer  "rank"
+    t.string   "founded"
+    t.string   "gender_type"
+    t.float    "female_pct"
+    t.string   "religion"
+    t.string   "description"
+    t.float    "boarding_pct"
+    t.float    "admin_rate"
+    t.float    "fee"
+    t.integer  "enrolled_student"
+    t.string   "name_cn"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "users", :force => true do |t|
