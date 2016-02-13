@@ -93,4 +93,16 @@ namespace :csv do
     Time.now - time.to_i * 3600
   end
 
+  task :agent => :environment do
+    puts 'Enter csv file name under sample/data/'
+    file = STDIN.gets.chomp
+    univ = CSV.read("./sample/data/#{file}.csv")
+    univ[1..-1].each_with_index do |row, index|
+      a_agent =AgentExtention.importer(row)
+     # a_school.import_image(row[9])
+    end
+    p '---- done ---'
+  end
+
+
 end
