@@ -44,7 +44,7 @@ class AgentExtention < ActiveRecord::Base
            agent.url = broker_agent[14].nil? ? nil : broker_agent[14].lstrip.rstrip
            agent.license_year = broker_agent[16].nil? ? nil : broker_agent[16].lstrip.rstrip
            agent.description = broker_agent[18].nil? ? nil : broker_agent[18].lstrip.rstrip
-           agent.photo_url = broker_agent[19].nil? ? nil : broker_agent[19].lstrip.rstrip
+           agent.photo_url = broker_agent[19].nil? ? nil : broker_agent[19].lstrip.rstrip[10..-5]
            agent.city_list = broker_agent[20].nil? ? nil : broker_agent[20].lstrip.rstrip
            agent.district_list = broker_agent[21].nil? ? nil : broker_agent[21].lstrip.rstrip
            agent.source = broker_agent[22].nil? ? nil : broker_agent[22].lstrip.rstrip
