@@ -10,14 +10,17 @@ namespace :csv do
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
 
         if !(row[7].nil? || row[7].empty?)
-
-          uniq_condition = {addr1: row[3].lstrip.rstrip,
-                          city: row[4].lstrip.rstrip,
-                          state: row[5].lstrip.rstrip,
-                          zipcode: row[6].lstrip.rstrip}
+          home_city = row[4].lstrip.rstrip
+          home_state = row[5].lstrip.rstrip
+          home_zip = row[6].lstrip.rstrip
+          home_county = row[7].lstrip.rstrip
+	  uniq_condition = {addr1: row[3].lstrip.rstrip,
+                          city: home_city,
+                          state: home_state,
+                          zipcode: home_zip}
           home = Home.where(uniq_condition).first_or_create
           
-          home.update_attributes(county: row[7],
+          home.update_attributes(county: home_county,
                                last_refresh_at: time_before_now(row[8]),
 			       added_to_site: row[9],
                                redfin_link: row[10],
@@ -50,8 +53,8 @@ namespace :csv do
           # import assigned school last, so it will not overwrite it.
           #home.import_public_record(row[0..2])
           home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
-          home.other_schools(elementary_schools + middle_schools + high_schools)
-          home.assign_public_schools(assigned_schools)
+          home.other_schools(elementary_schools + middle_schools + high_schools, home_city, home_county, home_state)
+          home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
           #home.assign_private_schools(private_schools)
   
           home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
@@ -66,11 +69,14 @@ namespace :csv do
   end
 
   task :college => :environment do
-    univ = CSV.read('./sample/college.csv')
+    puts 'Enter csv file name under sample/data/'
+    file = STDIN.gets.chomp
+    univ = CSV.read("./sample/data/#{file}.csv")
     univ[1..-1].each_with_index do |row, index|
-      School.importer(row)
+      a_school =School.importer(row)
+      a_school.import_image(row[9])
     end
-
+    p '---- done ---'
   end
 
   # add validation
@@ -86,5 +92,17 @@ namespace :csv do
   def time_before_now(time)  # time is hour
     Time.now - time.to_i * 3600
   end
+
+  task :agent => :environment do
+    puts 'Enter csv file name under sample/data/'
+    file = STDIN.gets.chomp
+    univ = CSV.read("./sample/data/#{file}.csv")
+    univ[1..-1].each_with_index do |row, index|
+      a_agent =AgentExtention.importer(row)
+     # a_school.import_image(row[9])
+    end
+    p '---- done ---'
+  end
+
 
 end

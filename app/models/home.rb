@@ -158,7 +158,7 @@ class Home < ActiveRecord::Base
     return monthly_rent
   end
 
-  def assign_schools(schools, assigned)
+  def assign_schools(schools, assigned, city, county, state)
     schools.each do |school|
 
       if school[6].nil? || school[6].empty?
@@ -168,7 +168,10 @@ class Home < ActiveRecord::Base
          record.school_type = school[6];
          record.student_teacher_ratio = school[3]
          record.rating = school[4].to_f
-         record.parent_rating = school[5].to_f    
+         record.parent_rating = school[5].to_f
+         record.city = city
+         record.county = county
+         record.state = state
          record.save
 
          assignment = HomeSchoolAssignment.where(home_id: self.id, school_id: record.id).first_or_create
@@ -177,16 +180,16 @@ class Home < ActiveRecord::Base
     end
   end
 
-  def assign_public_schools(schools)
-   assign_schools(schools, true)
+  def assign_public_schools(schools, city, county, state)
+   assign_schools(schools, true, city, county, state)
   end
 
-  def assign_private_schools(schools)
-    assign_schools(schools, false)
+  def assign_private_schools(schools, city, county, state)
+    assign_schools(schools, false, city, county, state)
   end
 
-  def other_schools(schools)
-    assign_schools(schools, false)
+  def other_schools(schools, city, county, state)
+    assign_schools(schools, false, city, county, state)
   end
 
   def build_image_group(images)
