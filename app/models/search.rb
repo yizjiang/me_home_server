@@ -3,7 +3,26 @@ HOME_TYPE = Home.pluck(:meejia_type).uniq
 class Search
   attr_accessor :region, :price_min, :price_max, :bed_num, :home_type, :indoor_size, :year_built, :search_query
 
-  def initialize(attributes)
+  def default_attributes
+    cities = Home.select('DISTINCT city').sample(2).map(&:city)
+    {
+     regionValue: cities.join(','),
+     priceMin: '',
+     priceMax: '',
+     bedNum: 2,
+     single_family: true,
+     condo: true,
+     townhouse: true,
+     multi_family: true,
+     business: true,
+     land: false,
+     farm: false,
+     other: false}
+
+  end
+
+  def initialize(attributes = nil)
+    attributes ||= default_attributes
     @region = attributes[:regionValue] || ''
     @search_query = {regionValue: @region}
 

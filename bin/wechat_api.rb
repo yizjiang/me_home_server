@@ -81,90 +81,96 @@ def publish_menu(access_token)
   url = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=#{access_token}"
   body = {
     button: [
-      {
-        name: '找房',
-        type: 'click',
-        key: 's'
-      },
-
-      {
-        name: '找经纪人',
-        type: 'click',
-        key: 'a'
-      },
-
-      {
-        name: "我的觅家",
-        sub_button: [
-          {
-            type: "click",
-            name: "红心房源",
-            key: "fav"
-          },
-
-          {
-            type: "click",
-            name: "提问",
-            key: "q"
-          },
-
-          {
-            type: "click",
-            name: "更新智能搜索",
-            key: "u"
-          },
-
-          {
-            type: "click",
-            name: "房产经纪人",
-            key: "a"
-          },
-
-          {
-            type: "click",
-            name: "贷款经纪人",
-            key: "l"
-          }
-
-        ]}
-      ]
-
-      #
       #{
-      #  name: '客户统计',
+      #  name: '找房',
       #  type: 'click',
-      #  key: 'my_client'
+      #  key: 's'
       #},
       #
       #{
-      #  name: '普通咨询',
+      #  name: '找经纪人',
       #  type: 'click',
-      #  key: 'cq'
+      #  key: 'a'
       #},
       #
       #{
-      #  name: '我',
+      #  name: "我的觅家",
       #  sub_button: [
-      #        {
-      #          type: "click",
-      #          name: "觅家二维码",
-      #          key: "meejia_qr_code"
-      #        },
+      #    {
+      #      type: "click",
+      #      name: "红心房源",
+      #      key: "fav"
+      #    },
       #
-      #        {
-      #          type: "click",
-      #          name: "主页设置",
-      #          key: "agent_page"
-      #        },
+      #    {
+      #      type: "click",
+      #      name: "提问",
+      #      key: "q"
+      #    },
       #
-      #        {
-      #          type: "click",
-      #          name: "更改联系方式",
-      #          key: "update_qr"
-      #        }
-      #  ]
+      #    {
+      #      type: "click",
+      #      name: "更新智能搜索",
+      #      key: "u"
+      #    },
       #
-      #}]
+      #    {
+      #      type: "click",
+      #      name: "忘记密码",
+      #      key: "my_login"
+      #    },
+      #
+      #    {
+      #      type: "click",
+      #      name: "贷款经纪人",
+      #      key: "l"
+      #    }
+      #
+      #  ]}
+      #]
+
+
+      {
+        name: '客户统计',
+        type: 'click',
+        key: 'my_client'
+      },
+
+      {
+        name: '普通咨询',
+        type: 'click',
+        key: 'cq'
+      },
+
+      {
+        name: '我',
+        sub_button: [
+              {
+                type: "click",
+                name: "觅家二维码",
+                key: "meejia_qr_code"
+              },
+
+              {
+                type: "click",
+                name: "主页设置",
+                key: "agent_page"
+              },
+
+              {
+                type: "click",
+                name: "更改联系方式",
+                key: "update_qr"
+              },
+
+              {
+                type: "click",
+                name: "忘记密码",
+                key: "my_login"
+              }
+        ]
+
+      }]
   }
   response = Typhoeus.post(url, body: body.to_json)
   p response.body

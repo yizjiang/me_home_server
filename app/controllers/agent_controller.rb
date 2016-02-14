@@ -19,10 +19,12 @@ class AgentController < ApplicationController
         criteria['regionValue'] = s
         Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})
       end
+    else
+      searches = [Search.new]
+    end
 
-      home_list = Home.search(searches).map do |home|
-        home.as_json
-      end
+    home_list = Home.search(searches).map do |home|
+      home.as_json
     end
 
     header_config = config['header']

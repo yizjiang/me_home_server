@@ -24,7 +24,8 @@ class WechatController < ApplicationController
                     'fav' => :my_favorite,
                     'l' => :loan_agent,
                     'agent_page' => :agent_page,
-                    'meejia_qr_code' => :meejia_qr_code
+                    'meejia_qr_code' => :meejia_qr_code,
+                    'my_login' => :my_login
 
   }
 
@@ -228,7 +229,7 @@ class WechatController < ApplicationController
       user.agent_extention_id = extention.id
       user.save
       set_redis(:wait_input, :agent_license, 60 * 60)
-      @msg_hash[:body] = "感谢您选择成为觅家经纪人，请输入您的经纪人序列号进行验证"
+      @msg_hash[:body] = "感谢您选择成为觅家经纪人，请输入您的经纪人序列号"
       text_response
     end
   end
@@ -505,6 +506,12 @@ class WechatController < ApplicationController
        pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
     end
+  end
+
+  def my_login
+    user = @wechat_user.user
+    @msg_hash[:body] = "您登陆的Email和密码是: #{user.email}/meejia2016"
+    text_response
   end
 
   def meejia_qr_code
