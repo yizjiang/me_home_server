@@ -24,8 +24,8 @@ def self.importer(agent_review)
      agent = AgentExtention.where(source: 'wjl', source_id: agent_source_id).limit(1).first
 
      if (!(agent.nil?) && !(comment.nil?))
-       puts "agent_id=#{agent.id} reviewer=#{reviewer} poster=#{poster}, source=#{source}, post_id=#{post_id}, agent_source_id=#{agent_source_id}"
-       puts "agent_id=#{agent.id} comment=#{comment}"
+#       puts "agent_id=#{agent.id} reviewer=#{reviewer} poster=#{poster}, source=#{source}, post_id=#{post_id}, agent_source_id=#{agent_source_id}"
+#       puts "agent_id=#{agent.id} comment=#{comment}"
        agent_review = AgentReview.where(agent_extention_id:agent.id, source_reviewer:reviewer,source:source,source_post_id:post_id, comment:comment).first_or_create
        agent_review.comment = comment
        agent_review.recommendation_rate = recommendation
