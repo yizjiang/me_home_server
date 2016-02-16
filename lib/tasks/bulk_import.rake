@@ -104,5 +104,16 @@ namespace :csv do
     p '---- done ---'
   end
 
+  task :agent_review => :environment do
+    puts 'Enter csv file name under sample/data/'
+    file = STDIN.gets.chomp
+    univ = CSV.read("./sample/data/#{file}.csv")
+    univ[1..-1].each_with_index do |row, index|
+      agent_review =AgentReview.importer(row)
+     # a_school.import_image(row[9])
+    end
+    p '---- done ---'
+  end
+
 
 end
