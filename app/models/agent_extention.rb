@@ -31,9 +31,9 @@ class AgentExtention < ActiveRecord::Base
          broker_company.save
          
          if (!broker_agent[17].nil? && broker_agent[17].match(/[-+]?[0-9]+/))
-           p broker_agent[17]         
+#           p broker_agent[17]         
            agent = AgentExtention.where(city_area:broker_agent[15].lstrip.rstrip, license_id:broker_agent[17], license_state:biz_state).first_or_create    
-           p agent
+#           p agent
            agent.first_name = broker_agent[7].nil? ? nil : broker_agent[7].lstrip.rstrip
            agent.middle_name = broker_agent[8].nil? ? nil : broker_agent[8].lstrip.rstrip
            agent.last_name = broker_agent[9].nil? ? nil : broker_agent[9].lstrip.rstrip
@@ -51,9 +51,9 @@ class AgentExtention < ActiveRecord::Base
            agent.source_id = broker_agent[23].nil? ? nil : broker_agent[23].lstrip.rstrip
            agent.status = "pending"
            agent.broker_company_id = broker_company.id
-           p "before save"
+ #          p "before save"
            agent.save
-           p agent.id
+  #         p agent.id
            return agent
          end 
        end     
