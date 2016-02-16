@@ -12,6 +12,7 @@ class WechatController < ApplicationController
                     'U' => :update_search,
                     'cq' => :customer_questions,
                     'pc' => :agent_request,
+                    'agent_request' => :agent_request,
                     'follow_agent' => :followed_by_agent,
                     'my_client' => :my_client,
                     'agent_follow' => :agent_follow,
@@ -508,6 +509,18 @@ class WechatController < ApplicationController
     end
   end
 
+  def reformat_requests(requests)
+    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
+    requests.map do |request|
+      home = Home.find(request.request_context_id)
+      requestor = User.find(request.from_user)
+      {title: "用户#{requestor.wechat_user.try(:nickname) || '路人甲'}想知道更多 #{home.addr1} #{home.city}的信息",
+       body: 'nice home',
+       pic_url: requestor.wechat_user.try(:head_img_url) || "#{CDN_HOST}/photo/default.jpeg",
+       url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
+    end
+  end
+
   def my_login
     user = @wechat_user.user
     @msg_hash[:body] = "您登陆的Email和密码是: #{user.email}/meejia2016"
@@ -521,6 +534,12 @@ class WechatController < ApplicationController
                           pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
                           url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
      article_response
+  end
+
+  def agent_request
+    requests = AgentRequest.where(to_user: @wechat_user.user_id).limit(8)
+    @msg_hash[:items] = reformat_requests(requests)
+    article_response
   end
 
   def set_redis(key, value, expired_time = 60)

@@ -31,9 +31,11 @@ MeHome::Application.routes.draw do
 
 
   get 'agent/:uid/customers', to: 'agent#all_customer'
+  get 'agent/:uid/requests', to: 'agent#all_request'
 
   post 'agent/save_page_config', to: 'agent#save_page_config'
   post '/agent/upload_qrcode', to: 'agent#upload_qrcode'
+  post 'agent/contact_request', to: 'agent#contact_request'
 
   post 'user/metric_tracking', to: 'user#metric_tracking'
   post 'user/save_search', to: 'user#save_search'

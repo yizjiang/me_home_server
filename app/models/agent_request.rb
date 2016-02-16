@@ -3,6 +3,14 @@
 class AgentRequest < ActiveRecord::Base
   attr_accessible *column_names
 
+  def as_json
+    home = Home.find(self.request_context_id)
+    body = "用户#{User.find(self.from_user).wechat_user.try(:nickname) || '路人甲'}想知道更多 #{home.addr1} #{home.city}的信息"
+    result = super
+    result['body'] = body
+    result
+  end
+
   def sent_to_wechat
     params = {grant_type: 'client_credential',
               appid: 'wxd284e53ecd0e2b51',

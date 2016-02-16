@@ -131,9 +131,21 @@ def publish_menu(access_token)
 
 
       {
-        name: '客户统计',
-        type: 'click',
-        key: 'my_client'
+        name: '客户',
+        sub_button: [
+          {
+            name: '我的客户',
+            type: 'click',
+            key: 'my_client'
+          },
+
+          {
+            type: "click",
+            name: '经纪人需求',
+            key: "agent_request"
+          }
+        ]
+
       },
 
       {

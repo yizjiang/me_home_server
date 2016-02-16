@@ -94,6 +94,11 @@ class AgentController < ApplicationController
     render json: @customers
   end
 
+  def all_request
+    requests = AgentRequest.where(to_user: params[:uid]).map(&:as_json)
+    render json: requests
+  end
+
   def set_search
     @customer = WechatUser.find(params[:cid])
     @agent_id = params[:uid]
@@ -120,15 +125,22 @@ class AgentController < ApplicationController
 
   end
 
+  def contact_request
+    params[:toUser].values.each do |aid|
+      AgentRequest.create(from_user: request.headers['HTTP_UID'], request_type: 'home', request_context_id: params[:home_id], to_user: aid, status: 'open', body: params[:msg])
+    end
+    render json:[]
+  end
+
   def active_agents
     agents = []
-    want_num_agent = 2
+    want_num_agent = 3
     agent_ids = AgentExtention.pluck(:user_id)
 
     if uid = request.headers['HTTP_UID']
       user = User.find(uid)
       if agent_id = user.wechat_user.agent_id
-        want_num_agent = 1
+        want_num_agent -= 1
         agents << User.find(agent_id.to_i).as_json(include_details: false)
         agent_ids -= [agent_id.to_i]
       end

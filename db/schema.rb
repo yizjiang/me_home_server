@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160209073126) do
+ActiveRecord::Schema.define(:version => 20160216010933) do
 
   create_table "addresses", :force => true do |t|
     t.string  "addr1"
@@ -28,14 +28,34 @@ ActiveRecord::Schema.define(:version => 20160209073126) do
     t.string  "agent_identifier"
     t.integer "user_id"
     t.string  "license_id"
+    t.string  "first_name"
+    t.string  "middle_name"
+    t.string  "last_name"
+    t.string  "cn_name"
+    t.string  "phone"
+    t.string  "wechat"
+    t.string  "mail"
+    t.string  "url"
+    t.string  "license_state"
+    t.string  "license_year"
+    t.text    "description"
+    t.string  "photo_url"
+    t.string  "status"
+    t.string  "city_area"
+    t.string  "city_list"
+    t.string  "district_list"
+    t.string  "source"
+    t.string  "source_id"
+    t.integer "broker_company_id"
   end
 
   create_table "agent_requests", :force => true do |t|
-    t.string "open_id"
-    t.string "agent_identifier_list"
-    t.string "status"
-    t.string "selected_agent"
-    t.string "region"
+    t.integer "from_user"
+    t.integer "to_user"
+    t.string  "status"
+    t.string  "request_type"
+    t.integer "request_context_id"
+    t.text    "body"
   end
 
   create_table "answers", :force => true do |t|
@@ -51,24 +71,36 @@ ActiveRecord::Schema.define(:version => 20160209073126) do
     t.string "external_id"
   end
 
-  create_table "cities", :force => true do |t|
+  create_table "broker_companies", :force => true do |t|
     t.string   "name"
+    t.string   "addr"
+    t.string   "city"
+    t.string   "state"
+    t.integer  "zipcode"
+    t.string   "country"
+    t.string   "phone"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "cities", :force => true do |t|
+    t.string   "name",           :limit => 255
     t.integer  "population"
     t.float    "income"
-    t.string   "above_bachelor"
+    t.string   "above_bachelor", :limit => 255
     t.float    "crime"
     t.float    "us_crime"
-    t.string   "unemploy"
-    t.string   "state_unemploy"
-    t.string   "hispanics"
-    t.string   "asian"
-    t.string   "caucasion"
-    t.string   "black"
+    t.string   "unemploy",       :limit => 255
+    t.string   "state_unemploy", :limit => 255
+    t.string   "hispanics",      :limit => 255
+    t.string   "asian",          :limit => 255
+    t.string   "caucasion",      :limit => 255
+    t.string   "black",          :limit => 255
     t.float    "PMI"
-    t.datetime "created_at",     :null => false
-    t.datetime "updated_at",     :null => false
-    t.string   "state"
-    t.string   "county"
+    t.datetime "created_at",                    :null => false
+    t.datetime "updated_at",                    :null => false
+    t.string   "state",          :limit => 255
+    t.string   "county",         :limit => 255
   end
 
   create_table "favorite_homes", :force => true do |t|
@@ -79,64 +111,64 @@ ActiveRecord::Schema.define(:version => 20160209073126) do
   create_table "home_school_assignments", :force => true do |t|
     t.integer "home_id"
     t.integer "school_id"
-    t.string  "distance"
+    t.string  "distance",  :limit => 255
     t.boolean "assigned"
   end
 
   create_table "homes", :force => true do |t|
-    t.string   "addr1"
-    t.string   "addr2"
-    t.string   "city"
-    t.string   "county"
-    t.string   "state"
+    t.string   "addr1",           :limit => 255
+    t.string   "addr2",           :limit => 255
+    t.string   "city",            :limit => 255
+    t.string   "county",          :limit => 255
+    t.string   "state",           :limit => 255
     t.integer  "zipcode"
     t.datetime "last_refresh_at"
     t.datetime "created_at"
-    t.string   "realtor_link"
+    t.string   "realtor_link",    :limit => 255
     t.text     "description"
     t.integer  "bed_num"
     t.float    "bath_num"
-    t.string   "indoor_size"
-    t.string   "lot_size"
+    t.string   "indoor_size",     :limit => 255
+    t.string   "lot_size",        :limit => 255
     t.float    "price"
     t.float    "unit_price"
-    t.string   "home_type"
+    t.string   "home_type",       :limit => 255
     t.integer  "year_built"
-    t.string   "neighborhood"
+    t.string   "neighborhood",    :limit => 255
     t.integer  "stores"
-    t.string   "status"
+    t.string   "status",          :limit => 255
     t.datetime "added_to_site"
-    t.string   "home_style"
-    t.string   "redfin_link"
-    t.string   "listing_agent"
-    t.string   "listed_by"
-    t.string   "meejia_type"
-    t.string   "geo_point"
+    t.string   "home_style",      :limit => 255
+    t.string   "redfin_link",     :limit => 255
+    t.string   "listing_agent",   :limit => 255
+    t.string   "listed_by",       :limit => 255
+    t.string   "meejia_type",     :limit => 255
+    t.string   "geo_point",       :limit => 255
   end
 
   create_table "homes_cn", :force => true do |t|
     t.text   "description"
     t.text   "short_desc"
-    t.string "city"
-    t.string "indoor_size"
-    t.string "lot_size"
-    t.string "price"
-    t.string "unit_price"
-    t.string "home_type"
+    t.string "city",        :limit => 255
+    t.string "indoor_size", :limit => 255
+    t.string "lot_size",    :limit => 255
+    t.string "price",       :limit => 255
+    t.string "unit_price",  :limit => 255
+    t.string "home_type",   :limit => 255
   end
 
   create_table "images", :force => true do |t|
-    t.string  "image_url"
+    t.string  "image_url", :limit => 255
     t.integer "home_id"
   end
 
   create_table "public_records", :force => true do |t|
-    t.string  "source"
-    t.string  "property_id"
-    t.string  "file_id"
+    t.string  "source",      :limit => 255
+    t.string  "property_id", :limit => 255
+    t.string  "file_id",     :limit => 255
     t.integer "home_id"
     t.date    "record_date"
-    t.string  "event"
+    t.string  "event",       :limit => 255
     t.float   "price"
   end
 
@@ -149,9 +181,9 @@ ActiveRecord::Schema.define(:version => 20160209073126) do
   end
 
   create_table "rents", :force => true do |t|
-    t.string   "metro"
-    t.string   "state"
-    t.string   "city"
+    t.string   "metro",      :limit => 255
+    t.string   "state",      :limit => 255
+    t.string   "city",       :limit => 255
     t.float    "studio"
     t.float    "one_bed"
     t.float    "two_bed"
@@ -160,8 +192,8 @@ ActiveRecord::Schema.define(:version => 20160209073126) do
     t.float    "five_bed"
     t.float    "six_bed"
     t.date     "reported"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",                :null => false
+    t.datetime "updated_at",                :null => false
   end
 
   create_table "saved_searches", :force => true do |t|
@@ -177,11 +209,11 @@ ActiveRecord::Schema.define(:version => 20160209073126) do
   end
 
   create_table "schools", :force => true do |t|
-    t.string   "name"
-    t.string   "grade"
-    t.string   "student_teacher_ratio"
+    t.string   "name",                  :limit => 255
+    t.string   "grade",                 :limit => 255
+    t.string   "student_teacher_ratio", :limit => 255
     t.float    "rating"
-    t.string   "school_type"
+    t.string   "school_type",           :limit => 255
     t.float    "parent_rating"
     t.string   "addr1"
     t.string   "addr2"
@@ -197,7 +229,7 @@ ActiveRecord::Schema.define(:version => 20160209073126) do
     t.string   "gender_type"
     t.float    "female_pct"
     t.string   "religion"
-    t.string   "description"
+    t.text     "description"
     t.float    "boarding_pct"
     t.float    "admin_rate"
     t.float    "fee"
