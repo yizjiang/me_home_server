@@ -166,6 +166,12 @@ def publish_menu(access_token)
               {
                 type: "click",
                 name: "主页设置",
+                key: "set_agent_page"
+              },
+
+              {
+                type: "click",
+                name: "我的主页",
                 key: "agent_page"
               },
 

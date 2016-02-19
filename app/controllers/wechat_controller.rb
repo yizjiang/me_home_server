@@ -25,6 +25,7 @@ class WechatController < ApplicationController
                     'fav' => :my_favorite,
                     'l' => :loan_agent,
                     'agent_page' => :agent_page,
+                    'set_agent_page' => :set_agent_page,
                     'meejia_qr_code' => :meejia_qr_code,
                     'my_login' => :my_login
 
@@ -387,15 +388,6 @@ class WechatController < ApplicationController
     text_response
   end
 
-  def agent_page
-    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
-    @msg_hash[:items] = [{title: "请点击您的头像设置您的主页",
-                          body: '',
-                          pic_url: @wechat_user.head_img_url,
-                          url: "#{CLIENT_HOST}?ticket=#{ticket}#/agent"}]
-    article_response
-  end
-
   def update_search
     ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
 
@@ -468,10 +460,28 @@ class WechatController < ApplicationController
     end
   end
 
-  def agent_request  #TODO
-    #@msg_hash[:body] = "User #{AgentRequest.last.open_id} request agent help in #{AgentRequest.last.region} area"
-    @msg_hash[:body] = "目前没有客户有经纪人需求"
-    text_response
+  def agent_page
+    p  "#{CLIENT_HOST}/agent/#{@wechat_user.user.agent_extention.agent_identifier}"
+    @msg_hash[:items] = [{title: "请点击您的头像查看主页",
+                          body: '',
+                          pic_url: @wechat_user.head_img_url,
+                          url: "#{CLIENT_HOST}/agent/#{@wechat_user.user.agent_extention.agent_identifier}"}]
+    article_response
+  end
+
+  def set_agent_page
+    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
+    @msg_hash[:items] = [{title: "请点击您的头像设置主页",
+                          body: '',
+                          pic_url: @wechat_user.head_img_url,
+                          url: "#{CLIENT_HOST}/?ticket=#{ticket}#/agent"}]
+    article_response
+  end
+
+  def agent_request
+    requests = AgentRequest.where(to_user: @wechat_user.user_id).limit(10)
+    @msg_hash[:items] = agent_request_items(requests)
+    article_response
   end
 
   def text_response
@@ -499,24 +509,24 @@ class WechatController < ApplicationController
     end
   end
 
+  def agent_request_items(requests)
+    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
+    requests.map do |request|
+      home = Home.find(request.request_context_id)
+      {title: request.body % {detail: "位于#{home.city}的#{home.addr1}房源信息"},
+       body: '点击图片查看',
+       picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
+       url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"
+      }
+    end
+  end
+
   def home_search_items(homes)
     ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
     homes.map do |home|
       {title: "位于#{home.addr1} #{home.city}的 #{home.bed_num} 卧室 #{home.home_type}，售价：#{home.price}美金",
        body: 'nice home',
        pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
-    end
-  end
-
-  def reformat_requests(requests)
-    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
-    requests.map do |request|
-      home = Home.find(request.request_context_id)
-      requestor = User.find(request.from_user)
-      {title: "用户#{requestor.wechat_user.try(:nickname) || '路人甲'}想知道更多 #{home.addr1} #{home.city}的信息",
-       body: 'nice home',
-       pic_url: requestor.wechat_user.try(:head_img_url) || "#{CDN_HOST}/photo/default.jpeg",
        url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
     end
   end
@@ -534,12 +544,6 @@ class WechatController < ApplicationController
                           pic_url:"#{SERVER_HOST}/agents/#{uid}1.png",
                           url: "#{SERVER_HOST}/agents/#{uid}1.png"}]
      article_response
-  end
-
-  def agent_request
-    requests = AgentRequest.where(to_user: @wechat_user.user_id).limit(8)
-    @msg_hash[:items] = reformat_requests(requests)
-    article_response
   end
 
   def set_redis(key, value, expired_time = 60)

@@ -95,7 +95,11 @@ class AgentController < ApplicationController
   end
 
   def all_request
-    requests = AgentRequest.where(to_user: params[:uid]).map(&:as_json)
+    requests = AgentRequest.where(to_user: params[:uid])
+    home_ids = requests.pluck(:request_context_id)
+    requests = home_ids.map do |homeid|
+      {home_id: homeid, requests: requests.select{|r| r.request_context_id == homeid}.map(&:as_json)}
+    end
     render json: requests
   end
 
@@ -127,7 +131,8 @@ class AgentController < ApplicationController
 
   def contact_request
     params[:toUser].values.each do |aid|
-      AgentRequest.create(from_user: request.headers['HTTP_UID'], request_type: 'home', request_context_id: params[:home_id], to_user: aid, status: 'open', body: params[:msg])
+      body = "#{User.find(request.headers['HTTP_UID']).wechat_user.try(:nickname) || '路人甲'} 想知道更多%{detail}的信息"
+      AgentRequest.where(from_user: request.headers['HTTP_UID'], request_type: 'home', request_context_id: params[:home_id], to_user: aid, status: 'open', body: body).first_or_create
     end
     render json:[]
   end
