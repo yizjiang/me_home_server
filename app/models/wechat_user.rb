@@ -9,8 +9,9 @@ class WechatUser < ActiveRecord::Base
     self.search_changed?
   }
 
-  def send_homes_on_wechat
-    search = if search = self.search
+  def send_homes_on_wechat(search = nil)
+    p 'ere'
+    search ||= if search = self.search
                JSON.parse(search)
              else
                {}
@@ -30,9 +31,12 @@ class WechatUser < ActiveRecord::Base
           Rails.logger.error(e)
           true
         end
+      else
+        WechatRequest.new.send_text(to_user: self.open_id, body: '没有在售房源')
       end
     end
   end
+
 
   def home_search_items(homes)
     ticket = TicketGenerator.encrypt_uid(self.user_id)

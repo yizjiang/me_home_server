@@ -11,6 +11,9 @@ gem 'haml'
 gem 'redis'
 gem 'spreadsheet'
 gem 'typhoeus'
+gem 'sidekiq'
+gem 'sinatra', require: false
+gem 'slim'
 
 # Gems used only for assets and not required
 # in production environments by default.

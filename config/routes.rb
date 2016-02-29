@@ -1,4 +1,8 @@
+require 'sidekiq/web'
+
 MeHome::Application.routes.draw do
+  mount Sidekiq::Web, at: "/sidekiq"
+
   root to: 'application#index'
   resources :home
   resources :region

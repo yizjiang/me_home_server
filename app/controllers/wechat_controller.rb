@@ -1,7 +1,5 @@
 # encoding: utf-8
 
-#require '../../lib/wechat/response_command'
-
 class WechatController < ApplicationController
   before_filter :get_message_from_params, :if => lambda { request.post? }
 
@@ -10,6 +8,7 @@ class WechatController < ApplicationController
                     'a' => :need_agent,
                     'u' => :update_search,
                     'U' => :update_search,
+                    'n' => :next_homes,
                     'cq' => :customer_questions,
                     'pc' => :agent_request,
                     'agent_request' => :agent_request,
@@ -27,7 +26,9 @@ class WechatController < ApplicationController
                     'agent_page' => :agent_page,
                     'set_agent_page' => :set_agent_page,
                     'meejia_qr_code' => :meejia_qr_code,
-                    'my_login' => :my_login
+                    'my_login' => :my_login,
+                    'report_location' => :report_location,
+                    'home_here' => :home_here
 
   }
 
@@ -41,7 +42,7 @@ class WechatController < ApplicationController
   end
 
   def message
-    response = if methond_sym = METHOD_MAPPING[@msg_hash[:body]]
+    response = if methond_sym = METHOD_MAPPING[@msg_hash[:body].downcase]
                  send(methond_sym)
                elsif (service_type = cached_input(:wait_input))
                  delete_redis(:wait_input)
@@ -64,7 +65,6 @@ class WechatController < ApplicationController
   end
 
   def get_message_from_params
-    p "xxx #{params}"
     body = case params['xml']['MsgType']
              when 'text'
                params['xml']['Content']
@@ -108,13 +108,14 @@ class WechatController < ApplicationController
                      'agent_login'
                    end
                  end
+               elsif params['xml']['Event'] == 'LOCATION'
+                 'report_location'
                else
                  params['xml']['EventKey']
                end
              else
                ''
            end
-
     @msg_hash = {from_username: params['xml']['FromUserName'],
                  to_username: params['xml']['ToUserName'],
                  body: body}
@@ -125,17 +126,77 @@ class WechatController < ApplicationController
     searches = @msg_hash[:body].split(',').map do |region|
       Search.new(regionValue: region)
     end
+    homes = Home.search(searches)                        # should query id not equel
+    home_result(homes)
+  end
 
-    homes = Home.search(searches, 10, Time.at(-284061600))
-    if (homes.count > 0)
-      latest = homes.map { |h| h.last_refresh_at }.max + 1
-      @wechat_user.update_attributes(search: {regionValue: @msg_hash[:body], priceMin: '', priceMax: ''}.to_json, last_search: latest, search_count: (@wechat_user.search_count || 0) + 1)
-      @msg_hash[:items] = home_search_items(homes)
-      article_response
+  def home_search
+    search = if search = @wechat_user.search
+               JSON.parse(search)
+             else
+               {}
+             end
+
+    if !search.empty?
+      searches = search['regionValue'].split(',').map do |region|
+        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'])
+      end
+
+      homes = Home.search(searches) # fair divide?
+      home_result(homes)
     else
-      @msg_hash[:body] = '对不起，以下消息 ' + @msg_hash[:body] + ' 无法自动回复，稍后会有人与您联系'
+      ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
+      @msg_hash[:items] = [{title: "请点击您的头像设置智能搜索条件",
+                            body: '',
+                            pic_url: @wechat_user.head_img_url,
+                            url: "#{CLIENT_HOST}/?ticket=#{ticket}#/dashboard"}]
+      article_response
+    end
+  end
+
+  def next_homes
+    home_ids = cached_input('next_ids')
+    if home_ids
+      home_ids = home_ids.split(',')
+      homes = Home.where('id in (?)', home_ids)
+      home_result(homes)
+    else
+      @msg_hash[:body] = '您还未搜索, 或者搜索地区没有更多房源'
       text_response
     end
+  end
+
+  def home_result(homes)
+    more_home = 0
+    if (homes.count > 0)
+      if homes.length > 10
+        more_home = homes.length - 9
+        showing_ids = homes[0..8].map(&:id)
+        set_redis('next_ids', (homes[9..-1].map(&:id)).join(','), 300)
+        homes = homes[0..8]
+      else
+        delete_redis('next_ids')
+      end
+
+      latest = homes.map { |h| h.last_refresh_at }.max + 1
+      @wechat_user.update_attributes(last_search: latest, search_count: (@wechat_user.search_count || 0) + 1)
+      @msg_hash[:items] = home_search_items(homes, more_home)
+      article_response
+    else
+      @msg_hash[:body] = '对不起，以下地区 ' + @msg_hash[:body] + ' 没有房源更新'
+      text_response
+    end
+  end
+
+  def report_location
+    lat, long = params['xml']['Latitude'], params['xml']['Longitude']
+    set_redis('location', "#{lat},#{long}" , 300)
+  end
+
+  def home_here
+    SearchWorker.perform_async(@msg_hash[:from_username])
+    @msg_hash[:body] = '正在获取地址，请稍后....'
+    text_response
   end
 
   def loan_agent
@@ -425,43 +486,7 @@ class WechatController < ApplicationController
     end
   end
 
-  def home_search
-    last_search = @wechat_user.last_search
-    search = if search = @wechat_user.search
-               JSON.parse(search)
-             else
-               {}
-             end
-
-    if !search.empty?
-      searches = search['regionValue'].split(',').map do |region|
-        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'])
-      end
-
-      homes = Home.search(searches, 10, last_search || Time.at(-284061600)) # fair divide?
-      if (homes.count > 0)
-        latest = homes.map { |h| h.last_refresh_at }.max + 1
-        @wechat_user.update_attributes(last_search: latest, search_count: (@wechat_user.search_count || 0) + 1)
-        @msg_hash[:items] = home_search_items(homes)
-        article_response
-      else
-        @wechat_user.update_attributes(search_count: (@wechat_user.search_count || 0) + 1)
-        @msg_hash[:body] = "您所搜索的地区还没有房源更新, 请回复u或点击更新搜索获取更多房源"
-        text_response
-      end
-
-    else
-      ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
-      @msg_hash[:items] = [{title: "请点击您的头像设置智能搜索条件",
-                           body: '',
-                           pic_url: @wechat_user.head_img_url,
-                           url: "#{CLIENT_HOST}/?ticket=#{ticket}#/dashboard"}]
-      article_response
-    end
-  end
-
   def agent_page
-    p  "#{CLIENT_HOST}/agent/#{@wechat_user.user.agent_extention.agent_identifier}"
     @msg_hash[:items] = [{title: "请点击您的头像查看主页",
                           body: '',
                           pic_url: @wechat_user.head_img_url,
@@ -521,14 +546,24 @@ class WechatController < ApplicationController
     end
   end
 
-  def home_search_items(homes)
+  def home_search_items(homes, more_home = 0)
     ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
-    homes.map do |home|
+    homes = homes.map do |home|
       {title: "位于#{home.addr1} #{home.city}的 #{home.bed_num} 卧室 #{home.home_type}，售价：#{home.price}美金",
        body: 'nice home',
        pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
     end
+
+    if more_home > 0
+      homes[homes.length] = {
+        title: "还有#{more_home}处房源, 请回复n或N查看下一页",
+        pic_url: "#{CDN_HOST}/photo/default.jpeg",
+        url: "#{CLIENT_HOST}/?ticket=#{ticket}#/"
+      }
+    end
+
+    homes
   end
 
   def my_login

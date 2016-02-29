@@ -140,7 +140,7 @@ class AgentController < ApplicationController
   def active_agents
     agents = []
     want_num_agent = 3
-    agent_ids = AgentExtention.pluck(:user_id)
+    agent_ids = AgentExtention.where('user_id is not NULL').pluck(:user_id)
 
     if uid = request.headers['HTTP_UID']
       user = User.find(uid)

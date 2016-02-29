@@ -49,6 +49,16 @@ class WechatRequest
     return "/public/agents/#{scene_id}.png"
   end
 
+  def send_text(opts)
+    body = {touser: opts[:to_user],
+            msgtype: 'text',
+            text: {
+              content: opts[:body]
+            }
+    }
+    Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{@access_token}", body: body.to_json)
+  end
+
   def send_articles (opts)
     body = {touser: opts[:to_user],
             msgtype: 'news',
