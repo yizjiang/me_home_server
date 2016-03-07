@@ -21,18 +21,8 @@ class WechatUser < ActiveRecord::Base
         Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'])
       end
 
-      homes = Home.search(searches, 10, last_search || Time.at(-284061600)) # fair divide?
-      if (homes.count > 0)
-        body = home_search_items(homes)
-        begin
-          WechatRequest.new.send_articles(to_user: self.open_id, body: body)
-        rescue Exception => e
-          Rails.logger.error(e)
-          true
-        end
-      else
-        WechatRequest.new.send_text(to_user: self.open_id, body: '没有在售房源')
-      end
+      homes = Home.search(searches) # fair divide?
+      home_result(homes, self.id)
     end
   end
 
@@ -82,14 +72,14 @@ class WechatUser < ActiveRecord::Base
     homes = homes.map do |home|
       {title: "位于#{home.addr1} #{home.city}的 #{home.bed_num} 卧室 #{home.home_type}，售价：#{home.price}美金",
        body: 'nice home',
-       pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
+       picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
     end
 
     if more_home > 0
       homes[homes.length] = {
         title: "还有#{more_home}处房源, 请回复n或N查看下一页",
-        pic_url: "#{CDN_HOST}/photo/default.jpeg",
+        picurl: "#{CDN_HOST}/photo/default.jpeg",
         url: "#{CLIENT_HOST}/?ticket=#{ticket}#/"
       }
     end

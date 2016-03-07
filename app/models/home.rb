@@ -105,7 +105,7 @@ class Home < ActiveRecord::Base
       result[:private_schools] = self.get_private_schools
       result[:chinese_description] = self.home_cn.try(:description)
       result[:short_desc] = self.home_cn.try(:short_desc)
-      result[:city_info] = City.find_by_name(self.city)
+      result[:city_info] = City.find_by_name(self.city).as_json
       result[:public_record] = get_latest_record || {}
       result[:monthly_rent] = self.cal_money
       result[:property_tax] = wrap_money((self.price * PROPERTY_TAX).round)
@@ -116,6 +116,7 @@ class Home < ActiveRecord::Base
         result[:short_desc] = home_cn.short_desc
         result[:price] = home_cn.price
         result[:unit_price] = home_cn.unit_price
+        result[:home_type] = home_cn.home_type
       end
     end
 
@@ -127,12 +128,13 @@ class Home < ActiveRecord::Base
     index = -records.length
     record = records[index]
     return {} unless record
-    record[:event] = if record[:event].include?('Sold')
+    record = record.as_json
+    record['event'] = if record['event'].include?('Sold')
                        '售出'
                      else
                       '还未成交'
                      end
-
+    record['price'] = wrap_money(record['price'])
     return record
   end
 
