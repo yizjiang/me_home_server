@@ -105,7 +105,7 @@ class Home < ActiveRecord::Base
       result[:private_schools] = self.get_private_schools
       result[:chinese_description] = self.home_cn.try(:description)
       result[:short_desc] = self.home_cn.try(:short_desc)
-      result[:city_info] = City.find_by_name(self.city).as_json
+      result[:city_info] = City.find_by_name(self.city)
       result[:public_record] = get_latest_record || {}
       result[:monthly_rent] = self.cal_money
       result[:property_tax] = wrap_money((self.price * PROPERTY_TAX).round)
@@ -116,7 +116,6 @@ class Home < ActiveRecord::Base
         result[:short_desc] = home_cn.short_desc
         result[:price] = home_cn.price
         result[:unit_price] = home_cn.unit_price
-        result[:home_type] = home_cn.home_type
       end
     end
 
@@ -128,13 +127,12 @@ class Home < ActiveRecord::Base
     index = -records.length
     record = records[index]
     return {} unless record
-    record = record.as_json
-    record['event'] = if record['event'].include?('Sold')
+    record[:event] = if record[:event].include?('Sold')
                        '售出'
                      else
                       '还未成交'
                      end
-    record['price'] = wrap_money(record['price'])
+
     return record
   end
 
@@ -165,13 +163,15 @@ class Home < ActiveRecord::Base
 
       if school[6].nil? || school[6].empty?
       else 
-          record = School.where(name: school[0], grade: school[2], school_type: school[6]).first_or_create
+          record = School.where(name: school[0].lstrip.rstrip, school_type: school[6].lstrip.rstrip, county:county, state:state).first_or_create
+         #p "school" 
+        # record = School.where(name: school[0], grade: school[2], school_type: school[6]).first_or_create
 #         record = School.where(name: school[0], grade: school[2]).first_or_create
          record.school_type = school[6];
          record.student_teacher_ratio = school[3]
          record.rating = school[4].to_f
          record.parent_rating = school[5].to_f
-         record.city = city
+#         record.city = city
          record.county = county
          record.state = state
          record.save
