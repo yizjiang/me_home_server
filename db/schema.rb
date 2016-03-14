@@ -11,17 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160216010933) do
-
-  create_table "addresses", :force => true do |t|
-    t.string  "addr1"
-    t.string  "addr2"
-    t.string  "city"
-    t.string  "county"
-    t.string  "state"
-    t.integer "zipcode"
-    t.integer "entity_id"
-  end
+ActiveRecord::Schema.define(:version => 20160314010238) do
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -42,8 +32,8 @@ ActiveRecord::Schema.define(:version => 20160216010933) do
     t.string  "photo_url"
     t.string  "status"
     t.string  "city_area"
-    t.string  "city_list"
-    t.string  "district_list"
+    t.text    "city_list"
+    t.text    "district_list"
     t.string  "source"
     t.string  "source_id"
     t.integer "broker_company_id"
@@ -56,6 +46,22 @@ ActiveRecord::Schema.define(:version => 20160216010933) do
     t.string  "request_type"
     t.integer "request_context_id"
     t.text    "body"
+  end
+
+  create_table "agent_reviews", :force => true do |t|
+    t.integer  "agent_extention_id"
+    t.integer  "poster_id"
+    t.integer  "recommendation_rate"
+    t.integer  "knowledge_rate"
+    t.integer  "expertise_rate"
+    t.integer  "responsiveness_rate"
+    t.integer  "negotiation_skill_rate"
+    t.text     "comment"
+    t.string   "source_reviewer"
+    t.string   "source"
+    t.integer  "source_post_id"
+    t.datetime "created_at",             :null => false
+    t.datetime "updated_at",             :null => false
   end
 
   create_table "answers", :force => true do |t|
@@ -144,6 +150,7 @@ ActiveRecord::Schema.define(:version => 20160216010933) do
     t.string   "listed_by",       :limit => 255
     t.string   "meejia_type",     :limit => 255
     t.string   "geo_point",       :limit => 255
+    t.string   "parcel"
   end
 
   create_table "homes_cn", :force => true do |t|
@@ -160,6 +167,14 @@ ActiveRecord::Schema.define(:version => 20160216010933) do
   create_table "images", :force => true do |t|
     t.string  "image_url", :limit => 255
     t.integer "home_id"
+  end
+
+  create_table "medias", :force => true do |t|
+    t.integer  "reference_id"
+    t.string   "media_id"
+    t.string   "media_url"
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
   end
 
   create_table "public_records", :force => true do |t|
@@ -237,6 +252,7 @@ ActiveRecord::Schema.define(:version => 20160216010933) do
     t.string   "name_cn"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "geo_point"
   end
 
   create_table "users", :force => true do |t|

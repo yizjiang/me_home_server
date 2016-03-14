@@ -70,6 +70,8 @@ class WechatController < ApplicationController
                params['xml']['Content']
              when 'image'
                params['xml']['PicUrl']
+             when 'voice'
+               params['xml']['MediaId']
              when 'event'
                if  params['xml']['Event'] == 'SCAN'
                  @agent_id = params['xml']['EventKey'].to_i/10
@@ -118,7 +120,8 @@ class WechatController < ApplicationController
            end
     @msg_hash = {from_username: params['xml']['FromUserName'],
                  to_username: params['xml']['ToUserName'],
-                 body: body}
+                 body: body,
+                 type: params['xml']['MsgType']}
     @wechat_user = WechatUser.find_or_initialize_by_open_id(@msg_hash[:from_username])
   end
 
@@ -206,12 +209,18 @@ class WechatController < ApplicationController
 
   def ask_question
     set_redis(:wait_input, :submit_question)
-    @msg_hash[:body] = '请输入您想问问的问题'
+    @msg_hash[:body] = '请输入或语音留言您想问的问题'
     text_response
   end
 
   def submit_question
-    Question.create(open_id: @msg_hash[:from_username], text: @msg_hash[:body])
+    case @msg_hash[:type]
+      when 'text'
+        Question.create(open_id: @msg_hash[:from_username], text: @msg_hash[:body])
+      else
+        question = Question.create_with_media(open_id: @msg_hash[:from_username], text: '该视频是语音消息', media_id: @msg_hash[:body])
+    end
+
     @msg_hash[:body] = '问题已提交，您会在24小时内收到解答'
     text_response
   end
@@ -320,6 +329,7 @@ class WechatController < ApplicationController
   end
 
   def customer_questions
+    #TODO list questions
     question = Question.unanswered(@wechat_user.user_id, Time.now - 3600).first
     if question
       set_redis(:wait_input, :answer_question, 3600)
@@ -329,7 +339,12 @@ class WechatController < ApplicationController
                  else
                    'xxx'
                  end
-      @msg_hash[:body] = "#{username}提问: #{question.text}"
+      body = "#{username}提问: #{question.text}"
+      if media = question.media
+        body += ',正在获取。'
+        MediaWorker.perform_async(@msg_hash[:from_username], media.id)
+      end
+      @msg_hash[:body] = body
       text_response
     else
       @msg_hash[:body] = "目前没有客户问题"

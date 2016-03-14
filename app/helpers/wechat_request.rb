@@ -70,10 +70,36 @@ class WechatRequest
     Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{@access_token}", body: body.to_json)
   end
 
+  def send_audio(opts)
+    body = {touser: opts[:to_user],
+            msgtype: 'voice',
+            voice: {
+              media_id: opts[:mid]
+            }
+    }
+
+    Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{@access_token}", body: body.to_json)
+  end
+
   def fetch_user_info(open_id)
     url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=#{@access_token}&openid=#{open_id}&lang=zh_CN"
     response = Typhoeus.get(url)
     JSON.parse(response.body)
   end
 
+  def download_media(media_id)
+    url = "https://api.weixin.qq.com/cgi-bin/media/get?access_token=#{@access_token}&media_id=#{media_id}"
+    response = Typhoeus.get(url)
+
+    filedata = response.body
+
+    content_disposition = response.headers["content-disposition"]
+    filename = content_disposition.match(/filename=(\"?)(.+)\1/)[2] rescue nil
+
+    local_file = "./public/wechat_media/#{filename}"
+
+    File.open(local_file, "w+") { |file| file.write filedata.force_encoding('utf-8') }
+
+    return "#{SERVER_HOST}/wechat_media/#{local_file}"
+  end
 end

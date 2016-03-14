@@ -127,7 +127,8 @@ class Home < ActiveRecord::Base
     index = -records.length
     record = records[index]
     return {} unless record
-    record[:event] = if record[:event].include?('Sold')
+    record = record.as_json
+    record['event'] = if record['event'].include?('Sold')
                        '售出'
                      else
                       '还未成交'

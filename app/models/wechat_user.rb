@@ -65,8 +65,6 @@ class WechatUser < ActiveRecord::Base
     end
   end
 
-
-
   def home_search_items(homes, more_home = 0, uid)
     ticket = TicketGenerator.encrypt_uid(uid)
     homes = homes.map do |home|
