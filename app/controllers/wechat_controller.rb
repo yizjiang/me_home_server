@@ -51,7 +51,11 @@ class WechatController < ApplicationController
                else
                  default_response
                end
-    render xml: response
+    if response
+      render xml: response
+    else
+      render nothing: true
+    end
   end
 
   private
@@ -194,6 +198,7 @@ class WechatController < ApplicationController
   def report_location
     lat, long = params['xml']['Latitude'], params['xml']['Longitude']
     set_redis('location', "#{lat},#{long}" , 300)
+    nil
   end
 
   def home_here
@@ -209,7 +214,7 @@ class WechatController < ApplicationController
 
   def ask_question
     set_redis(:wait_input, :submit_question)
-    @msg_hash[:body] = '请输入或语音留言您想问的问题'
+    @msg_hash[:body] = '请输入或语音留言您想问的问题。(我们暂时只能接受一条消息留言)'
     text_response
   end
 
@@ -218,10 +223,10 @@ class WechatController < ApplicationController
       when 'text'
         Question.create(open_id: @msg_hash[:from_username], text: @msg_hash[:body])
       else
-        question = Question.create_with_media(open_id: @msg_hash[:from_username], text: '该视频是语音消息', media_id: @msg_hash[:body])
+        question = Question.create_with_media(open_id: @msg_hash[:from_username], text: '该问题是语音消息', media_id: @msg_hash[:body])
     end
 
-    @msg_hash[:body] = '问题已提交，您会在24小时内收到解答'
+    @msg_hash[:body] = '问题已提交，我们的经纪人会尽快为您解答'
     text_response
   end
 
@@ -409,12 +414,12 @@ class WechatController < ApplicationController
   end
 
   def like_agent
-    agent = AgentExtention.find_by_agent_identifier(@msg_hash[:body]).user
+    agent = User.find(@user_input)
     @wechat_user.update_attributes(agent_id: agent.id)
-    @msg_hash[:items] = [{title: "#{agent.wechat_user.nickname}非常荣幸为您服务",
-                          body: '点击二维码查看经纪人页面',
+    @msg_hash[:items] = [{title: "#{agent.agent_extention.cn_name || agent.wechat_user.nickname}非常荣幸为您服务",
+                          body: '',
                           pic_url: agent.qr_code,
-                          url: "#{CLIENT_HOST}/agent/#{@msg_hash[:body]}"}]
+                          url: agent.qr_code}]
     article_response
   end
 
@@ -540,10 +545,13 @@ class WechatController < ApplicationController
   end
 
   def agent_search_items
-    agents = User.where('agent_extention_id is NOT NULL').includes(:agent_extention, :wechat_user).limit(10)
+    agents = User.where('agent_extention_id is NOT NULL').includes(:agent_extention, :wechat_user).limit(8)
+    ReplyWorker.perform_async(@msg_hash[:from_username], 'need_agent')
+    set_redis(:wait_input, :like_agent)
+
     agents.map do |agent|
-      {title: "#{agent.wechat_user.try(:nickname)}",
-       body: '',
+      {title: "编号:#{agent.id}, 姓名: #{agent.agent_extention.cn_name || agent.wechat_user.try(:nickname)}",
+       body: "#{agent.agent_extention.description}",
        pic_url: "#{agent.wechat_user.try(:head_img_url)}",
        url: "#{CLIENT_HOST}/agent/#{agent.agent_extention.try(:agent_identifier)}"}
     end

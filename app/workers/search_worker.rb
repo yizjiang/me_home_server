@@ -9,7 +9,7 @@ class SearchWorker
   end
 
   sidekiq_retries_exhausted do |msg|
-    WechatRequest.new.send_text(to_user: msg['args'][0], body: '无法获取地址')
+    WechatRequest.new.send_text(to_user: msg['args'][0], body: '无法获取地址，请查看手机设置并开启位置服务')
   end
 
   def perform(uid)
