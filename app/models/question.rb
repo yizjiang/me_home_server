@@ -6,7 +6,23 @@ class Question < ActiveRecord::Base
   has_one :medias, foreign_key: 'reference_id', dependent: :destroy
   attr_accessible *column_names
 
-  scope :unanswered, lambda{ |uid, latest| includes(:answers).where('accepted_aid is NULL AND created_at > ?', latest).select{|q| q.answers.index{|a| a.uid == uid} == nil} }    #TODO more efficient query
+  scope :unanswered, lambda{ |uid, latest|
+    includes(:answers).where('accepted_aid is NULL AND created_at > ?', latest)
+    .select{|q| q.answers.index{|a| a.uid == uid} == nil}
+    }    #TODO more efficient query
+
+  def as_json(options=nil)
+    options ||= {}
+    result = super(options)
+
+    if media = self.media
+      result.merge!({
+                      is_audio: true,
+                      media_url: media.media_url
+                    })
+    end
+    result
+  end
 
   def self.create_with_media(opts)
     transaction do
@@ -15,7 +31,6 @@ class Question < ActiveRecord::Base
     end
   end
   def create_answer(text, replyee_id)
-    #self.accepted_aid = replyee_id
     self.answers << Answer.find_or_create_by_uid_and_body(replyee_id, text)
     self.save
     if self.open_id
@@ -34,13 +49,13 @@ class Question < ActiveRecord::Base
     response = Typhoeus.get("https://api.weixin.qq.com/cgi-bin/token", params: params)
     access_token = JSON.parse(response.body)['access_token']
 
-
+    agent = User.find(replyee_id)
     body = {touser: self.open_id,
             msgtype: 'text',
-            text: {content: "#{User.find(replyee_id).agent_extention.agent_identifier}: #{text} \n 如果满意请回复经纪人姓名获取联系方式"}}
+            text: {content: "#{agent.agent_extention.cn_name || agent.agent_extention.agent_identifier}(编号:#{agent.id}): #{text} \n 您可以回复经纪人编码获取联系方式"}}
 
     Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{access_token}", body: body.to_json)
 
-    REDIS.set("#{ self.open_id}:wait_input", :like_agent)
+    REDIS.set("#{self.open_id}:wait_input", :like_agent, 600)
   end
 end

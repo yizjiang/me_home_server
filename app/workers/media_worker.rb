@@ -9,9 +9,10 @@ class MediaWorker
   end
 
   def perform(wid, mid)
-    mid = Media.find(mid).media_id
-    #media_url = WechatRequest.new.download_media(mid)
-    WechatRequest.new.send_audio(to_user: wid, mid: mid)
-    # do something
+    media = Media.find(mid)
+    WechatRequest.new.send_audio(to_user: wid, mid: media.media_id)
+    media_url = WechatRequest.new.download_media(media.media_id)
+    media.media_url = media_url
+    media.save
   end
 end

@@ -100,6 +100,6 @@ class WechatRequest
 
     File.open(local_file, "w+") { |file| file.write filedata.force_encoding('utf-8') }
 
-    return "#{SERVER_HOST}/wechat_media/#{local_file}"
+    return "#{SERVER_HOST}/wechat_media/#{filename}"
   end
 end

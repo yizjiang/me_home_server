@@ -362,7 +362,7 @@ class WechatController < ApplicationController
     question = Question.find(cached_input(:answer_question).to_i)
     delete_redis(:answer_question)
     question.create_answer(@msg_hash[:body], WechatUser.find_by_open_id(@msg_hash[:from_username]).user_id)
-    @msg_hash[:body] = "回复已提交"
+    @msg_hash[:body] = "回答已提交"
     text_response
   end
 
