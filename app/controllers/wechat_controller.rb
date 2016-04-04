@@ -545,9 +545,11 @@ class WechatController < ApplicationController
   end
 
   def agent_request
-    requests = AgentRequest.where(to_user: @wechat_user.user_id).limit(10)
+    requests = AgentRequest.where(to_user: @wechat_user.user_id, status: 'open').limit(10)
     if requests.length > 0
       @msg_hash[:items] = agent_request_items(requests)
+      set_redis(:wait_input, :select_ar)
+      ReplyWorker.perform_async(@wechat_user.open_id, 'agent_request')
       article_response
     else
       @msg_hash[:body] = '目前没有客户需求'
@@ -555,6 +557,20 @@ class WechatController < ApplicationController
     end
   end
 
+  def answer_ar
+    ar = AgentRequest.find(cached_input(:answer_ar).to_i)
+    ar.update_attributes(status: 'close', response:  @msg_hash[:body])
+    ReplyWorker.perform_async(User.find(ar.from_user).wechat_user.try(:open_id), 'response_agent_request', ar.id)
+    @msg_hash[:body] = '已提交'
+    text_response
+  end
+
+  def select_ar
+    set_redis(:answer_ar, @msg_hash[:body], 60 * 60)
+    set_redis(:wait_input, :answer_ar, 60 * 60)
+    @msg_hash[:body] = '请输入您的回复'
+    text_response
+  end
 
   def text_response
     file_content = File.open(File.expand_path("./app/helpers/text_response.xml.erb"), "r").read
@@ -588,7 +604,7 @@ class WechatController < ApplicationController
     ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
     requests.map do |request|
       home = Home.find(request.request_context_id)
-      {title: request.body % {detail: "位于#{home.city}的#{home.addr1}房源信息"},
+      {title: "编号#{request.id}: " + request.body % {detail: "位于#{home.addr1} #{home.city}的房源信息"},
        body: '点击图片查看',
        picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"

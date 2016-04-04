@@ -96,7 +96,7 @@ class AgentController < ApplicationController
   end
 
   def all_request
-    requests = AgentRequest.where(to_user: params[:uid])
+    requests = AgentRequest.where(to_user: params[:uid], status: 'open')
     home_ids = requests.pluck(:request_context_id)
     requests = home_ids.map do |homeid|
       {home_id: homeid, requests: requests.select{|r| r.request_context_id == homeid}.map(&:as_json)}
@@ -149,7 +149,7 @@ class AgentController < ApplicationController
     requestIds.each do |rid|
       request= AgentRequest.find(rid.to_i)
       open_id = WechatUser.find_by_user_id(request.from_user).try(:open_id)
-      request.update_attributes(status: 'closed', body: params[:msg], to_user: uid)
+      request.update_attributes(status: 'closed', response: params[:msg], to_user: uid)
       ReplyWorker.perform_async(open_id, 'request_response', request.id) if open_id
     end
     render json:[]

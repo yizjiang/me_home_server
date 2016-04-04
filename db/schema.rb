@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160403064238) do
+ActiveRecord::Schema.define(:version => 20160404044406) do
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(:version => 20160403064238) do
     t.string  "request_type"
     t.integer "request_context_id"
     t.text    "body"
+    t.text    "response"
   end
 
   create_table "agent_reviews", :force => true do |t|
