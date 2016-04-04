@@ -34,6 +34,7 @@ class AgentController < ApplicationController
 
     render json: {header: header_config, home_list: home_list,
                   qr_image: agent_extention.user.qr_code,
+                  description: agent_extention.description,
                   head_image: agent_extention.user.wechat_user.try(:head_img_url) }
   end
 
@@ -130,9 +131,26 @@ class AgentController < ApplicationController
   end
 
   def contact_request
-    params[:toUser].values.each do |aid|
-      body = "#{User.find(request.headers['HTTP_UID']).wechat_user.try(:nickname) || '路人甲'} 想知道更多%{detail}的信息"
-      AgentRequest.where(from_user: request.headers['HTTP_UID'], request_type: 'home', request_context_id: params[:home_id], to_user: aid, status: 'open', body: body).first_or_create
+    if params[:toUser]
+      params[:toUser].values.each do |aid|
+        body = "#{User.find(request.headers['HTTP_UID']).wechat_user.try(:nickname) || '路人甲'} 想知道更多%{detail}的信息"
+        AgentRequest.where(from_user: request.headers['HTTP_UID'], request_type: 'home', request_context_id: params[:home_id], to_user: aid, status: 'open', body: body).first_or_create
+      end
+    else
+      AgentRequest.where(from_user: request.headers['HTTP_UID'], request_type: 'home', request_context_id: params[:home_id]).first_or_create
+    end
+
+    render json:[]
+  end
+
+  def request_response
+    uid = request.headers['HTTP_UID']
+    requestIds = params[:requests].values
+    requestIds.each do |rid|
+      request= AgentRequest.find(rid.to_i)
+      open_id = WechatUser.find_by_user_id(request.from_user).try(:open_id)
+      request.update_attributes(status: 'closed', body: params[:msg], to_user: uid)
+      ReplyWorker.perform_async(open_id, 'request_response', request.id) if open_id
     end
     render json:[]
   end
@@ -146,6 +164,7 @@ class AgentController < ApplicationController
       user = User.find(uid)
       if agent_id = user.wechat_user.agent_id
         want_num_agent -= 1
+        p agent_id
         agents << User.find(agent_id.to_i).as_json(include_details: false)
         agent_ids -= [agent_id.to_i]
       end

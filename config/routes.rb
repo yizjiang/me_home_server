@@ -40,6 +40,7 @@ MeHome::Application.routes.draw do
   post 'agent/save_page_config', to: 'agent#save_page_config'
   post '/agent/upload_qrcode', to: 'agent#upload_qrcode'
   post 'agent/contact_request', to: 'agent#contact_request'
+  post 'agent/request_response', to: 'agent#request_response'
 
   post 'user/metric_tracking', to: 'user#metric_tracking'
   post 'user/save_search', to: 'user#save_search'

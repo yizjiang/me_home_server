@@ -1,7 +1,7 @@
 development:
-  agent_client_id: wx18034235da4be445
-  agent_client_secret: 64007b6d52d74fb2858ea90e28f8cd1b
-  agent_account_id: gh_a546c928e7f7
+  agent_client_id: wx8f2bdf36a0d0448a
+  agent_client_secret: d4624c36b6795d1d99dcf0547af5443d
+  agent_account_id: gh_f99ce98ff4d6
   client_id: wx18034235da4be445
   client_secret: 64007b6d52d74fb2858ea90e28f8cd1b
   account_id: gh_a546c928e7f7

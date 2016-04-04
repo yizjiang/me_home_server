@@ -87,6 +87,17 @@ class WechatRequest
     JSON.parse(response.body)
   end
 
+
+  def upload_media(file)
+    url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=#{@access_token}&type=voice"
+
+    response = Typhoeus.post(url,
+                             headers: {'Content-Type' => 'multipart/form-data' },
+                             body: {:media => File.open(file,'r')})
+    JSON.parse(response.body)['media_id']
+
+  end
+
   def download_media(media_id)
     url = "https://api.weixin.qq.com/cgi-bin/media/get?access_token=#{@access_token}&media_id=#{media_id}"
     response = Typhoeus.get(url)
@@ -100,6 +111,6 @@ class WechatRequest
 
     File.open(local_file, "w+") { |file| file.write filedata.force_encoding('utf-8') }
 
-    return "#{SERVER_HOST}/wechat_media/#{filename}"
+    return local_file
   end
 end

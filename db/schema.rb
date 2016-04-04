@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160314010238) do
+ActiveRecord::Schema.define(:version => 20160403064238) do
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -173,8 +173,9 @@ ActiveRecord::Schema.define(:version => 20160314010238) do
     t.integer  "reference_id"
     t.string   "media_id"
     t.string   "media_url"
-    t.datetime "created_at",   :null => false
-    t.datetime "updated_at",   :null => false
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
+    t.string   "receiver_media_id"
   end
 
   create_table "public_records", :force => true do |t|

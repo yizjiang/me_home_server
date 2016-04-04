@@ -20,7 +20,7 @@ class User < ActiveRecord::Base
     end
   end
   has_many :answers, foreign_key: 'uid'
-  has_one :agent_extention
+  has_one :agent_extention, dependent: :destroy
   has_one :wechat_user, foreign_key: 'user_id'
 
   after_create :assign_agent_extension, if: lambda{self.agent_extention_id.present?}

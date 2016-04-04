@@ -17,4 +17,9 @@ namespace :sidekiq do
     system "kill -9 #{pid}"
     system "rm #{pidfile}"
   end
+
+  task :restart do
+    Rake::Task["sidekiq:stop"].execute
+    Rake::Task["sidekiq:start"].execute
+  end
 end

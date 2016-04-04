@@ -152,12 +152,23 @@ class WechatController < ApplicationController
       homes = Home.search(searches) # fair divide?
       home_result(homes)
     else
-      ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
-      @msg_hash[:items] = [{title: "请点击您的头像设置智能搜索条件",
-                            body: '',
-                            pic_url: @wechat_user.head_img_url,
-                            url: "#{CLIENT_HOST}/?ticket=#{ticket}#/dashboard"}]
-      article_response
+      if cached_input('quick_search')
+        homes = []
+        HOT_AREAS.sample(3).each do |area|
+          homes += Home.search(Search.new(regionValue: area), 3)
+        end
+        home_result(homes)
+      else
+        SearchWorker.perform_async(@wechat_user.id)
+        set_redis('quick_search', true, 3600)
+        ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
+        body = [{title: "您可以点击头像设置搜索条件",
+                 body: '为了让您更了解美国房产，我们也为您推荐了热门房屋，您可以持续点击查看下一页',
+                 pic_url: @wechat_user.head_img_url,
+                 url: "#{CLIENT_HOST}/?ticket=#{ticket}#/dashboard"}]
+        @msg_hash[:items] = body
+        article_response
+      end
     end
   end
 
@@ -202,7 +213,7 @@ class WechatController < ApplicationController
   end
 
   def home_here
-    SearchWorker.perform_async(@msg_hash[:from_username])
+    LocationWorker.perform_async(@msg_hash[:from_username])
     @msg_hash[:body] = '正在获取地址，请稍后....'
     text_response
   end
@@ -223,7 +234,8 @@ class WechatController < ApplicationController
       when 'text'
         Question.create(open_id: @msg_hash[:from_username], text: @msg_hash[:body])
       else
-        question = Question.create_with_media(open_id: @msg_hash[:from_username], text: '该问题是语音消息', media_id: @msg_hash[:body])
+        media = Question.create_with_media(open_id: @msg_hash[:from_username], text: '该问题是语音消息', media_id: @msg_hash[:body])
+        MediaWorker.perform_async(@wechat_user.id, media.id, false, false)
     end
 
     @msg_hash[:body] = '问题已提交，我们的经纪人会尽快为您解答'
@@ -347,8 +359,9 @@ class WechatController < ApplicationController
       body = "#{username}提问: #{question.text}"
       if media = question.media
         body += ',正在获取。'
-        MediaWorker.perform_async(@msg_hash[:from_username], media.id)
+        MediaWorker.perform_async(@msg_hash[:from_username], media.id, false, true)
       end
+      body += "\n请直接回复文字答复。如果客户满意，我们会推送您的二维码联系方式。"
       @msg_hash[:body] = body
       text_response
     else
@@ -361,7 +374,15 @@ class WechatController < ApplicationController
   def answer_question
     question = Question.find(cached_input(:answer_question).to_i)
     delete_redis(:answer_question)
-    question.create_answer(@msg_hash[:body], WechatUser.find_by_open_id(@msg_hash[:from_username]).user_id)
+
+    case @msg_hash[:type]
+      when 'text'
+        question.create_answer(@msg_hash[:body], @wechat_user.user_id)
+        ReplyWorker.perform_async(question.open_id, 'submit_answer')
+      else
+        #media = Question.create_with_media(open_id: @msg_hash[:from_username], text: '该问题是语音消息', media_id: @msg_hash[:body])
+        #MediaWorker.perform_async(@wechat_user.id, media.id, false, false)
+    end
     @msg_hash[:body] = "回答已提交"
     text_response
   end
@@ -525,9 +546,15 @@ class WechatController < ApplicationController
 
   def agent_request
     requests = AgentRequest.where(to_user: @wechat_user.user_id).limit(10)
-    @msg_hash[:items] = agent_request_items(requests)
-    article_response
+    if requests.length > 0
+      @msg_hash[:items] = agent_request_items(requests)
+      article_response
+    else
+      @msg_hash[:body] = '目前没有客户需求'
+      text_response
+    end
   end
+
 
   def text_response
     file_content = File.open(File.expand_path("./app/helpers/text_response.xml.erb"), "r").read
@@ -572,7 +599,7 @@ class WechatController < ApplicationController
   def home_search_items(homes, more_home = 0)
     ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
     homes = homes.map do |home|
-      {title: "位于#{home.addr1} #{home.city}的 #{home.bed_num} 卧室 #{home.home_type}，售价：#{home.price}美金",
+      {title: "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金",
        body: 'nice home',
        pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}

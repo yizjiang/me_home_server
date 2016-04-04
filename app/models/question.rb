@@ -27,7 +27,7 @@ class Question < ActiveRecord::Base
   def self.create_with_media(opts)
     transaction do
       q = create(open_id: opts[:open_id], text: opts[:text])
-      Media.create(reference_id: q.id, media_id: opts[:media_id])
+      media = Media.create(reference_id: q.id, media_id: opts[:media_id])
     end
   end
   def create_answer(text, replyee_id)
@@ -52,10 +52,9 @@ class Question < ActiveRecord::Base
     agent = User.find(replyee_id)
     body = {touser: self.open_id,
             msgtype: 'text',
-            text: {content: "#{agent.agent_extention.cn_name || agent.agent_extention.agent_identifier}(编号:#{agent.id}): #{text} \n 您可以回复经纪人编码获取联系方式"}}
+            text: {content: "#{agent.agent_extention.try(:cn_name) || agent.agent_extention.try(:agent_identifier)}(编号:#{agent.id}): #{text}"}}
 
     Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{access_token}", body: body.to_json)
-
-    REDIS.set("#{self.open_id}:wait_input", :like_agent, 600)
+    REDIS.setex("#{self.open_id}:wait_input", 600, 'like_agent')
   end
 end

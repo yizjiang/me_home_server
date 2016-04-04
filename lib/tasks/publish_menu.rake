@@ -32,14 +32,14 @@ namespace :wechat do
                    name: '客户',
                    sub_button: [
                      {
-                       name: '我的客户',
+                       name: '现有客户',
                        type: 'click',
                        key: 'my_client'
                      },
 
                      {
                        type: "click",
-                       name: '经纪人需求',
+                       name: '客户需求',
                        key: "agent_request"
                      }
                    ]
@@ -92,10 +92,10 @@ namespace :wechat do
              {
                button: [
                  {
-                   name: '找房',
+                   name: '快速找房',
                    sub_button: [
                      {
-                       name: '我的搜索',
+                       name: '条件搜索',
                        type: 'click',
                        key: 's'
                      },
@@ -110,9 +110,28 @@ namespace :wechat do
                  },
 
                  {
-                   name: '找经纪人',
-                   type: 'click',
-                   key: 'a'
+                   name: '专业咨询',
+                   sub_button: [
+
+                     {
+                       type: "click",
+                       name: "提问",
+                       key: "q"
+                     },
+
+                     {
+                       name: '购房经纪人',
+                       type: 'click',
+                       key: 'a'
+                     },
+
+                     {
+                       type: "click",
+                       name: "贷款经纪人",
+                       key: "l"
+                     }
+                   ]
+
                  },
 
                  {
@@ -126,13 +145,7 @@ namespace :wechat do
 
                      {
                        type: "click",
-                       name: "提问",
-                       key: "q"
-                     },
-
-                     {
-                       type: "click",
-                       name: "更新智能搜索",
+                       name: "更新条件搜索",
                        key: "u"
                      },
 
@@ -140,12 +153,6 @@ namespace :wechat do
                        type: "click",
                        name: "忘记密码",
                        key: "my_login"
-                     },
-
-                     {
-                       type: "click",
-                       name: "贷款经纪人",
-                       key: "l"
                      }
 
                    ]}
