@@ -124,8 +124,12 @@ class AgentController < ApplicationController
         render 'agent/customer_search_form'
       end
     else
-      flash[:notice] = "城市不能为空"
-      render 'agent/customer_search_form'
+      if params[:api]
+        render :status =>500, json:{}
+      else
+        flash[:notice] = "城市不能为空"
+        render 'agent/customer_search_form'
+      end
     end
 
   end

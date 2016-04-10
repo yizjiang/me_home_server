@@ -161,11 +161,10 @@ class WechatController < ApplicationController
       else
         SearchWorker.perform_async(@wechat_user.id)
         set_redis('quick_search', true, 3600)
-        ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
-        body = [{title: "您可以点击头像设置搜索条件",
-                 body: '为了让您更了解美国房产，我们也为您推荐了热门房屋，您可以持续点击查看下一页',
+        body = [{title: "点击头像设置搜索条件",
+                 body: '为了让您更了解美国房产，我们也为您推送了热门房屋，您可以持续点击查看下一页',
                  pic_url: @wechat_user.head_img_url,
-                 url: "#{CLIENT_HOST}/?ticket=#{ticket}#/dashboard"}]
+                 url: "#{CLIENT_HOST}/quick_search/?wid=#{@wechat_user.id}"}]
         @msg_hash[:items] = body
         article_response
       end
@@ -491,27 +490,20 @@ class WechatController < ApplicationController
   end
 
   def update_search
-    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
-
     if search = @wechat_user.search
       title = ''
       search = JSON.parse(search)
-      mapping = {regionValue: '地区', bedNum: '房间数', priceMin: '最低价', priceMax: '最高价'}
-
-      search.each do |k,v|
-        title += "#{mapping[k.to_sym]}: #{v}, " if mapping.include?(k.to_sym)
-      end
-
+      title = "位于#{search['regionValue']}多于#{search['bedNum']}卧室的房源"
       @msg_hash[:items] = [{title: title,
-                            body: '请点击您的头像设置智能搜索条件',
+                            body: '点击头像更新搜索条件',
                             pic_url: @wechat_user.head_img_url,
-                            url: "#{CLIENT_HOST}?ticket=#{ticket}#/dashboard"}]
+                            url: "#{CLIENT_HOST}/quick_search/?wid=#{@wechat_user.id}"}]
       article_response
     else
-      @msg_hash[:items] = [{title: "请点击您的头像设置智能搜索条件",
+      @msg_hash[:items] = [{title: "点击头像设置智能搜索条件",
                             body: '',
                             pic_url: @wechat_user.head_img_url,
-                            url: "#{CLIENT_HOST}?ticket=#{ticket}#/dashboard"}]
+                            url: "#{CLIENT_HOST}/quick_search/?wid=#{@wechat_user.id}"}]
       article_response
     end
   end

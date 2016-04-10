@@ -15,4 +15,9 @@ class RegionController < ApplicationController
     result = result.push(*(Home.pluck(:zipcode).uniq.map(&:to_s)))
     render json: result
   end
+
+  def bay_area_cities
+    result = ALL_CITY[params[:area]]
+    render json: result
+  end
 end

@@ -103,7 +103,7 @@ class Home < ActiveRecord::Base
       result[:assigned_school] = self.get_assigned_schools
       result[:public_schools] = self.get_other_public_schools
       result[:private_schools] = self.get_private_schools
-      result[:chinese_description] = self.home_cn.try(:description)
+      #result[:chinese_description] = self.home_cn.try(:description)
       result[:short_desc] = self.home_cn.try(:short_desc)
       result[:city_info] = City.find_by_name(self.city)
       result[:public_record] = get_latest_record || {}

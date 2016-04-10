@@ -1,7 +1,7 @@
 # encoding: utf-8
 namespace :homes do
   task :coordinate => :environment do
-    Home.all.each do |home|
+    Home.where(geo_point: nil).each do |home|
       address =  "#{home.addr1} #{home.addr2}, #{home.city}, #{home.state}, #{home.zipcode}"
       request = "https://dev.virtualearth.net/REST/v1/Locations/#{URI::encode(address)}?output=json&key=AjVrfYUU-6_5NnEHSjCxZ16XAJHyu0-J42p16WXCld6F52NujvxQ2iRV1X3UQeQs"
       response = Typhoeus.get(request)

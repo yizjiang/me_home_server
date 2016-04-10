@@ -25,6 +25,8 @@ MeHome::Application.routes.draw do
   #post 'users/sign_in', to: 'login#create'
 
   get 'all_city', to: 'region#all_city'
+  get 'bay_area_cities', to: 'region#bay_area_cities'
+
   get 'wechat_login', to: 'application#wechat_login'
   get 'agent/set_search', to: 'agent#set_search'
   #get 'agent/customers', to: 'agent#all_customer'
