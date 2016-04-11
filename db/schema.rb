@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160404044406) do
+ActiveRecord::Schema.define(:version => 20160411045550) do
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -214,7 +214,7 @@ ActiveRecord::Schema.define(:version => 20160404044406) do
   end
 
   create_table "saved_searches", :force => true do |t|
-    t.string  "search_query"
+    t.text    "search_query"
     t.integer "uid"
   end
 
