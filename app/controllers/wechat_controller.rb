@@ -339,7 +339,7 @@ class WechatController < ApplicationController
       username = username + Random.rand(1000).to_s
     end
 
-    user = User.new(email: "#{username}@meejia.com", username: username, password: 'meejia2016')
+    user = User.new(email: "#{username}@meejia.cn", username: username, password: 'meejia2016')
     user.save(validate: false)
     user
   end
@@ -421,7 +421,7 @@ class WechatController < ApplicationController
       user = User.find(uid)
     end
     @wechat_user.save
-    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务。您可以输入如下Email和密码: #{user.email}/meejia2016 登录meejia.com"
+    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务。您可以输入如下Email和密码: #{user.email}/meejia2016 登录meejia.cn"
     text_response
   end
 
