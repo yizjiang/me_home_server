@@ -13,6 +13,6 @@ staging:
   cdn_url: <%= ENV['CDN_URL'] || 'http://cdn.usreclub.com' %>
 
 production:
-  client_url: <%= ENV['CLIENT_URL'] || 'http://client.meejia.com' %>
-  server_url: <%= ENV['SERVER_URL'] || 'http://api.meejia.com' %>
+  client_url: <%= ENV['CLIENT_URL'] || 'http://client.meejia.cn' %>
+  server_url: <%= ENV['SERVER_URL'] || 'http://api.meejia.cn' %>
   cdn_url: <%= ENV['CDN_URL'] || 'http://mirror-10018786.file.myqcloud.com' %>
