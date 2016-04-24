@@ -40,7 +40,7 @@ class Question < ActiveRecord::Base
   end
 
   def create_answer_with_media(media_id, replyee_id)
-    answer = Answer.find_or_create_by_uid_and_body(replyee_id, '该回复是语音消息')
+    answer = Answer.find_or_create_by_qid_and_uid_and_body(self.id, replyee_id, '该回复是语音消息')
     self.answers << answer
     self.save
     media = Media.create(reference_id: answer.id, reference_type: 'Answer', media_id: media_id)
