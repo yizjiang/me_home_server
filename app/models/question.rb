@@ -30,12 +30,24 @@ class Question < ActiveRecord::Base
       media = Media.create(reference_id: q.id, media_id: opts[:media_id])
     end
   end
+
   def create_answer(text, replyee_id)
     self.answers << Answer.find_or_create_by_uid_and_body(replyee_id, text)
     self.save
     if self.open_id
       send_to_wechat(text, replyee_id) # TODO hook method
     end
+  end
+
+  def create_answer_with_media(media_id, replyee_id)
+    answer = Answer.find_or_create_by_uid_and_body(replyee_id, '该回复是语音消息')
+    self.answers << answer
+    self.save
+    media = Media.create(reference_id: answer.id, reference_type: 'Answer', media_id: media_id)
+    if self.open_id
+      send_to_wechat('该回复是语音消息,正在获取。您可以回复经纪人标号获取二维码', replyee_id) # TODO hook method
+    end
+    media
   end
 
   def media

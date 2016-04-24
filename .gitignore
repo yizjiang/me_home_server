@@ -14,3 +14,4 @@ public/agents/*
 public/homes/*
 public/shared_qr/*
 config/client_server.yml
+public/wechat_media/*

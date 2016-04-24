@@ -360,7 +360,7 @@ class WechatController < ApplicationController
         body += ',正在获取。'
         MediaWorker.perform_async(@msg_hash[:from_username], media.id, false, true)
       end
-      body += "\n请直接回复文字答复。如果客户满意，我们会推送您的二维码联系方式。"
+      body += "\n请直接回复文字或语音答复(暂时只支持一条)。如果客户满意，我们会推送您的二维码联系方式。"
       @msg_hash[:body] = body
       text_response
     else
@@ -379,8 +379,8 @@ class WechatController < ApplicationController
         question.create_answer(@msg_hash[:body], @wechat_user.user_id)
         ReplyWorker.perform_async(question.open_id, 'submit_answer')
       else
-        #media = Question.create_with_media(open_id: @msg_hash[:from_username], text: '该问题是语音消息', media_id: @msg_hash[:body])
-        #MediaWorker.perform_async(@wechat_user.id, media.id, false, false)
+        media = question.create_answer_with_media(@msg_hash[:body], @wechat_user.user_id)
+        MediaWorker.perform_async(question.open_id, media.id, true, true)
     end
     @msg_hash[:body] = "回答已提交"
     text_response
