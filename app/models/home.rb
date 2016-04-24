@@ -103,7 +103,7 @@ class Home < ActiveRecord::Base
       result[:assigned_school] = self.get_assigned_schools
       result[:public_schools] = self.get_other_public_schools
       result[:private_schools] = self.get_private_schools
-      #result[:chinese_description] = self.home_cn.try(:description)
+      result[:chinese_description] = self.home_cn.try(:description)
       result[:short_desc] = self.home_cn.try(:short_desc)
       result[:city_info] = City.find_by_name(self.city)
       result[:public_record] = get_latest_record || {}
@@ -159,26 +159,47 @@ class Home < ActiveRecord::Base
     return monthly_rent
   end
 
+ def alternate_name(name)
+#   if !name.nil? && name.include("Incorporated")?
+     a_name = name.sub!("Incorporated","Inc")  
+ #  end
+ end
+
   def assign_schools(schools, assigned, city, county, state)
     schools.each do |school|
+      school_state = state
+      scool_city = city
+      tokens = school[7].split("/") unless school[7].nil?
+      school_state = tokens[3] unless tokens.nil?
+      school_city = tokens[4].sub!("-"," ") unless tokens.nil?
+    #  print school[7], ",", school_city, ",", school_state, "\n" unless school[7].nil?
+      if !(school[6].nil? || school[6].empty?) 
+        school_type = school[6].lstrip.rstrip.capitalize
+        #record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:city, county:county, state:state, grade:school[2]).first_or_create
+        record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:school_city, county:county, state:school_state, grade:school[2]).first
+        record = School.where(name: school[0].lstrip.rstrip, county:county, state:school_state, grade:school[2]).first if record.nil?
+        record = School.where(name: school[0].lstrip.rstrip, county:county, state:school_state).first if record.nil?
+        school_name = alternate_name(school[0].lstrip.rstrip)
+        record = School.where(name: school_name, school_type: school_type, city:city, county:county, state:state, grade:school[2]).first if record.nil? && !school_name.nil?
+        record = School.where(name: school_name, county:county, state:state, grade:school[2]).first  if record.nil? && !school_name.nil?
+        record = School.where(name: school_name, county:county, state:state).first  if record.nil? && !school_name.nil?
 
-      if school[6].nil? || school[6].empty?
-      else 
-          record = School.where(name: school[0].lstrip.rstrip, school_type: school[6].lstrip.rstrip, county:county, state:state).first_or_create
-         #p "school" 
-        # record = School.where(name: school[0], grade: school[2], school_type: school[6]).first_or_create
-#         record = School.where(name: school[0], grade: school[2]).first_or_create
-         record.school_type = school[6];
-         record.student_teacher_ratio = school[3]
-         record.rating = school[4].to_f
-         record.parent_rating = school[5].to_f
-#         record.city = city
-         record.county = county
-         record.state = state
-         record.save
-
-         assignment = HomeSchoolAssignment.where(home_id: self.id, school_id: record.id).first_or_create
-         assignment.update_attributes(distance: school[1], assigned: assigned)
+        #print "no shcool find --", city, ": ", school[0], "\n"  if record.nil?
+        
+        record = School.new(:name => school[0].lstrip.rstrip, :school_type => school_type, :city => city, :county => county, :state => state, :grade => school[2]) if record.nil?
+       
+        if !(record.nil?)
+          record.school_type = school_type;
+          record.grade = school[2] if record.grade.nil?
+          record.student_teacher_ratio = school[3] if record.student_teacher_ratio.nil?
+          record.rating = school[4].to_f if record.rating.nil?
+          record.parent_rating = school[5].to_f  if record.parent_rating.nil?
+          record.school_type = school_type if record.school_type.nil?
+          record.save
+          
+          assignment = HomeSchoolAssignment.where(home_id: self.id, school_id: record.id).first_or_create
+          assignment.update_attributes(distance: school[1], assigned: assigned)
+        end 
       end 
     end
   end
