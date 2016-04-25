@@ -2,7 +2,7 @@
 
 class LocationWorker
   include Sidekiq::Worker
-  sidekiq_options retry: 5
+  sidekiq_options retry: 3
 
   sidekiq_retry_in do |count|
     1 * (count + 1)

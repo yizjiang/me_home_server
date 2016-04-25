@@ -49,11 +49,11 @@ class WechatUser < ActiveRecord::Base
   def home_result(homes, uid)
     more_home = 0
     if (homes.count > 0)
-      if homes.length > 10
-        more_home = homes.length - 9
-        showing_ids = homes[0..8].map(&:id)
-        set_redis('next_ids', (homes[9..-1].map(&:id)).join(','), 300)
-        homes = homes[0..8]
+      if homes.length > 8
+        more_home = homes.length - 7
+        showing_ids = homes[0..6].map(&:id)
+        set_redis('next_ids', (homes[7..-1].map(&:id)).join(','), 300)
+        homes = homes[0..6]
       else
         delete_redis('next_ids')
       end
