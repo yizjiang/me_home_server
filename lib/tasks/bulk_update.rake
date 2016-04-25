@@ -8,15 +8,12 @@ namespace :csv do
     home[1..-1].each_with_index do |row, index|
       begin
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
-
-        if !(row[7].nil? || row[7].empty?)
-          home_city = row[4].lstrip.rstrip
+        
+        if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil?) && row[5] == 'CA')
+          home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
-          home_county = row[7].lstrip.rstrip
-          if (home_city.nil? || home_state.nil? || home_county.nil?)
-              p row
-          end
+          home_county = row[7].lstrip.rstrip 
 	  uniq_condition = {addr1: row[3].lstrip.rstrip,
                           city: home_city,
                           state: home_state,
@@ -33,7 +30,7 @@ namespace :csv do
                                bath_num: row[14],
                                indoor_size: row[15],
                                lot_size: row[16],
-                               price: row[17].delete(','),
+			       price: row[17].delete(','),
                                unit_price: row[18],
                                home_type: row[19],
                                year_built: row[20].to_i,
@@ -65,7 +62,8 @@ namespace :csv do
         end
 
       rescue StandardError
-        p "error out for item #{index}"
+        #p "error out for item #{index}"
+     	print "error out for item: ", index , "," , row[3], "\n"
       end
       # property_tax: 65
     end
