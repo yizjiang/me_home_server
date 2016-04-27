@@ -19,12 +19,17 @@ class AgentController < ApplicationController
         criteria['regionValue'] = s
         Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})
       end
-    else
-      searches = [Search.new]
-    end
 
-    home_list = Home.search(searches).map do |home|
-      home.as_json
+      home_list = Home.search(searches).map do |home|
+        home.as_json
+      end
+    else
+      home_list = []
+      HOT_AREAS.sample(5).each do |area|
+        home_list += Home.search(Search.new(regionValue: area), 5).map do |home|
+          home.as_json
+        end
+      end
     end
 
     header_config = config['header']
@@ -35,6 +40,10 @@ class AgentController < ApplicationController
     render json: {header: header_config, home_list: home_list,
                   qr_image: agent_extention.user.qr_code,
                   description: agent_extention.description,
+                  cn_name: agent_extention.cn_name,
+                  phone: agent_extention.phone,
+                  mail: agent_extention.mail,
+                  wechat: agent_extention.wechat,
                   head_image: agent_extention.user.wechat_user.try(:head_img_url) }
   end
 

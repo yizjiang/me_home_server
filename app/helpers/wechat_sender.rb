@@ -27,7 +27,7 @@ module WechatSender
       {title: "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金",
        body: '',
        picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}"}
+       url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{uid}"}
     end
 
     if more_home.to_i > 0

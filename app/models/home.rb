@@ -110,6 +110,7 @@ class Home < ActiveRecord::Base
       result[:monthly_rent] = self.cal_money
       result[:property_tax] = wrap_money((self.price * PROPERTY_TAX).round)
       result[:origin_price] = self.price
+      result[:colleges] = self.get_college
       if home_cn = self.home_cn
         result[:indoor_size] = home_cn.indoor_size
         result[:lot_size] = home_cn.lot_size
@@ -120,6 +121,10 @@ class Home < ActiveRecord::Base
     end
 
     result
+  end
+
+  def get_college
+    School.where(grade: 'college', zipcode: self.zipcode)
   end
 
   def get_latest_record

@@ -7,7 +7,7 @@ class AgentRequest < ActiveRecord::Base
   def as_json
     result = super
     result['body'] = result['body'] % {detail: ""}
-    result['link'] = "#{CLIENT_HOST}/#/home_detail/#{self.request_context_id}"
+    result['link'] = "#{CLIENT_HOST}/home/#{self.request_context_id}"
     result
   end
 
@@ -15,7 +15,6 @@ class AgentRequest < ActiveRecord::Base
     to_user = User.find(self.to_user)
     open_id = to_user.try(:wechat_user).open_id
     if open_id
-      ticket = TicketGenerator.encrypt_uid(self.to_user)
       params = {grant_type: 'client_credential',
                 appid: AGENT_WECHAT_CLIENTID,
                 secret: AGENT_WECHAT_CLIENTSECRET}
@@ -29,7 +28,7 @@ class AgentRequest < ActiveRecord::Base
                 {
                   title: "编号#{self.id}" + self.body % {detail: "位于#{home.city}的#{home.addr1}房源信息"},
                   description: '点击图片查看',
-                  url: "#{CLIENT_HOST}/?ticket=#{ticket}#/home_detail/#{home.id}",
+                  url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{self.to_user}",
                   picurl: home.images.first
                 }]
               }

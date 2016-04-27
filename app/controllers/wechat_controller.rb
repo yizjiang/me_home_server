@@ -146,7 +146,7 @@ class WechatController < ApplicationController
 
     if !search.empty?
       searches = search['regionValue'].split(',').map do |region|
-        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'])
+        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'], home_type: search['home_type'])
       end
 
       homes = Home.search(searches) # fair divide?
@@ -593,13 +593,12 @@ class WechatController < ApplicationController
   end
 
   def agent_request_items(requests)
-    ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
     requests.map do |request|
       home = Home.find(request.request_context_id)
       {title: "编号#{request.id}: " + request.body % {detail: "位于#{home.addr1} #{home.city}的房源信息"},
        body: '点击图片查看',
        picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/home/#{home.id}"
+       url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{@wechat_user.user_id}"
       }
     end
   end
@@ -610,7 +609,7 @@ class WechatController < ApplicationController
       {title: "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金",
        body: 'nice home',
        pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/home/#{home.id}"}
+       url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{@wechat_user.user_id}"}
     end
 
     if more_home > 0
