@@ -232,12 +232,23 @@ class Home < ActiveRecord::Base
 
   
   def import_public_record(record)
-       history_record =  PublicRecord.where(source: record[0], property_id: record[1], home_id: self.id).first_or_create
-       history_record.record_date = record[3]
-       history_record.file_id = record[2]
-       history_record.event = record[4]
-       history_record.price = record[5].delete('$').delete(',')
-       history_record.save
+    source = record[0].lstrip.rstrip unless record[0].nil?
+    property_id = record[1].lstrip.rstrip unless record[1].nil?
+    o_event = 'Active'
+    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first
+
+    if (history_record.nil? && !property_id.nil? && !source.nil?)
+      history_record =  PublicRecord.where(source: source, property_id: property_id, home_id: self.id).first_or_create
+      history_record.file_id = record[2].lstrip.rstrip unless record[2].nil?
+    end
+
+    if (!history_record.nil?)
+      history_record.record_date = record[3] unless record[3].nil?
+      history_record.event = record[4].lstrip.rstrip unless record[4].nil?
+      history_record.price = record[5].delete('$').delete(',') unless record[5].nil?
+      history_record.save
+    end
+    
   end
 
  def import_history_record(records)
