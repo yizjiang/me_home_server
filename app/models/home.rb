@@ -234,12 +234,21 @@ class Home < ActiveRecord::Base
   def import_public_record(record)
     source = record[0].lstrip.rstrip unless record[0].nil?
     property_id = record[1].lstrip.rstrip unless record[1].nil?
+    n_event = record[4].lstrip.rstrip unless record[4].nil?
     o_event = 'Active'
-    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first
+    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first 
+    o_event = 'Active-REO'
+    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
+    o_event = 'Active-Short Sale'
+    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
 
     if (history_record.nil? && !property_id.nil? && !source.nil?)
-      history_record =  PublicRecord.where(source: source, property_id: property_id, home_id: self.id).first_or_create
-      history_record.file_id = record[2].lstrip.rstrip unless record[2].nil?
+      history_record =  PublicRecord.where(source: source, property_id: property_id, home_id: self.id, event:n_event).first
+      if (history_record.nil?)
+       # p "new row will be created or find"
+        history_record =  PublicRecord.where(source: source, property_id: property_id, home_id: self.id).first_or_create
+        history_record.file_id = record[2].lstrip.rstrip unless record[2].nil?
+      end 
     end
 
     if (!history_record.nil?)
@@ -247,6 +256,9 @@ class Home < ActiveRecord::Base
       history_record.event = record[4].lstrip.rstrip unless record[4].nil?
       history_record.price = record[5].delete('$').delete(',') unless record[5].nil?
       history_record.save
+    else
+      p record
+      p self.id
     end
     
   end
