@@ -8,23 +8,24 @@ namespace :csv do
     home[1..-1].each_with_index do |row, index|
       begin
         home_status = row[24].lstrip.rstrip 
-
 	#row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
         if ( !(row[7].nil? || row[7].empty? || row[5].nil? ) && row[5] == 'CA'  && !home_status.starts_with?('Active'))
-
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
           # home_county = row[7].lstrip.rstrip
-          home_status = 'Active' if home_status.starts_with?('Price') 
-	  home_status = 'Inactive' if !home_status.starts_with?('Price') 
-          uniq_condition = {addr1: row[3].lstrip.rstrip,
+          if (home_status.starts_with?('Price') || home_status.starts_with?('Back'))
+	    home_status = 'Active' 
+	  else
+	    home_status = 'Inactive'
+          end 
+
+	  uniq_condition = {addr1: row[3].lstrip.rstrip,
                           city: home_city,
                           state: home_state,
                           zipcode: home_zip}
           home = Home.where(uniq_condition).first
 	  if (!home.nil?)	  
-
               update_date =  time_before_now(row[8])
               home_price = row[17].delete(',') unless row[17].nil? 
 	      home.update_attributes(
