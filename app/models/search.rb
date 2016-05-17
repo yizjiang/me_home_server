@@ -21,6 +21,10 @@ class Search
 
   end
 
+  def normal_home
+
+  end
+
   def initialize(attributes = nil)
     attributes ||= default_attributes
     @region = attributes[:regionValue] || ''
@@ -64,6 +68,8 @@ class Search
                      else
                        nil
                      end
+    p attributes
+    p home_type_attr
     @home_type = home_type_attr || HOME_TYPE
 
     if(attributes[:single_family] == 'false')
