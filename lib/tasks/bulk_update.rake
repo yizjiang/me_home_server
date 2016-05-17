@@ -8,7 +8,6 @@ namespace :csv do
     home[1..-1].each_with_index do |row, index|
       begin
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
-        
         if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil?) && row[5] == 'CA')
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
@@ -51,7 +50,6 @@ namespace :csv do
            #private_schools = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: [] 
 
           # import assigned school last, so it will not overwrite it.
-          #home.import_public_record(row[0..2])
           home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
           home.other_schools(elementary_schools + middle_schools + high_schools, home_city, home_county, home_state)
           home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
