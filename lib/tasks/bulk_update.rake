@@ -8,7 +8,7 @@ namespace :csv do
     home[1..-1].each_with_index do |row, index|
       begin
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
-        if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil || row[25].empty?) && row[5] == 'CA')
+        if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
