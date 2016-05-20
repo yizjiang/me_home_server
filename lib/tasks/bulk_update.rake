@@ -9,7 +9,7 @@ namespace :csv do
       begin
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
         if (row[25].nil? || row[25].empty?)
-          row[25 = row[37]
+          row[25] = row[37]
           print "no photo: ", row[25] , "," , row[37], "\n"
         end
         #if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
