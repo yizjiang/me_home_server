@@ -8,7 +8,12 @@ namespace :csv do
     home[1..-1].each_with_index do |row, index|
       begin
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
-        if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
+        if (row[25].nil? || row[25].empty?)
+          row[25] = row[37]  
+	  print "no photo: ", row[25] , "," , row[37], "\n"         
+        end 
+        #if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
+        if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil?) && row[5] == 'CA')
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
@@ -18,7 +23,7 @@ namespace :csv do
                           state: home_state,
                           zipcode: home_zip}
           home = Home.where(uniq_condition).first_or_create
-          if (home.id < 4494)
+          if (home.id < 5121)
 	       print home.id, " ", home.price, " ", home.status, " ",  home.addr1, "\n"
           end
 	  home.update_attributes(county: home_county,
