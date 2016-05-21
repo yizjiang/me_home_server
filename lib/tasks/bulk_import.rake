@@ -16,8 +16,9 @@ namespace :csv do
 	  print "no photo: ", row[25] , "," , row[37], "\n"         
         end 
         if ((row[18].nil? || row[18].empty?) && !row[15].nil? && !row[17].nil?)
-          print "no unit price: ", row[3], "\n"
-    	   row[18] = row[17].delete(',')/row[15]
+          print "no unit price: ", row[3], ", price: ", row[17], ", house_size:", row[15], "\n"
+           row[18] = (row[17].to_f / row[15].to_f).round
+          print "unit price:", row[18], "\n"
         end         
 
         #if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
