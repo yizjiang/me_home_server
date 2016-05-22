@@ -5,6 +5,7 @@ namespace :csv do
     file = STDIN.gets.chomp
 #    home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
     home = CSV.read("./sample/data/#{file}.csv")
+    pb_count = 0
     home[1..-1].each_with_index do |row, index|
       begin
         home_status = row[24].lstrip.rstrip 
@@ -16,7 +17,7 @@ namespace :csv do
           # home_county = row[7].lstrip.rstrip
           if (home_status.starts_with?('Price') || home_status.starts_with?('Back'))
 	    home_status = 'Active' 
-           print "Price change or back to Market ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state, "\n"	  
+            pb_count = pb_count+1
 	  else
 	    home_status = 'Inactive'
           end 
@@ -68,13 +69,13 @@ namespace :csv do
         else 
               print "no update: ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"
         end
-
       rescue StandardError
         #p "error out for item #{index}"
      	print "error out for item: ", index , "," , row[3], "\n"
       end
       # property_tax: 65
     end
+     print "price change + back to market=",  pb_count, "\n"
   end
 
 
