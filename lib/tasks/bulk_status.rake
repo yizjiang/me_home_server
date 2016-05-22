@@ -6,6 +6,8 @@ namespace :csv do
 #    home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
     home = CSV.read("./sample/data/#{file}.csv")
     pb_count = 0
+    ia_count = 0
+    u_count = 0
     home[1..-1].each_with_index do |row, index|
       begin
         home_status = row[24].lstrip.rstrip 
@@ -20,6 +22,7 @@ namespace :csv do
             pb_count = pb_count+1
 	  else
 	    home_status = 'Inactive'
+            ia_count = ia_count+1
           end 
 
 	  uniq_condition = {addr1: row[3].lstrip.rstrip,
@@ -33,6 +36,7 @@ namespace :csv do
 	     home.zipcode = home_zip	 
 	  end 
 	  if (!home.nil?)
+	      u_count = u_count+1
 	      #print "find ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"	  
               update_date =  time_before_now(row[8])
               home_price = row[17].delete(',') unless row[17].nil? 
@@ -75,7 +79,7 @@ namespace :csv do
       end
       # property_tax: 65
     end
-     print "price change + back to market=",  pb_count, "\n"
+     print "pb=",  pb_count, ", ia_count=", ia_count, ", u_count=", u_count, "\n"
   end
 
 
