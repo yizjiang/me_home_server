@@ -54,7 +54,12 @@ namespace :csv do
 	      home.import_public_record(row[0..2].concat([update_date]).concat([row[24]]).concat([row[17]])) 
               # home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
               # home.import_history_record(home_history)
+            else 
+              print "not find for update: ", index , "," , row[3], "\n"
             end
+
+        else 
+	   print "not update: ", index , "," , row[3], "\n"
         end
 
       rescue StandardError
