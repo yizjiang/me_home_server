@@ -25,21 +25,24 @@ namespace :csv do
             ia_count = ia_count+1
           end 
 
-	  uniq_condition = {addr1: row[3].lstrip.rstrip,
-                          city: home_city,
-                          state: home_state,
-                          zipcode: home_zip}
-          home = Home.where(uniq_condition).first
-	  if (home.nil?)
-             home = Home.where(city:home_city, state:home_state, redfin_link:row[10]).first 
-             home.addr1 = row[3].lstrip.rstrip
-	     home.zipcode = home_zip	 
-	  end 
+	  # uniq_condition = {addr1: row[3].lstrip.rstrip,
+          #                city: home_city,
+          #                state: home_state,
+          #                zipcode: home_zip}
+          # home = Home.where(uniq_condition).first
+	  #if (home.nil?)
+              home = Home.where(city:home_city, state:home_state, redfin_link:row[10]).first 
+	     # home.addr1 = row[3].lstrip.rstrip
+	       home.zipcode = home_zip unless home.nil? 
+	  #end
 	  if (!home.nil?)
 	      u_count = u_count+1
 	      #print "find ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"	  
               update_date =  time_before_now(row[8])
               home_price = row[17].delete(',') unless row[17].nil? 
+	      if (home.status.eql?("Inactive"))
+                print "it was inactive", home.addr1, ", new status=", home_status, "\n"
+	      end 	 
 	      home.update_attributes(
 			  #     county: home_county,
                                last_refresh_at: update_date,
@@ -62,14 +65,12 @@ namespace :csv do
 			   #    listing_agent: row[26],
 			   #    listed_by: row[27]
               ) 
-              #p home.status
 	      home.import_public_record(row[0..2].concat([update_date]).concat([row[24]]).concat([row[17]])) 
               # home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
               # home.import_history_record(home_history)
             else 
               print "not find for update: ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"
             end
-
         else 
               print "no update: ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"
         end
@@ -79,7 +80,7 @@ namespace :csv do
       end
       # property_tax: 65
     end
-     print "pb=",  pb_count, ", ia_count=", ia_count, ", u_count=", u_count, "\n"
+      print "pb=",  pb_count, ", ia_count=", ia_count, ", u_count=", u_count, "\n"
   end
 
 
