@@ -3,7 +3,7 @@ namespace :homes do
   task :coordinate => :environment do
     Home.where(geo_point: nil).each do |home|
       address =  "#{home.addr1} #{home.addr2}, #{home.city}, #{home.state}, #{home.zipcode}"
-      request = "https://dev.virtualearth.net/REST/v1/Locations/#{URI::encode(address)}?output=json&key=AjVrfYUU-6_5NnEHSjCxZ16XAJHyu0-J42p16WXCld6F52NujvxQ2iRV1X3UQeQs"
+      request = "https://dev.virtualearth.net/REST/v1/Locations/#{URI::encode(address)}?output=json&key=#{ACCESS_KEY}"
       response = Typhoeus.get(request)
       begin
         geo_point = JSON.parse(response.body)['resourceSets'][0]['resources'][0]['point']['coordinates'].join(',')

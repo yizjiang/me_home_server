@@ -16,7 +16,7 @@ class LocationWorker
     @uid = uid
     location = REDIS.get("#{uid}:location")
     raise 'location not set' unless location
-    url = "http://dev.virtualearth.net/REST/v1/Locations/#{location}?o=json&includeEntityTypes=Postcode1&key=AjVrfYUU-6_5NnEHSjCxZ16XAJHyu0-J42p16WXCld6F52NujvxQ2iRV1X3UQeQs"
+    url = "http://dev.virtualearth.net/REST/v1/Locations/#{location}?o=json&includeEntityTypes=Postcode1&key=#{ACCESS_KEY}"
     response = Typhoeus.get(url)
     result = JSON.parse response.body
     zipcode = result['resourceSets'][0]['resources'][0]['address']['postalCode']
