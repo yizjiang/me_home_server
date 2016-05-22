@@ -16,6 +16,7 @@ namespace :csv do
           # home_county = row[7].lstrip.rstrip
           if (home_status.starts_with?('Price') || home_status.starts_with?('Back'))
 	    home_status = 'Active' 
+           print "Price change or back to Market ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state, "\n"	  
 	  else
 	    home_status = 'Inactive'
           end 
@@ -25,7 +26,13 @@ namespace :csv do
                           state: home_state,
                           zipcode: home_zip}
           home = Home.where(uniq_condition).first
-	  if (!home.nil?)	  
+	  if (home.nil?)
+             home = Home.where(city:home_city, state:home_state, redfin_link:row[10]).first 
+             home.addr1 = row[3].lstrip.rstrip
+	     home.zipcode = home_zip	 
+	  end 
+	  if (!home.nil?)
+	      #print "find ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"	  
               update_date =  time_before_now(row[8])
               home_price = row[17].delete(',') unless row[17].nil? 
 	      home.update_attributes(
@@ -55,11 +62,11 @@ namespace :csv do
               # home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
               # home.import_history_record(home_history)
             else 
-              print "not find for update: ", index , "," , row[3], "\n"
+              print "not find for update: ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"
             end
 
         else 
-	   print "not update: ", index , "," , row[3], "\n"
+              print "no update: ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"
         end
 
       rescue StandardError
