@@ -24,7 +24,12 @@ module WechatSender
   def home_search_items(homes, more_home = 0, uid)
     ticket = TicketGenerator.encrypt_uid(uid)
     homes = homes.map do |home|
-      {title: "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金",
+      if  Home::OTHER_PROPERTY_TYPE.include?(home.meejia_type)
+        title = "位于#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+      else
+        title = "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+      end
+      {title: title,
        body: '',
        picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{uid}"}

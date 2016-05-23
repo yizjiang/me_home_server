@@ -177,7 +177,6 @@ class AgentController < ApplicationController
       user = User.find(uid)
       if agent_id = user.wechat_user.agent_id
         want_num_agent -= 1
-        p agent_id
         agents << User.find(agent_id.to_i).as_json(include_details: false)
         agent_ids -= [agent_id.to_i]
       end

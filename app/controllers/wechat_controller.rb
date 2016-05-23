@@ -327,6 +327,7 @@ class WechatController < ApplicationController
     extention = @wechat_user.user.agent_extention
     if extention
       extention.update_attributes(license_id: @msg_hash[:body])
+      AgentFetcher.perform_async(extention, @msg_hash[:body])
     end
     set_redis(:wait_input, :upload_agent_qr_code, 60 * 60)
     @msg_hash[:body] = "经纪人序列号已保存，请上传您的二维码联系方式以便我们为您联系客户"
@@ -493,7 +494,13 @@ class WechatController < ApplicationController
     if search = @wechat_user.search
       title = ''
       search = JSON.parse(search)
-      title = "位于#{search['regionValue']}多于#{search['bedNum']}卧室的房源"
+
+      if (search['home_type'] - Home::OTHER_PROPERTY_TYPE).length == 0
+        title = "位于#{search['regionValue']}其他类型房产"
+      else
+        title = "位于#{search['regionValue']}多于#{search['bedNum']}卧室的房源"
+      end
+
       @msg_hash[:items] = [{title: title,
                             body: '点击头像更新搜索条件',
                             pic_url: @wechat_user.head_img_url,
@@ -606,7 +613,14 @@ class WechatController < ApplicationController
   def home_search_items(homes, more_home = 0)
     ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
     homes = homes.map do |home|
-      {title: "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金",
+
+      if Home::OTHER_PROPERTY_TYPE.include?(home.meejia_type)
+        title = "位于#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+      else
+        title = "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+      end
+
+      {title: title,
        body: 'nice home',
        pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{@wechat_user.user_id}"}

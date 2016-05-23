@@ -68,8 +68,6 @@ class Search
                      else
                        nil
                      end
-    p attributes
-    p home_type_attr
     @home_type = home_type_attr || HOME_TYPE
 
     if(attributes[:single_family] == 'false')

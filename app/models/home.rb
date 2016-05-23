@@ -23,9 +23,9 @@ RENT_MAPPING = {19=>"nineteen",
 
 PROPERTY_TAX = 0.012
 
-OTHER_PROPERTY_TYPE = ["Residential Land", "Mobile Home", "Other", "-"]
-
 class Home < ActiveRecord::Base
+  OTHER_PROPERTY_TYPE = ["Residential Land", "Mobile Home", "Other", "-"]
+
   attr_accessible *column_names
   has_many :images
   has_many :public_records
@@ -135,8 +135,8 @@ class Home < ActiveRecord::Base
       result[:origin_price] = self.price
       result[:colleges] = self.get_college
       if home_cn = self.home_cn
-        result[:indoor_size] = home_cn.indoor_size
-        result[:lot_size] = home_cn.lot_size
+        result[:chinese_indoor_size] = home_cn.indoor_size
+        result[:chinese_lot_size] = home_cn.lot_size
         result[:short_desc] = home_cn.short_desc
         result[:price] = home_cn.price
         result[:unit_price] = home_cn.unit_price

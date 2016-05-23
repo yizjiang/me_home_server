@@ -20,7 +20,7 @@ class WechatUser < ActiveRecord::Base
 
     if !search.empty?
       searches = search['regionValue'].split(',').map do |region|
-        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'])
+        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'], home_type: search['home_type'])
       end
 
       homes = Home.search(searches) # fair divide?
