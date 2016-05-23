@@ -248,7 +248,6 @@ class Home < ActiveRecord::Base
     p self.id
     images.split('<img src=')[1..-1].each do |image|
      image_url = "/homes/#{image[1..-3]}"
-       p image_url
        new_image = Image.where(image_url: image_url).first_or_create 
        if (new_image.home_id.nil?)
          new_image.home_id = self.id 
