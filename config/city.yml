@@ -1,58 +1,106 @@
-SF:
-  - San Carlos,圣卡洛斯
-  - Montara, 蒙塔拉
-  - Redwood City, 红木城
-  - Daly City, 德利城
-  - East Palo Alto, 东帕洛阿尔托
-  - Millbrae, 米尔布雷
-  - South San Francisco, 南旧金山,南三番市
-  - Foster City, 福斯特城
-  - Pacifica, 帕斯菲卡
-  - Half Moon Bay, 半月湾
-  - San Mateo, 圣马特奥
-  - Belmont, 贝尔蒙特
-  - Menlo Park, 门洛帕克
-  - Burlingame, 伯林盖姆
-  - Hillsborough,希尔思伯勒
-  - San Bruno, 圣布鲁诺
-  - Pescadero, 佩斯卡德罗
-  - Brisbane, 布里斯班
-  - San Gregorio, 圣格雷戈里奥
-  - Atherton, 阿瑟顿
-  - Moss Beach, 莫斯海滩
-  - Portola Valley,波托拉谷
-  - San Francisco, 旧金山,三番市
-  - Fremont, 弗里蒙特
-  - Hayward, 海沃德
-  - Oakland, 奥克兰
-  - Union City, 联和市
-  - San Leandro, 圣莱安德罗
-  - Alameda, 阿拉米达
-  - Dublin, 都柏林
-  - Livermore, 利弗莫尔
-  - Pleasanton, 普莱森顿
-  - Berkeley, 伯克利
-  - Castro Valley, 卡斯特罗谷
-  - Newark, 纽瓦克
-  - San Lorenzo, 圣洛伦索
-  - Emeryville, 埃默里维尔
-  - Gilroy, 吉尔罗伊
-  - San Jose, 圣荷西
-  - Milpitas, 米尔皮塔斯
-  - Santa Clara, 圣塔克拉拉
-  - Los Gatos, 洛斯加托斯
-  - Sunnyvale, 桑尼维尔
-  - Mountain View,山景城
-  - Palo Alto, 帕洛阿尔托
-  - Morgan Hill, 摩根希尔
-  - Piedmont, 皮埃蒙特
-  - Kensington, 肯辛顿
-  - Los Altos, 洛斯阿尔托斯
-  - Campbell, 坎贝尔
-  - Los Altos Hills, 洛斯阿尔托斯山
-  - Cupertino, 库珀蒂诺
-  - Saratoga, 萨拉托加
-  - Albany, 奥尔巴尼
-  - San Martin, 圣马丁
-  - El Cerrito, 埃尔塞里托
-  - Alviso,阿尔非索
+﻿SF:			
+  - San Carlos, 圣卡洛斯	
+  - Montara, 蒙塔拉	
+  - Redwood City, 红木城	
+  - Daly City, 德利城	
+  - East Palo Alto, 东帕洛阿尔托	
+  - Millbrae, 米尔布雷	
+  - South San Francisco, 南旧金山, 南三番市
+  - Foster City, 福斯特城	
+  - Pacifica, 帕斯菲卡	
+  - Half Moon Bay, 半月湾	
+  - San Mateo, 圣马特奥	
+  - Belmont, 贝尔蒙特	
+  - Menlo Park, 门洛帕克	
+  - Burlingame, 伯林盖姆	
+  - Hillsborough, 希尔思伯勒	
+  - San Bruno, 圣布鲁诺	
+  - Pescadero, 佩斯卡德罗	
+  - Brisbane, 布里斯班	
+  - San Gregorio, 圣格雷戈里奥	
+  - Atherton, 阿瑟顿	
+  - Moss Beach, 莫斯海滩	
+  - Portola Valley, 波托拉谷	
+  - San Francisco, 旧金山, 三番市
+  - Fremont, 弗里蒙特	
+  - Hayward, 海沃德	
+  - Oakland, 奥克兰	
+  - Union City, 联和市	
+  - San Leandro, 圣莱安德罗	
+  - Alameda, 阿拉米达	
+  - Dublin, 都柏林	
+  - Livermore, 利弗莫尔	
+  - Pleasanton, 普莱森顿	
+  - Berkeley, 伯克利	
+  - Castro Valley, 卡斯特罗谷	
+  - Newark, 纽瓦克	
+  - San Lorenzo, 圣洛伦索	
+  - Emeryville, 埃默里维尔	
+  - Gilroy, 吉尔罗伊	
+  - San Jose, 圣荷西	
+  - Milpitas, 米尔皮塔斯	
+  - Santa Clara, 圣塔克拉拉	
+  - Los Gatos, 洛斯加托斯	
+  - Sunnyvale, 桑尼维尔	
+  - Mountain View, 山景城	
+  - Palo Alto, 帕洛阿尔托	
+  - Morgan Hill, 摩根希尔	
+  - Piedmont, 皮埃蒙特	
+  - Kensington, 肯辛顿	
+  - Los Altos, 洛斯阿尔托斯	
+  - Campbell, 坎贝尔	
+  - Los Altos Hills, 洛斯阿尔托斯山	
+  - Cupertino, 库珀蒂诺	
+  - Saratoga, 萨拉托加	
+  - Albany, 奥尔巴尼	
+  - San Martin, 圣马丁	
+  - El Cerrito, 埃尔塞里托	
+  - Alviso, 阿尔非索	
+  - FAIRMONT, 菲尔摩特	
+  - FILLMORE, 菲尔莫	
+  - WOODSIDE, 沃得萨得	
+  - EL GRANADA, 埃尔格兰纳达	
+  - LOMA MAR, 洛马	
+  - MOUNT HAMILTON, 芒特哈米特	
+  - EMERALD HILLS, 埃默瑞黑尔	
+  - SEACLIFF, 西克利夫	
+  - LAKE ARROWHEAD, 雷克阿若亥德	
+  - LANCASTER, 兰卡斯特	
+  - LA HONDA, 拉航达	
+  - JOSHUA TREE, 加厦曲	
+  - CHULA VISTA, 丘拉维斯塔	
+  - LANDERS, 兰德斯	
+  - MONTE SERENO, 芒特瑟利诺	
+  - REDWOOD SHORES, 红木海岸	
+  - Hollister, 霍利斯特	
+  - Sunol, 索诺尔	
+  - Watsonville, 沃森维尔	
+  - San Ramon, 圣拉蒙	
+  - Martinez, 马丁内斯	
+  - Concord, 和睦	
+  - Antioch, 安提阿	
+  - Pleasant Hill, 普莱森特希尔	
+  - Pittsburg, 匹兹堡	
+  - Brentwood, 布伦特伍德	
+  - Oakley, 奥克利	
+  - Alamo, 阿拉摩	
+  - Walnut Creek, 核桃溪	
+  - Danville, 丹维尔	
+  - Pinole, 皮诺尔	
+  - Discovery Bay, 愉景湾	
+  - Hercules, 大力神	
+  - Lafayette, 拉斐特	
+  - Crockett, 克罗克特	
+  - Moraga, 莫拉加	
+  - El Sobrante,埃尔萨尔瓦多	
+  - Rodeo, 圈地	
+  - Orinda, 奥林达	
+  - Richmond, 里士满	
+  - San Pablo, 圣巴勃罗	
+  - Bay Point, 湾角	
+  - Clayton, 克莱顿	
+  - Diablo, 暗黑破坏神	
+  - Bethel Island, 伯特利岛	
+  - Byron, 拜伦	
+  - Pacheco, 帕切科
+  - Knightsen, 奈特森

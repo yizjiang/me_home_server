@@ -5,6 +5,9 @@ namespace :csv do
     file = STDIN.gets.chomp
 #    home = CSV.read("./sample/data/#{file}.csv", :encoding => 'windows-1251:utf-8')
     home = CSV.read("./sample/data/#{file}.csv")
+    pb_count = 0
+    ia_count = 0
+    u_count = 0
     home[1..-1].each_with_index do |row, index|
       begin
         home_status = row[24].lstrip.rstrip 
@@ -16,18 +19,30 @@ namespace :csv do
           # home_county = row[7].lstrip.rstrip
           if (home_status.starts_with?('Price') || home_status.starts_with?('Back'))
 	    home_status = 'Active' 
+            pb_count = pb_count+1
 	  else
 	    home_status = 'Inactive'
+            ia_count = ia_count+1
           end 
 
-	  uniq_condition = {addr1: row[3].lstrip.rstrip,
-                          city: home_city,
-                          state: home_state,
-                          zipcode: home_zip}
-          home = Home.where(uniq_condition).first
-	  if (!home.nil?)	  
+	  # uniq_condition = {addr1: row[3].lstrip.rstrip,
+          #                city: home_city,
+          #                state: home_state,
+          #                zipcode: home_zip}
+          # home = Home.where(uniq_condition).first
+	  #if (home.nil?)
+              home = Home.where(city:home_city, state:home_state, redfin_link:row[10]).first 
+	     # home.addr1 = row[3].lstrip.rstrip
+	       home.zipcode = home_zip unless home.nil? 
+	  #end
+	  if (!home.nil?)
+	      u_count = u_count+1
+	      #print "find ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"	  
               update_date =  time_before_now(row[8])
               home_price = row[17].delete(',') unless row[17].nil? 
+	      if (home.status.eql?("Inactive"))
+                print "it was inactive", home.addr1, ", new status=", home_status, "\n"
+	      end 	 
 	      home.update_attributes(
 			  #     county: home_county,
                                last_refresh_at: update_date,
@@ -50,19 +65,22 @@ namespace :csv do
 			   #    listing_agent: row[26],
 			   #    listed_by: row[27]
               ) 
-              #p home.status
 	      home.import_public_record(row[0..2].concat([update_date]).concat([row[24]]).concat([row[17]])) 
               # home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
               # home.import_history_record(home_history)
+            else 
+              print "not find for update: ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"
             end
+        else 
+              print "no update: ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"
         end
-
       rescue StandardError
         #p "error out for item #{index}"
      	print "error out for item: ", index , "," , row[3], "\n"
       end
       # property_tax: 65
     end
+      print "pb=",  pb_count, ", ia_count=", ia_count, ", u_count=", u_count, "\n"
   end
 
 
