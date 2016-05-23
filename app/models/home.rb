@@ -245,12 +245,24 @@ class Home < ActiveRecord::Base
   end
 
   def build_image_group(images)
+    p self.id
     images.split('<img src=')[1..-1].each do |image|
-      image_url = "/homes/#{image[1..-3]}"
-      Image.where(image_url: image_url).first_or_create do |new_image|
-       new_image.home_id = self.id
-      end
-    end
+     image_url = "/homes/#{image[1..-3]}"
+       p image_url
+       new_image = Image.where(image_url: image_url).first_or_create 
+       if (new_image.home_id.nil?)
+         new_image.home_id = self.id 
+         new_image.save
+       elsif (new_image.home_id != self.id)
+         new_image = Image.where(image_url: image_url, home_id: self.id).first_or_create 
+         new_image.save
+       end
+       
+       # Image.where(image_url: image_url).first_or_create do |new_image|
+       #   new_image.home_id = self.id
+       #   p new_image
+       # end
+     end
   end
 
   
