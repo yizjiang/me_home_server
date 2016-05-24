@@ -6,7 +6,8 @@ class School < ActiveRecord::Base
   has_one :address, foreign_key: 'entity_id'
 
   def attributes
-    {name: nil, grade: nil, student_teacher_ratio: nil, rating: nil, school_type: nil}
+    {name: nil, grade: nil, student_teacher_ratio: nil, rating: nil, school_type: nil,
+     rank: nil, url: nil, female_pct: nil, admin_rate: nil, enrolled_student: nil}
   end
 
 

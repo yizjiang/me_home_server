@@ -147,8 +147,35 @@ class Home < ActiveRecord::Base
   end
 
   def get_college
-    School.where(grade: 'college', zipcode: self.zipcode)
+    schools = School.where(grade: 'college', zipcode: (self.zipcode.to_i - 1000 .. self.zipcode.to_i + 1000))
+    schools.to_a.sort!{|x, y| compare_distance(x.geo_point, y.geo_point)}.first(2)
   end
+
+  def compare_distance(geo_a, geo_b)
+    dist1 = distance(self.geo_point.split(','), geo_a.split(','))
+    dist2 = distance(self.geo_point.split(','), geo_a.split(','))
+    dist1 <=> dist2
+  end
+
+  def distance loc1, loc2
+    loc1 = loc1.map(&:to_f)
+    loc2 = loc2.map(&:to_f)
+    rad_per_deg = Math::PI/180  # PI / 180
+    rkm = 6371                  # Earth radius in kilometers
+    rm = rkm * 1000             # Radius in meters
+
+    dlat_rad = (loc2[0]-loc1[0]) * rad_per_deg  # Delta, converted to rad
+    dlon_rad = (loc2[1]-loc1[1]) * rad_per_deg
+
+    lat1_rad, lon1_rad = loc1.map {|i| i * rad_per_deg }
+    lat2_rad, lon2_rad = loc2.map {|i| i * rad_per_deg }
+
+    a = Math.sin(dlat_rad/2)**2 + Math.cos(lat1_rad) * Math.cos(lat2_rad) * Math.sin(dlon_rad/2)**2
+    c = 2 * Math::atan2(Math::sqrt(a), Math::sqrt(1-a))
+
+    rm * c # Delta in meters
+  end
+
 
   def get_latest_record
     records = self.public_records
