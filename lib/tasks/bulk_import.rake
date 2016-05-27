@@ -32,7 +32,7 @@ namespace :csv do
                           state: home_state,
                           zipcode: home_zip}
           home = Home.where(uniq_condition).first_or_create
-          if (home.id < 6331)
+          if (home.id < 6667)
 	       print home.id, " ", home.price, " ", home.status, " ",  home.addr1, "\n"
           end
 	  home.update_attributes(county: home_county,
