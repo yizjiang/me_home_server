@@ -32,10 +32,13 @@ namespace :csv do
                           state: home_state,
                           zipcode: home_zip}
           home = Home.where(uniq_condition).first_or_create
-          if (home.id < 6667)
-	       print home.id, " ", home.price, " ", home.status, " ",  home.addr1, "\n"
-          end
-	  home.update_attributes(county: home_county,
+          if (!home.status.nil? && !home.status.eql?("Inactive"))
+	       print "exist --", home.id, " ", home.price, " ", home.status, " ",  home.addr1, "\n"
+               #print "db link:"+ home.redfin_link, ", pass_link:", row[10], "\n" 
+	       p home.redfin_link
+	       p row[10] 
+      	  else   
+	    home.update_attributes(county: home_county,
                                last_refresh_at: time_before_now(row[8]),
 			       added_to_site: row[9],
                                redfin_link: row[10],
@@ -55,27 +58,24 @@ namespace :csv do
                                status: row[24],
 			       listing_agent: row[26],
 			       listed_by: row[27]
-           ) 
-
-           home.build_image_group(row[25]) unless row[25].nil?
-
-           assigned_schools = row[28] ? parse_wierd_input_to_array(row[28])[1..-1] : []  #remove header 
-           elementary_schools = row[29] ?  parse_wierd_input_to_array(row[29])[1..-1] : [] 
-           middle_schools =  row[30] ? parse_wierd_input_to_array(row[30])[1..-1]: [] 
-           high_schools =  row[31] ? parse_wierd_input_to_array(row[31])[1..-1]: [] 
-           #private_schools = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: [] 
-
-          # import assigned school last, so it will not overwrite it.
-          #home.import_public_record(row[0..2])
-          home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
-          #home.other_schools(elementary_schools + middle_schools + high_schools, home_city, home_county, home_state)
-          #home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
-          #home.assign_private_schools(private_schools)
-  
-          home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
-          home.import_history_record(home_history)
+              ) 
+              home.build_image_group(row[25]) unless row[25].nil?
+              home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
+              home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
+              home.import_history_record(home_history)
+       
+              assigned_schools = row[28] ? parse_wierd_input_to_array(row[28])[1..-1] : []  #remove header 
+              elementary_schools = row[29] ?  parse_wierd_input_to_array(row[29])[1..-1] : [] 
+              middle_schools =  row[30] ? parse_wierd_input_to_array(row[30])[1..-1]: [] 
+              high_schools =  row[31] ? parse_wierd_input_to_array(row[31])[1..-1]: [] 
+              #private_schools = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: [] 
+              # import assigned school last, so it will not overwrite it.
+              #home.other_schools(elementary_schools + middle_schools + high_schools, home_city, home_county, home_state)
+             #home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
+             #home.assign_private_schools(private_schools)
+	  end    
         else 
-	 print "not import: ", index , "," , row[3], "\n"
+	   print "not import: ", index , "," , row[3], "\n"
 	end
 
       rescue StandardError
