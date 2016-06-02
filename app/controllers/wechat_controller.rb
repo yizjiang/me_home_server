@@ -565,7 +565,7 @@ class WechatController < ApplicationController
     @msg_hash[:items] = [{title: "请点击您的头像设置主页",
                           body: '',
                           pic_url: @wechat_user.head_img_url,
-                          url: "#{CLIENT_HOST}/?ticket=#{ticket}#/agent"}]
+                          url: "#{CLIENT_HOST}/agent/#{@wechat_user.user.id}/setting"}]
     article_response
   end
 
