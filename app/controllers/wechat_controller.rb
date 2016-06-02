@@ -73,13 +73,13 @@ class WechatController < ApplicationController
     home = Home.find(@home_id)
 
     if Home::OTHER_PROPERTY_TYPE.include?(home.meejia_type)
-      title = "位于#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+      title = "#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
     else
-      title = "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+      title = "#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
     end
 
     body = {title: title,
-     body: 'nice home',
+     body: home.home_cn.try(:short_desc) || '绝对超值',
      pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
      url: "#{CLIENT_HOST}/home/#{home.id}/?agent_id=#{@agent_id}"}
 
