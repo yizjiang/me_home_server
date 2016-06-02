@@ -39,7 +39,7 @@ namespace :wechat do
 
                      {
                        type: "click",
-                       name: '客户需求',
+                       name: '潜在买家',
                        key: "agent_request"
                      }
                    ]

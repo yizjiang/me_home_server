@@ -5,6 +5,16 @@ class UserController < ApplicationController
     render json: temp_json.to_json  #TODO write to json method in model
   end
 
+  def wechat_search
+    if search = WechatUser.find(params[:id]).search
+      search = JSON.parse search
+    else
+      search = {}
+    end
+
+    render json: search
+  end
+
   def get_user_json(params)
     uid =  params[:uid].present? ? params[:uid] : session[:uid]
     result = uid.present? ? User.find(uid) : {}
@@ -17,17 +27,6 @@ class UserController < ApplicationController
     temp_json.merge!(JSON.parse result.to_json(include: {:questions=> {include: {:answers => {include: :user}}}}))      #TODO what is this shit
 
     if result.agent_extention
-      page_config = if result.agent_extention.page_config
-                      JSON.parse(result.agent_extention.page_config)
-                    else
-                      {}
-                    end
-      search = if page_config['search']
-                 page_config['search'].map{|_, v| JSON.parse(v)}
-               else
-                 []
-               end
-
       if WechatUser.where(user_id: uid).empty?
         expect_url = "public/agents/#{uid}0.png"
         unless File.exist?(expect_url)
@@ -46,8 +45,6 @@ class UserController < ApplicationController
       end
 
       temp_json.merge!(agent_identifier: result.agent_extention.agent_identifier,
-                       published_page_config: {header: page_config['header'],
-                                               search: search},
                        qr_image: qr_image)   #TODO saved search
     end
     return temp_json

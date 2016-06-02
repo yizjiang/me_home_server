@@ -49,6 +49,29 @@ class WechatRequest
     return "/public/agents/#{scene_id}.png"
   end
 
+  def generate_home_code(scene_str)
+    url = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=#{@access_token}"
+    body = {
+      action_name: "QR_LIMIT_STR_SCENE",
+      action_info:
+        {
+          scene:
+            {
+              scene_str: scene_str
+            }
+        }
+    }
+    response = Typhoeus.post(url, body: body.to_json)
+    ticket = URI::encode (JSON.parse(response.body)['ticket'])
+    url = "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=#{ticket}"
+    response = Typhoeus.get(url)
+    file = "#{Rails.root}/public/agents/#{scene_str}.png"
+    File.open(file, 'wb') do |outfile|
+      outfile.write(response.body)
+    end
+    return "/agents/#{scene_str}.png"
+  end
+
   def send_text(opts)
     body = {touser: opts[:to_user],
             msgtype: 'text',

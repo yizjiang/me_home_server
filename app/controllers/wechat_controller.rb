@@ -28,7 +28,8 @@ class WechatController < ApplicationController
                     'meejia_qr_code' => :meejia_qr_code,
                     'my_login' => :my_login,
                     'report_location' => :report_location,
-                    'home_here' => :home_here
+                    'home_here' => :home_here,
+                    'send_home_card' => :send_home_card
 
   }
 
@@ -68,6 +69,24 @@ class WechatController < ApplicationController
     article_response
   end
 
+  def send_home_card
+    home = Home.find(@home_id)
+
+    if Home::OTHER_PROPERTY_TYPE.include?(home.meejia_type)
+      title = "位于#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+    else
+      title = "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+    end
+
+    body = {title: title,
+     body: 'nice home',
+     pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
+     url: "#{CLIENT_HOST}/home/#{home.id}/?agent_id=#{@agent_id}"}
+
+    @msg_hash[:items] = [body]
+    article_response
+  end
+
   def get_message_from_params
     body = case params['xml']['MsgType']
              when 'text'
@@ -78,19 +97,26 @@ class WechatController < ApplicationController
                params['xml']['MediaId']
              when 'event'
                if  params['xml']['Event'] == 'SCAN'
-                 @agent_id = params['xml']['EventKey'].to_i/10
-                 event_id = params['xml']['EventKey'].to_i % 10
-                 if event_id == 1
-                   'follow_agent'
-                 elsif event_id == 0
-                   'agent_follow'
-                 elsif event_id == 3
-                   if params['xml']['ToUserName'] == ACCOUNT_ID
-                     'login'
-                   else
-                     'agent_login'
+                 if params['xml']['EventKey'].start_with?('h')
+                   home_id, @agent_id = params['xml']['EventKey'].split('a')
+                   @home_id = home_id[1..-1]
+                   'send_home_card'
+                 else
+                   @agent_id = params['xml']['EventKey'].to_i/10
+                   event_id = params['xml']['EventKey'].to_i % 10
+                   if event_id == 1
+                     'follow_agent'
+                   elsif event_id == 0
+                     'agent_follow'
+                   elsif event_id == 3
+                     if params['xml']['ToUserName'] == ACCOUNT_ID
+                       'login'
+                     else
+                       'agent_login'
+                     end
                    end
                  end
+
                elsif params['xml']['Event'] == 'subscribe'
                  @from_search = false
                  @agent_id = params['xml']['EventKey'][8..-1].to_i/10
@@ -456,10 +482,10 @@ class WechatController < ApplicationController
                  else
                    {}
                  end
-        {title: "#{user.nickname} 城市：#{search['regionValue']} 价格: #{search['priceMin']} - #{search['priceMax']} 累计搜索:#{user.search_count}次",
+        {title: "#{user.nickname} 城市：#{search['regionValue']} 价格: #{search['priceMin']} - #{search['priceMax']}万美元 累计搜索:#{user.search_count}次",
          body: '',
          pic_url: user.head_img_url,
-         url: "#{SERVER_HOST}/agent/set_search?uid=#{@wechat_user.user_id}&cid=#{user.id}"}
+         url: "#{CLIENT_HOST}/quick_search/?wid=#{user.id}&from_agent=true"}
         end
         article_response
       else

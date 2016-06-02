@@ -35,6 +35,12 @@ MeHome::Application.routes.draw do
   get 'agent/:name', to: 'agent#index'
   get 'agents', to: 'agent#active_agents'
 
+  get 'wechat/user/:id/search', to: 'user#wechat_search'
+
+  get 'agent/:id/show', to: 'agent#show'
+  post 'agent/:id/edit', to: 'agent#edit'
+
+  post 'agent/:id/generate_home_qr_code', to: 'agent#generate_home_qr_code'
 
   get 'agent/:uid/customers', to: 'agent#all_customer'
   get 'agent/:uid/requests', to: 'agent#all_request'

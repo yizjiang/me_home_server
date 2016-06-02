@@ -1,23 +1,52 @@
 # encoding: utf-8
 
 class AgentController < ApplicationController
+  def show
+    agent_extention = User.find(params[:id]).agent_extention
+    render json: agent_info(agent_extention)
+  end
+
+  def edit
+    agent = User.find(params[:id])
+  end
+
+  def generate_home_qr_code
+    source_type = case params[:sourceType]
+                    when 'mls'
+                    ['MLSListings', 'San Francisco MLS', 'CRMLS']
+                    when 'public_record'
+                    ['Public Records']
+                    when 'metro_list'
+                    ['MetroList']
+                    when 'new_home'
+                      ['NewHomeSource.com']
+                    else
+                      ['EBRD', 'SANDICOR', 'BAREIS', 'VCRDS', 'CRISNet']
+                  end
+    home_id = PublicRecord.where('source in (?) and property_id like ?', source_type, params[:sourceId]).first.home.id
+    agent_id = params[:id]
+
+    scene_str = "h#{home_id}a#{agent_id}"
+    expect_file = "public/agents/#{scene_str}.png"
+    if File.exist?(expect_file)
+      qr_img = "/agents/#{scene_str}.png"
+    else
+      qr_img = WechatRequest.new.generate_home_code(scene_str)
+    end
+    render json: {qrImage: qr_img}
+  end
+
   def index
     home_list = []
     agent_extention = AgentExtention.find_by_agent_identifier(params[:name])
-    config = if page_config =agent_extention.page_config
-               JSON.parse page_config
-             else
-               {}
-             end
+    uid = agent_extention.user.id
 
-    search_config = config['search']
-
-    if search_config
-      search = JSON.parse search_config['0']
+    if search_config = agent_extention.page_config
+      search = JSON.parse(search_config)
       searches = search['regionValue'].split(',').map do |s|
         criteria = search.clone
         criteria['regionValue'] = s
-        Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})
+        Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})       #home num is a number
       end
 
       home_list = Home.search(searches).map do |home|
@@ -32,39 +61,46 @@ class AgentController < ApplicationController
       end
     end
 
-    header_config = config['header']
-    unless header_config
-      header_config = {name: agent_extention.user.try(:wechat_user).try(:nickname)}
+    if WechatUser.where(user_id: uid).empty?
+      expect_url = "public/agents/#{uid}0.png"
+      unless File.exist?(expect_url)
+        WechatRequest.new.generate_qr_code("#{uid}0")
+      end
+
+      qr_image = {img_url: "agents/#{uid}0.png",
+                  is_followed: false}
+      meejia_image = 'shared_qr/login.png'
+    else
+      expect_url = "public/agents/#{uid}1.png"
+      unless File.exist?(expect_url)
+        WechatRequest.new.generate_qr_code("#{uid}1")
+      end
+      qr_image = {img_url: "agents/#{uid}1.png",
+                  is_followed: true}
+      meejia_image = "agents/#{uid}1.png"
     end
 
-    render json: {header: header_config, home_list: home_list,
-                  qr_image: agent_extention.user.qr_code,
-                  description: agent_extention.description,
-                  cn_name: agent_extention.cn_name,
-                  phone: agent_extention.phone,
-                  mail: agent_extention.mail,
-                  wechat: agent_extention.wechat,
-                  head_image: agent_extention.user.wechat_user.try(:head_img_url) }
+    render json: agent_info(agent_extention).merge(home: home_list).merge(qr_image: qr_image).merge(meejia_image: meejia_image)
   end
 
   def save_page_config
     agent_extention = User.find(request.headers['HTTP_UID']).agent_extention
-    new_config = if agent_extention.page_config
-                   JSON.parse(agent_extention.page_config)
-                 else
-                   {}
-                 end
+    result = []
+
     if params[:header]
-      new_config['header'] = params[:header]
-    elsif params[:search]
-      new_config['search'] = params[:search]
+      agent_extention.update_attributes(cn_name: params[:header][:name],
+                                        phone: params[:header][:phone],
+                                        license_id: params[:header][:license],
+                                        mail: params[:header][:email],
+                                        description: params[:header][:description])
     end
-    agent_extention.update_attributes(page_config: new_config.to_json)
 
-    search_config = JSON.parse(agent_extention.page_config)['search']
+    if params[:search]
+      agent_extention.update_attributes(page_config: params[:search].to_json)
+    end
 
-    if search_config
-      search = JSON.parse search_config['0']
+    if search_config = agent_extention.page_config
+      search = JSON.parse(search_config)
       searches = search['regionValue'].split(',').map do |s|
         criteria = search.clone
         criteria['regionValue'] = s
@@ -75,9 +111,24 @@ class AgentController < ApplicationController
     result = Home.search(searches).map do |home|
       home.as_json
     end
-    render json: {header: new_config['header'], home_list: result }
+    render json: agent_info(agent_extention).merge(home: result)
   end
 
+  def agent_info(agent_extention)
+    {
+    agent_identifier: agent_extention.agent_identifier,
+    license_year: agent_extention.license_year,
+     license_id: agent_extention.license_id,
+     page_config: agent_extention.page_config,
+                  qr_code: agent_extention.user.qr_code,
+                  description: agent_extention.description,
+                  cn_name: agent_extention.cn_name || agent_extention.user.try(:wechat_user).try(:nickname),
+                  phone: agent_extention.phone,
+                  mail: agent_extention.mail,
+                  wechat: agent_extention.wechat,
+                  head_image: agent_extention.user.wechat_user.try(:head_img_url) }
+
+  end
   def upload_qrcode
     uid = request.headers['HTTP_UID']
     File.open("./public/agents/#{uid}_qrcode.png", 'wb') do |outfile|
@@ -177,14 +228,14 @@ class AgentController < ApplicationController
       user = User.find(uid)
       if agent_id = user.wechat_user.agent_id
         want_num_agent -= 1
-        agents << User.find(agent_id.to_i).as_json(include_details: false)
+        agents << User.find(agent_id.to_i)
         agent_ids -= [agent_id.to_i]
       end
     end
     agent_ids = agent_ids.sample(want_num_agent)
 
-    agents = agents + User.find(agent_ids).map{|agent| agent.as_json(include_details: false)}
-    render json: agents
+    agents = agents + User.find(agent_ids)
+    render json: agents.map{|a| agent_info(a.agent_extention)}
   end
 
   private
