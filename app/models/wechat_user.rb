@@ -7,9 +7,15 @@ class WechatUser < ActiveRecord::Base
   belongs_to :user
   has_many :wechat_trackings
 
+  after_create :after_subscribe
+
   after_save :send_homes_on_wechat, if: lambda {
     self.search_changed?
   }
+
+  def after_subscribe
+    SubscribeWorker.perform_async(self.id)
+  end
 
   def send_homes_on_wechat(search = nil)
     search ||= if search = self.search

@@ -522,9 +522,9 @@ class WechatController < ApplicationController
       search = JSON.parse(search)
 
       if (search['home_type'] - Home::OTHER_PROPERTY_TYPE).length == 0
-        title = "位于#{search['regionValue']}其他类型房产"
+        title = "#{search['regionValue']}其他类型房产"
       else
-        title = "位于#{search['regionValue']}多于#{search['bedNum']}卧室的房源"
+        title = "#{search['regionValue']}多于#{search['bedNum']}卧室的房源"
       end
 
       @msg_hash[:items] = [{title: title,
@@ -628,7 +628,7 @@ class WechatController < ApplicationController
   def agent_request_items(requests)
     requests.map do |request|
       home = Home.find(request.request_context_id)
-      {title: "编号#{request.id}: " + request.body % {detail: "位于#{home.addr1} #{home.city}的房源信息"},
+      {title: "编号#{request.id}: " + request.body % {detail: "#{home.addr1} #{home.city}的房源信息"},
        body: '点击图片查看',
        picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{@wechat_user.user_id}"
@@ -641,9 +641,9 @@ class WechatController < ApplicationController
     homes = homes.map do |home|
 
       if Home::OTHER_PROPERTY_TYPE.include?(home.meejia_type)
-        title = "位于#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+        title = "#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
       else
-        title = "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+        title = "#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
       end
 
       {title: title,
