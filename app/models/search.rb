@@ -47,8 +47,7 @@ class Search
     @search_query[:bedNum] = @bed_num
 
     @indoor_size = if attributes[:indoor_size].present?
-                     @search_query[:indoor_size] = attributes[:indoor_size]
-                     attributes[:indoor_size]
+                     @search_query[:indoor_size] = attributes[:indoor_size].to_f
                    else
                      0
                    end
