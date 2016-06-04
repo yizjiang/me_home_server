@@ -27,6 +27,9 @@ namespace :csv do
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
           home_county = row[7].lstrip.rstrip 
+          if (home_city.eql?('Stanford') && home_state.eql?('CA') && home_county.eql?('Santa Clara'))
+             home_city = 'Palo Alto'
+          end
 	  uniq_condition = {addr1: row[3].lstrip.rstrip,
                           city: home_city,
                           state: home_state,
