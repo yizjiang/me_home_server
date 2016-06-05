@@ -22,13 +22,14 @@ namespace :csv do
         end         
 
         #if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
-        if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil?) && row[5] == 'CA')
+         if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
           home_county = row[7].lstrip.rstrip 
           if (home_city.eql?('Stanford') && home_state.eql?('CA') && home_county.eql?('Santa Clara'))
 	     home_city = 'Palo Alto'
+             p 'stanford'
 	  end
 
 	  uniq_condition = {addr1: row[3].lstrip.rstrip,
