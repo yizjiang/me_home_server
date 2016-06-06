@@ -38,18 +38,43 @@ namespace :wechat do
                      },
 
                      {
-                       type: "click",
+                       type: 'click',
                        name: '潜在买家',
-                       key: "agent_request"
+                       key: 'buyer'
+                     },
+
+                     {
+                       type: 'click',
+                       name: '房屋咨询',
+                       key: 'agent_request'
+                     },
+
+                     {
+                       name: '普通咨询',
+                       type: 'click',
+                       key: 'cq'
                      }
+
                    ]
 
                  },
 
                  {
-                   name: '普通咨询',
-                   type: 'click',
-                   key: 'cq'
+                   name: '主页管理',
+                   sub_button: [
+                     {
+                       type: "click",
+                       name: "基本信息",
+                       key: "set_agent_page"
+                     },
+
+                     {
+                       type: "click",
+                       name: '推荐文章',
+                       key: 'articles'
+                     }
+                   ]
+
                  },
 
                  {
@@ -59,12 +84,6 @@ namespace :wechat do
                        type: "click",
                        name: "觅家二维码",
                        key: "meejia_qr_code"
-                     },
-
-                     {
-                       type: "click",
-                       name: "主页设置",
-                       key: "set_agent_page"
                      },
 
                      {

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160424000644) do
+ActiveRecord::Schema.define(:version => 20160605074811) do
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -71,6 +71,20 @@ ActiveRecord::Schema.define(:version => 20160424000644) do
     t.string  "body"
   end
 
+  create_table "articles", :force => true do |t|
+    t.string   "media_id"
+    t.text     "content"
+    t.string   "url"
+    t.string   "title"
+    t.string   "digest"
+    t.string   "author"
+    t.string   "content_source_url"
+    t.integer  "user_id"
+    t.string   "thumb_media_id"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
+  end
+
   create_table "auth_provider", :force => true do |t|
     t.string "name"
     t.string "access_token"
@@ -118,57 +132,61 @@ ActiveRecord::Schema.define(:version => 20160424000644) do
   create_table "home_school_assignments", :force => true do |t|
     t.integer "home_id"
     t.integer "school_id"
-    t.string  "distance",  :limit => 255
+    t.string  "distance"
     t.boolean "assigned"
   end
 
+  add_index "home_school_assignments", ["home_id"], :name => "index_home_school_assignments_on_home_id"
+
   create_table "homes", :force => true do |t|
-    t.string   "addr1",           :limit => 255
-    t.string   "addr2",           :limit => 255
-    t.string   "city",            :limit => 255
-    t.string   "county",          :limit => 255
-    t.string   "state",           :limit => 255
-    t.integer  "zipcode"
+    t.string   "addr1"
+    t.string   "addr2"
+    t.string   "city"
+    t.string   "county"
+    t.string   "state"
+    t.string   "zipcode"
     t.datetime "last_refresh_at"
     t.datetime "created_at"
-    t.string   "realtor_link",    :limit => 255
+    t.string   "realtor_link"
     t.text     "description"
     t.integer  "bed_num"
     t.float    "bath_num"
-    t.string   "indoor_size",     :limit => 255
-    t.string   "lot_size",        :limit => 255
+    t.string   "indoor_size"
+    t.string   "lot_size"
     t.float    "price"
     t.float    "unit_price"
-    t.string   "home_type",       :limit => 255
+    t.string   "home_type"
     t.integer  "year_built"
-    t.string   "neighborhood",    :limit => 255
+    t.string   "neighborhood"
     t.integer  "stores"
-    t.string   "status",          :limit => 255
+    t.string   "status"
     t.datetime "added_to_site"
-    t.string   "home_style",      :limit => 255
-    t.string   "redfin_link",     :limit => 255
-    t.string   "listing_agent",   :limit => 255
-    t.string   "listed_by",       :limit => 255
-    t.string   "meejia_type",     :limit => 255
-    t.string   "geo_point",       :limit => 255
+    t.string   "home_style"
+    t.string   "redfin_link"
+    t.string   "listing_agent"
+    t.string   "listed_by"
+    t.string   "meejia_type"
+    t.string   "geo_point"
     t.string   "parcel"
   end
 
   create_table "homes_cn", :force => true do |t|
     t.text   "description"
     t.text   "short_desc"
-    t.string "city",        :limit => 255
-    t.string "indoor_size", :limit => 255
-    t.string "lot_size",    :limit => 255
-    t.string "price",       :limit => 255
-    t.string "unit_price",  :limit => 255
-    t.string "home_type",   :limit => 255
+    t.string "city"
+    t.string "indoor_size"
+    t.string "lot_size"
+    t.string "price"
+    t.string "unit_price"
+    t.string "home_type"
   end
 
   create_table "images", :force => true do |t|
     t.string  "image_url", :limit => 255
     t.integer "home_id"
   end
+
+  add_index "images", ["home_id"], :name => "index_images_on_home_id"
 
   create_table "medias", :force => true do |t|
     t.integer  "reference_id"
@@ -227,18 +245,18 @@ ActiveRecord::Schema.define(:version => 20160424000644) do
   end
 
   create_table "schools", :force => true do |t|
-    t.string   "name",                  :limit => 255
-    t.string   "grade",                 :limit => 255
-    t.string   "student_teacher_ratio", :limit => 255
+    t.string   "name"
+    t.string   "grade"
+    t.string   "student_teacher_ratio"
     t.float    "rating"
-    t.string   "school_type",           :limit => 255
+    t.string   "school_type"
     t.float    "parent_rating"
     t.string   "addr1"
     t.string   "addr2"
     t.string   "city"
     t.string   "county"
     t.string   "state"
-    t.integer  "zipcode"
+    t.string   "zipcode"
     t.string   "phone"
     t.string   "url"
     t.string   "mail"

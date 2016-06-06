@@ -117,9 +117,10 @@ class Home < ActiveRecord::Base
 
   def as_json(options=nil)
     options ||= {}
-    if options[:addr_only]
-      options.merge!(only: [:id, :addr1, :city])
+    if options[:shorten]
+      options.merge!(only: [:id, :addr1, :city, :bed_num, :bath_num])
       result = super(options)
+      result[:images] =  self.images.try(:first)
     else
       result = super(options)
       result[:images] = self.images
@@ -134,16 +135,39 @@ class Home < ActiveRecord::Base
       result[:property_tax] = wrap_money((self.price * PROPERTY_TAX).round)
       result[:origin_price] = self.price
       result[:colleges] = self.get_college
-      if home_cn = self.home_cn
-        result[:chinese_indoor_size] = home_cn.indoor_size
-        result[:chinese_lot_size] = home_cn.lot_size
-        result[:short_desc] = home_cn.short_desc
-        result[:price] = home_cn.price
-        result[:unit_price] = home_cn.unit_price
-      end
     end
 
+    result[:home_type] = convert_home_type(self.meejia_type)
+    if home_cn = self.home_cn
+      result[:chinese_indoor_size] = home_cn.indoor_size
+      result[:chinese_lot_size] = home_cn.lot_size
+      result[:short_desc] = home_cn.short_desc
+      result[:price] = home_cn.price
+      result[:unit_price] = home_cn.unit_price
+    end
     result
+  end
+
+  def convert_home_type(meejia_type)
+    home_type = %w(single_family multi_family condo townhouse business land farm other)
+
+    if meejia_type == 'Single Family Home'
+      'single_family'
+    elsif ['Multi Family Home', 'Duplex', 'Triplex', 'Fourplex'].include?(meejia_type)
+      'multi_family'
+    elsif ['Apartment', 'Condominium'].include?(meejia_type)
+       'condo'
+    elsif meejia_type == 'Townhouse'
+       'townhouse'
+    elsif meejia_type == 'Mixed Use'
+       'business'
+    elsif ['Residential Land', 'Residential Lot', 'Land'].include?(meejia_type)
+      'land'
+    elsif ['Farms', 'Ranches'].include?(meejia_type)
+      'farm'
+    else
+      'other'
+    end
   end
 
   def get_college

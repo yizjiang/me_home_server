@@ -29,6 +29,8 @@ class WechatController < ApplicationController
                     'my_login' => :my_login,
                     'report_location' => :report_location,
                     'home_here' => :home_here,
+                    'buyer' => :potential_buyer,
+                    'articles' => :latest_articles,
                     'send_home_card' => :send_home_card
 
   }
@@ -194,6 +196,32 @@ class WechatController < ApplicationController
         @msg_hash[:items] = body
         article_response
       end
+    end
+  end
+
+  def latest_articles
+    set_redis(:wait_input, :select_article)
+    ReplyWorker.perform_async(@wechat_user.open_id, 'select_article')
+    @msg_hash[:items] = article_items(Article.last(10))
+    article_response
+  end
+
+  def select_article
+    p @msg_hash[:body]
+    page_config = @wechat_user.user.agent_extention.page_config || "{}"
+    page_config = JSON.parse page_config
+    page_config[:article_id] = @msg_hash[:body]
+    @wechat_user.user.agent_extention.update_attributes(page_config: page_config.to_json)
+    @msg_hash[:body] = '已成功推荐到您的主页'
+    text_response
+  end
+
+  def article_items(articles)
+    articles.map do |item|
+      {title: "编号#{item.id}: #{item.title}",
+       body: item.digest,
+       pic_url: item.content[/src="(.*?)"/i,1],
+       url: item.url}
     end
   end
 
@@ -435,7 +463,6 @@ class WechatController < ApplicationController
       @msg_hash[:body] = "请上传您的二维码完善联系方式"
       text_response
     end
-
   end
 
   def followed_by_agent
@@ -448,7 +475,8 @@ class WechatController < ApplicationController
       user = User.find(uid)
     end
     @wechat_user.save
-    @msg_hash[:body] = "经纪人#{User.find(@agent_id).agent_extention.agent_identifier}非常荣幸能为您服务。您可以输入如下Email和密码: #{user.email}/meejia2016 登录meejia.cn"
+    ReplyWorker.perform_async(@wechat_user.open_id, 'agent_card', @agent_id)
+    @msg_hash[:body] = "您可以输入如下Email和密码: #{user.email}/meejia2016 登录meejia.cn"
     text_response
   end
 
@@ -569,6 +597,15 @@ class WechatController < ApplicationController
     article_response
   end
 
+  def potential_buyer
+    ReplyWorker.perform_async(@wechat_user.open_id, 'potential_buyer')
+    set_redis(:wait_input, :select_buyer)
+    items = WechatUser.limit(10).order("RAND()").where('agent_id = 0 OR agent_id is NULL')
+    @msg_hash[:items] = wechat_user_items(items)
+    set_redis('select_buyer', items.map(&:user_id).join(','))
+    article_response
+  end
+
   def agent_request
     requests = AgentRequest.where(to_user: @wechat_user.user_id, status: 'open').limit(10)
     if requests.length > 0
@@ -577,8 +614,18 @@ class WechatController < ApplicationController
       ReplyWorker.perform_async(@wechat_user.open_id, 'agent_request')
       article_response
     else
-      @msg_hash[:body] = '目前没有客户需求'
+      @msg_hash[:body] = '目前没有房屋咨询'
       text_response
+    end
+  end
+
+  def wechat_user_items(wechat_users)
+    wechat_users.map do |wuser|
+      {title: "编号#{wuser.user_id}: #{wuser.nickname}最近搜索了#{wuser.search_count.to_i}次, 希望能得到经纪人帮助",
+       body: '',
+       pic_url: wuser.head_img_url,
+       url: ""
+      }
     end
   end
 
@@ -594,6 +641,23 @@ class WechatController < ApplicationController
     set_redis(:answer_ar, @msg_hash[:body], 60 * 60)
     set_redis(:wait_input, :answer_ar, 60 * 60)
     @msg_hash[:body] = '请输入您的回复'
+    text_response
+  end
+
+  def select_buyer
+    if @msg_hash[:body].to_i == 0
+      wusers = cached_input(:select_buyer).split(',')
+    else
+     wusers = [@msg_hash[:body].to_i]
+    end
+    p 'xxx'
+    p wusers
+    wusers = WechatUser.where('id in (?)', wusers)
+    wusers.each do |wuser|
+      ReplyWorker.perform_async(wuser.open_id, 'agent_card', @wechat_user.user_id)
+    end
+
+    @msg_hash[:body] = '已尝试发送您的觅家名片给选中用户'
     text_response
   end
 
@@ -618,7 +682,7 @@ class WechatController < ApplicationController
     set_redis(:wait_input, :like_agent)
 
     agents.map do |agent|
-      {title: "编号:#{agent.id}, 姓名: #{agent.agent_extention.cn_name || agent.wechat_user.try(:nickname)}",
+      {title: "编号#{agent.id}, 姓名: #{agent.agent_extention.cn_name || agent.wechat_user.try(:nickname)}",
        body: "#{agent.agent_extention.description}",
        pic_url: "#{agent.wechat_user.try(:head_img_url)}",
        url: "#{CLIENT_HOST}/agent/#{agent.agent_extention.try(:agent_identifier)}"}
@@ -628,7 +692,7 @@ class WechatController < ApplicationController
   def agent_request_items(requests)
     requests.map do |request|
       home = Home.find(request.request_context_id)
-      {title: "编号#{request.id}: " + request.body % {detail: "#{home.addr1} #{home.city}的房源信息"},
+      {title: "编号#{request.from_user}: " + request.body % {detail: "#{home.addr1} #{home.city}的房源信息"},
        body: '点击图片查看',
        picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
        url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{@wechat_user.user_id}"

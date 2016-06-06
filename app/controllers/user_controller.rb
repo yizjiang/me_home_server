@@ -27,25 +27,7 @@ class UserController < ApplicationController
     temp_json.merge!(JSON.parse result.to_json(include: {:questions=> {include: {:answers => {include: :user}}}}))      #TODO what is this shit
 
     if result.agent_extention
-      if WechatUser.where(user_id: uid).empty?
-        expect_url = "public/agents/#{uid}0.png"
-        unless File.exist?(expect_url)
-          WechatRequest.new.generate_qr_code("#{uid}0")
-        end
-
-        qr_image = {img_url: "agents/#{uid}0.png",
-                    is_followed: false}
-      else
-        expect_url = "public/agents/#{uid}1.png"
-        unless File.exist?(expect_url)
-          WechatRequest.new.generate_qr_code("#{uid}1")
-        end
-        qr_image = {img_url: "agents/#{uid}1.png",
-                    is_followed: true}
-      end
-
-      temp_json.merge!(agent_identifier: result.agent_extention.agent_identifier,
-                       qr_image: qr_image)   #TODO saved search
+      temp_json.merge!(agent_identifier: result.agent_extention.agent_identifier)   #TODO saved search
     end
     return temp_json
   end

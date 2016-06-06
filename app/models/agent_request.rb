@@ -26,7 +26,7 @@ class AgentRequest < ActiveRecord::Base
               msgtype: 'news',
               news: {articles: [
                 {
-                  title: "编号#{self.id}" + self.body % {detail: "位于#{home.city}的#{home.addr1}房源信息"},
+                  title: "编号#{self.to_user}" + self.body % {detail: "位于#{home.city}的#{home.addr1}房源信息"},
                   description: '点击图片查看',
                   url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{self.to_user}",
                   picurl: home.images.first

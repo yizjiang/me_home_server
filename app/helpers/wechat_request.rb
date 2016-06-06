@@ -20,6 +20,18 @@ class WechatRequest
     JSON.parse(response.body)['access_token']
   end
 
+  def article_list
+    url = "https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=#{@access_token}"
+    body = {
+      type: 'news',
+      offset: 0,
+      count: 20
+    }
+
+    response = Typhoeus.post("#{url}", body: body.to_json)
+    JSON.parse(response.body)
+  end
+
   def upload_image(file)
     url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=#{@access_token}&type=image"
     response = Typhoeus.post(url, headers: {'Content-Type' => 'multipart/form-data'}, body: {media: File.open(file, "r")})
@@ -115,8 +127,8 @@ class WechatRequest
     url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=#{@access_token}&type=voice"
 
     response = Typhoeus.post(url,
-                             headers: {'Content-Type' => 'multipart/form-data' },
-                             body: {:media => File.open(file,'r')})
+                             headers: {'Content-Type' => 'multipart/form-data'},
+                             body: {:media => File.open(file, 'r')})
     JSON.parse(response.body)['media_id']
 
   end

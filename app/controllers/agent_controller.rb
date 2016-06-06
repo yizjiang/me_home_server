@@ -10,6 +10,28 @@ class AgentController < ApplicationController
     agent = User.find(params[:id])
   end
 
+  def meejia_image
+    uid = params[:id]
+    if WechatUser.where(user_id: uid).empty?
+      expect_url = "public/agents/#{uid}0.png"
+      unless File.exist?(expect_url)
+        WechatRequest.new.generate_qr_code("#{uid}0")
+      end
+
+      qr_image = {img_url: "#{SERVER_HOST}/agents/#{uid}0.png",
+                  meejia_url: "#{SERVER_HOST}/shared_qr/login.png",
+                  is_followed: false}
+    else
+      expect_url = "public/agents/#{uid}1.png"
+      unless File.exist?(expect_url)
+        WechatRequest.new.generate_qr_code("#{uid}1")
+      end
+      qr_image = {img_url: "#{SERVER_HOST}/agents/#{uid}1.png",
+                  is_followed: true}
+    end
+    render json: qr_image
+  end
+
   def generate_home_qr_code
     source_type = case params[:sourceType]
                     when 'mls'
@@ -39,7 +61,6 @@ class AgentController < ApplicationController
   def index
     home_list = []
     agent_extention = AgentExtention.find_by_agent_identifier(params[:name])
-    uid = agent_extention.user.id
 
     if search_config = agent_extention.page_config
       search = JSON.parse(search_config)
@@ -50,37 +71,18 @@ class AgentController < ApplicationController
       end
 
       home_list = Home.search(searches).map do |home|
-        home.as_json
+        home.as_json(shorten: true)
       end
     else
       home_list = []
       HOT_AREAS.sample(5).each do |area|
         home_list += Home.search(Search.new(regionValue: area), 5).map do |home|
-          home.as_json
+          home.as_json(shorten: true)
         end
       end
     end
 
-    if WechatUser.where(user_id: uid).empty?
-      expect_url = "public/agents/#{uid}0.png"
-      unless File.exist?(expect_url)
-        WechatRequest.new.generate_qr_code("#{uid}0")
-      end
-
-      qr_image = {img_url: "agents/#{uid}0.png",
-                  is_followed: false}
-      meejia_image = 'shared_qr/login.png'
-    else
-      expect_url = "public/agents/#{uid}1.png"
-      unless File.exist?(expect_url)
-        WechatRequest.new.generate_qr_code("#{uid}1")
-      end
-      qr_image = {img_url: "agents/#{uid}1.png",
-                  is_followed: true}
-      meejia_image = "agents/#{uid}1.png"
-    end
-
-    render json: agent_info(agent_extention).merge(home: home_list).merge(qr_image: qr_image).merge(meejia_image: meejia_image)
+    render json: agent_info(agent_extention).merge(home: home_list.sample(15))
   end
 
   def save_page_config
@@ -96,7 +98,7 @@ class AgentController < ApplicationController
     end
 
     if params[:search]
-      agent_extention.update_attributes(page_config: params[:search].to_json)
+      agent_extention.update_attributes(page_config: params[:search].to_json)  #TODO use search.search_query to populate
     end
 
     if search_config = agent_extention.page_config
@@ -116,10 +118,11 @@ class AgentController < ApplicationController
 
   def agent_info(agent_extention)
     {
-    agent_identifier: agent_extention.agent_identifier,
-    license_year: agent_extention.license_year,
-     license_id: agent_extention.license_id,
-     page_config: agent_extention.page_config,
+      agent_id: agent_extention.user.id,
+      agent_identifier: agent_extention.agent_identifier,
+      license_year: agent_extention.license_year,
+      license_id: agent_extention.license_id,
+      page_config: agent_extention.page_config,
                   qr_code: agent_extention.user.qr_code,
                   description: agent_extention.description,
                   cn_name: agent_extention.cn_name || agent_extention.user.try(:wechat_user).try(:nickname),
@@ -143,12 +146,12 @@ class AgentController < ApplicationController
   def all_customer
     @customers = WechatUser.where(agent_id: params[:uid]).includes(:wechat_trackings, :user).map do |wuser|
                     favorites = wuser.user.homes.map do |home|
-                      home.as_json(addr_only: true)
+                      home.as_json(shorten: true)
                     end
                     customer_hash = wuser.as_json.merge(favorites: favorites)
                     home_ids = wuser.wechat_trackings.pluck(:item).map{|id| id.to_i}
                     interest_homes = Home.select([:id, :addr1, :city]).where( "id in (?)", home_ids).map do |home|
-                      home.as_json(addr_only: true)
+                      home.as_json(shorten: true)
                     end
                     customer_hash.merge(interest: interest_homes)
     end

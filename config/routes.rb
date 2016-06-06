@@ -7,6 +7,8 @@ MeHome::Application.routes.draw do
   resources :home
   resources :region
   resources :school
+  resources :article, only: [:index, :show]
+
   resources :user do
     #collection do
     #  get 'questions'
@@ -34,6 +36,7 @@ MeHome::Application.routes.draw do
 
   get 'agent/:name', to: 'agent#index'
   get 'agents', to: 'agent#active_agents'
+  get 'agent/:id/meejia_image', to: 'agent#meejia_image'
 
   get 'wechat/user/:id/search', to: 'user#wechat_search'
 
@@ -65,4 +68,6 @@ MeHome::Application.routes.draw do
 
   get 'customers', to: 'customer#index'
   post 'customers/connect', to: 'customer#connect'
+
+
 end
