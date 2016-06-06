@@ -3,7 +3,7 @@ namespace :wechat do
     token = get_access_token(true)
     articles = article_list(token)['item']
     articles.each do |article|
-      if Article.find_by_media_id_and_tile(article['media_id'], article['title']).nil?
+      if Article.find_by_media_id_and_title(article['media_id'], article['title']).nil?
         news = article['content']['news_item']
         news.each do |item|
           Article.create(media_id: article['media_id'],
