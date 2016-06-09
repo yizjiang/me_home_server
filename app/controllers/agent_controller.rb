@@ -82,7 +82,7 @@ class AgentController < ApplicationController
       end
     end
 
-    render json: agent_info(agent_extention).merge(home: home_list.sample(15))
+    render json: agent_info(agent_extention).merge(home: home_list.sample(10))
   end
 
   def save_page_config
@@ -101,19 +101,19 @@ class AgentController < ApplicationController
       agent_extention.update_attributes(page_config: params[:search].to_json)  #TODO use search.search_query to populate
     end
 
-    if search_config = agent_extention.page_config
-      search = JSON.parse(search_config)
-      searches = search['regionValue'].split(',').map do |s|
-        criteria = search.clone
-        criteria['regionValue'] = s
-        Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})       #home num is a number
-      end
-    end
-
-    result = Home.search(searches).map do |home|
-      home.as_json
-    end
-    render json: agent_info(agent_extention).merge(home: result)
+    #if search_config = agent_extention.page_config
+    #  search = JSON.parse(search_config)
+    #  searches = search['regionValue'].split(',').map do |s|
+    #    criteria = search.clone
+    #    criteria['regionValue'] = s
+    #    Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})       #home num is a number
+    #  end
+    #end
+    #
+    #result = Home.search(searches).map do |home|
+    #  home.as_json
+    #end
+    render json: agent_info(agent_extention)#.merge(home: result)
   end
 
   def agent_info(agent_extention)

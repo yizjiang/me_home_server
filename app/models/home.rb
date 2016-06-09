@@ -120,7 +120,7 @@ class Home < ActiveRecord::Base
     if options[:shorten]
       options.merge!(only: [:id, :addr1, :city, :bed_num, :bath_num])
       result = super(options)
-      result[:images] =  self.images.try(:first)
+      result[:images] =  [self.images.try(:first)]
     else
       result = super(options)
       result[:images] = self.images

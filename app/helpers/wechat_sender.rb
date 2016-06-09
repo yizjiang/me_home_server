@@ -13,8 +13,8 @@ module WechatSender
   def send_random_homes
     homes = []
 
-    HOT_AREAS.sample(3).each do |area|
-      homes += Home.search(Search.new(regionValue: area), 10).sample(3)
+    HOT_AREAS.sample(4).each do |area|
+      homes += Home.search(Search.new(regionValue: area), 10).sample(2)
     end
 
     body = home_search_items(homes, 0, self.user_id)
