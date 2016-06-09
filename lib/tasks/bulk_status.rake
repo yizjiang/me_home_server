@@ -12,8 +12,8 @@ namespace :csv do
       begin
         home_status = row[24].lstrip.rstrip 
 	#row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
-        if ( !(row[7].nil? || row[7].empty? || row[5].nil? ) && row[5] == 'CA'  && !home_status.starts_with?('Active'))
-          home_city = row[4].lstrip.rstrip 
+        if ( !(row[4].nil? || row[4].empty? || row[5].nil? ) && row[5] == 'CA'  && !home_status.starts_with?('Active'))
+	  home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
           # home_county = row[7].lstrip.rstrip
@@ -32,6 +32,7 @@ namespace :csv do
           # home = Home.where(uniq_condition).first
 	  #if (home.nil?)
               home = Home.where(city:home_city, state:home_state, redfin_link:row[10]).first 
+              home = Home.where(state:home_state, redfin_link:row[10]).first if home.nil?
 	     # home.addr1 = row[3].lstrip.rstrip
 	       home.zipcode = home_zip unless home.nil? 
 	  #end
@@ -64,7 +65,7 @@ namespace :csv do
                                status: home_status
 			   #    listing_agent: row[26],
 			   #    listed_by: row[27]
-              ) 
+              )
 	      home.import_public_record(row[0..2].concat([update_date]).concat([row[24]]).concat([row[17]])) 
               # home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
               # home.import_history_record(home_history)

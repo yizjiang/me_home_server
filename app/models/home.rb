@@ -329,6 +329,8 @@ class Home < ActiveRecord::Base
     history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
     o_event = 'Price Change-REO'
     history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
+    o_event = 'Back On Market'
+    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
   
    if (history_record.nil? && !property_id.nil? && !source.nil?)
       history_record =  PublicRecord.where(source: source, property_id: property_id, home_id: self.id, event:n_event).first
