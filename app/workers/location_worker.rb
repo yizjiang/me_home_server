@@ -5,11 +5,11 @@ class LocationWorker
   sidekiq_options retry: 3
 
   sidekiq_retry_in do |count|
-    1 * (count + 1)
+    count
   end
 
   sidekiq_retries_exhausted do |msg|
-    WechatRequest.new.send_text(to_user: msg['args'][0], body: '无法获取地址，请打开公众号右上角菜单开启位置服务')
+    WechatRequest.new.send_text(to_user: msg['args'][0], body: '无法获取地址，请您 1.前往手机设置开启微信的位置服务. 2.允许公众号获取地址(您可以点击右上角菜单开启)')
   end
 
   def perform(uid)
