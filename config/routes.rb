@@ -26,6 +26,7 @@ MeHome::Application.routes.draw do
 
   #post 'users/sign_in', to: 'login#create'
 
+  get 'home/search/listing', to: 'home#search_by_listing'
   get 'all_city', to: 'region#all_city'
   get 'bay_area_cities', to: 'region#bay_area_cities'
 
@@ -37,7 +38,7 @@ MeHome::Application.routes.draw do
   get 'agent/:name', to: 'agent#index'
   get 'agents', to: 'agent#active_agents'
   get 'agent/:id/meejia_image', to: 'agent#meejia_image'
-
+  get 'agent/:id/home_list', to: 'agent#home_list'
   get 'wechat/user/:id/search', to: 'user#wechat_search'
 
   get 'agent/:id/show', to: 'agent#show'

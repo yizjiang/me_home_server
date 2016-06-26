@@ -2,7 +2,7 @@
 
 class AgentRequest < ActiveRecord::Base
   attr_accessible *column_names
-  after_create :sent_to_wechat
+  after_create :sent_to_wechat, :if => lambda {|request| request.to_user.present? }
 
   def as_json
     result = super

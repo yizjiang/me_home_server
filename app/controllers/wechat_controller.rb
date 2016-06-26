@@ -31,7 +31,8 @@ class WechatController < ApplicationController
                     'home_here' => :home_here,
                     'buyer' => :potential_buyer,
                     'articles' => :latest_articles,
-                    'send_home_card' => :send_home_card
+                    'send_home_card' => :send_home_card,
+                    'my_agent' => :my_agent
 
   }
 
@@ -84,6 +85,8 @@ class WechatController < ApplicationController
      body: home.home_cn.try(:short_desc) || '绝对超值',
      pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
      url: "#{CLIENT_HOST}/home/#{home.id}/?agent_id=#{@agent_id}"}
+
+    ReplyWorker.perform_async(@wechat_user.open_id, 'listing_agent_card', @agent_id)
 
     @msg_hash[:items] = [body]
     article_response
@@ -465,6 +468,21 @@ class WechatController < ApplicationController
     end
   end
 
+  def my_agent
+    agent_id = @wechat_user.agent_id
+    if agent_id
+      agent = User.find(agent_id)
+      @msg_hash[:items] = [{title: "#{agent.agent_extention.cn_name || agent.wechat_user.nickname}非常荣幸为您服务",
+                            body: '',
+                            pic_url: agent.qr_code,
+                            url: agent.qr_code}]
+      article_response
+    else
+      @msg_hash[:body] = '您还没有选择经纪人，请点击专业经纪人->购房经纪人选择'
+      text_response
+    end
+  end
+
   def followed_by_agent
     @wechat_user.agent_id = @agent_id
     set_wechat_user_info
@@ -608,6 +626,11 @@ class WechatController < ApplicationController
 
   def agent_request
     requests = AgentRequest.where(to_user: @wechat_user.user_id, status: 'open').limit(10)
+
+    if requests.count < 10
+      requests += AgentRequest.where(status: 'open').limit(10 - requests.count)
+    end
+
     if requests.length > 0
       @msg_hash[:items] = agent_request_items(requests)
       set_redis(:wait_input, :select_ar)

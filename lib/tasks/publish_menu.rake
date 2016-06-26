@@ -172,6 +172,12 @@ namespace :wechat do
                        type: "click",
                        name: "忘记密码",
                        key: "my_login"
+                     },
+
+                     {
+                       type: "click",
+                       name: "我的经纪人",
+                       key: "my_agent"
                      }
 
                    ]}

@@ -33,19 +33,7 @@ class AgentController < ApplicationController
   end
 
   def generate_home_qr_code
-    source_type = case params[:sourceType]
-                    when 'mls'
-                    ['MLSListings', 'San Francisco MLS', 'CRMLS']
-                    when 'public_record'
-                    ['Public Records']
-                    when 'metro_list'
-                    ['MetroList']
-                    when 'new_home'
-                      ['NewHomeSource.com']
-                    else
-                      ['EBRD', 'SANDICOR', 'BAREIS', 'VCRDS', 'CRISNet']
-                  end
-    home_id = PublicRecord.where('source in (?) and property_id like ?', source_type, params[:sourceId]).first.home.id
+    home_id = params[:home_id]
     agent_id = params[:id]
 
     scene_str = "h#{home_id}a#{agent_id}"
@@ -55,13 +43,18 @@ class AgentController < ApplicationController
     else
       qr_img = WechatRequest.new.generate_home_code(scene_str)
     end
+    Home.find(home_id).update_attributes(listing_agent: agent_id)
     render json: {qrImage: qr_img}
   end
 
   def index
-    home_list = []
     agent_extention = AgentExtention.find_by_agent_identifier(params[:name])
+    render json: agent_info(agent_extention)
+  end
 
+  def home_list
+    home_list = []
+    agent_extention = User.find(params[:id]).agent_extention
     if search_config = agent_extention.page_config
       search = JSON.parse(search_config)
       searches = search['regionValue'].split(',').map do |s|
@@ -70,19 +63,18 @@ class AgentController < ApplicationController
         Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})       #home num is a number
       end
 
-      home_list = Home.search(searches).map do |home|
+      home_list = Home.search(searches, 15).map do |home|
         home.as_json(shorten: true)
       end
     else
       home_list = []
       HOT_AREAS.sample(5).each do |area|
-        home_list += Home.search(Search.new(regionValue: area), 5).map do |home|
+        home_list += Home.search(Search.new(regionValue: area), 3).map do |home|
           home.as_json(shorten: true)
         end
       end
     end
-
-    render json: agent_info(agent_extention).merge(home: home_list.sample(10))
+    render json: home_list
   end
 
   def save_page_config
@@ -204,7 +196,7 @@ class AgentController < ApplicationController
         AgentRequest.where(from_user: request.headers['HTTP_UID'], request_type: 'home', request_context_id: params[:home_id], to_user: aid, status: 'open', body: body).first_or_create
       end
     else
-      AgentRequest.where(from_user: request.headers['HTTP_UID'], request_type: 'home', request_context_id: params[:home_id]).first_or_create
+      AgentRequest.where(from_user: request.headers['HTTP_UID'], request_type: 'home', request_context_id: params[:home_id], status: 'open').first_or_create
     end
 
     render json:[]
@@ -225,7 +217,7 @@ class AgentController < ApplicationController
   def active_agents
     agents = []
     want_num_agent = 3
-    agent_ids = AgentExtention.where('user_id is not NULL').pluck(:user_id)
+    agent_ids = AgentExtention.where(status: 'Active').where('user_id is not NULL').pluck(:user_id)
 
     if uid = request.headers['HTTP_UID']
       user = User.find(uid)
@@ -237,7 +229,7 @@ class AgentController < ApplicationController
     end
     agent_ids = agent_ids.sample(want_num_agent)
 
-    agents = agents + User.find(agent_ids)
+    agents = agents + User.where('qr_code is not NULL and id in (?)', agent_ids)
     render json: agents.map{|a| agent_info(a.agent_extention)}
   end
 

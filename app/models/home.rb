@@ -135,6 +135,7 @@ class Home < ActiveRecord::Base
       result[:property_tax] = wrap_money((self.price * PROPERTY_TAX).round)
       result[:origin_price] = self.price
       result[:colleges] = self.get_college
+      result[:listing_agent] = self.get_listing_agent
     end
 
     result[:home_type] = convert_home_type(self.meejia_type)
@@ -146,6 +147,15 @@ class Home < ActiveRecord::Base
       result[:unit_price] = home_cn.unit_price
     end
     result
+  end
+
+  def get_listing_agent
+    agent_info = {name: self.listing_agent}
+    if self.listing_agent.to_i != 0
+      agent = User.find(self.listing_agent.to_i)
+      agent_info.merge!(id: agent.id, name: agent.agent_extention.cn_name, profile_image: agent.wechat_user.head_img_url)
+    end
+    agent_info
   end
 
   def convert_home_type(meejia_type)

@@ -21,5 +21,27 @@ class HomeController < ApplicationController
     render json: home.as_json
   end
 
+  def search_by_listing
+    source_type = case params[:sourceType]
+                    when 'mls'
+                      ['MLSListings']
+                    when 'the_mls'
+                      ['TheMLS']
+                    when 'crmls'
+                      ['CRMLS']
+                    when 'sf_mls'
+                      ['San Francisco MLS']
+                    when 'metro_list'
+                      ['MetroList']
+                    else
+                      ['EBRD', 'SANDICOR', 'BAREIS', 'VCRDS', 'CRISNet']
+                  end
+    home = PublicRecord.where('source in (?) and property_id like ?', source_type, params[:sourceId].strip).first.try(:home)
+    if home
+      render json: home.as_json(shorten: true)
+    else
+      render json: {}
+    end
+  end
 end
 

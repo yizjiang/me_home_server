@@ -20,6 +20,15 @@ class ReplyWorker
                       url: File.join(CLIENT_HOST, "agent/#{extention.agent_identifier}")}]
 
           WechatRequest.new.send_articles(to_user: wid, body: article)
+        when 'listing_agent_card'
+          agent = User.find(reference_id)
+          extention = agent.agent_extention
+          article = [{title: "#{extention.cn_name}是此房子的卖方经纪人，请点击经纪人头像查看二维码",
+                      body: "#{extention.description}",
+                      picurl: agent.wechat_user.head_img_url,
+                      url: agent.qr_code}]
+
+          WechatRequest.new.send_articles(to_user: wid, body: article)
         when 'need_agent'
           body = '您可以回复经纪人编号获取联系方式，我们的经纪人也会尽快与您取得联系'
           WechatRequest.new.send_text(to_user: wid, body: body)
