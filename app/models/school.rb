@@ -7,7 +7,8 @@ class School < ActiveRecord::Base
 
   def attributes
     {name: nil, grade: nil, student_teacher_ratio: nil, rating: nil, school_type: nil,
-     rank: nil, url: nil, female_pct: nil, admin_rate: nil, enrolled_student: nil}
+     rank: nil, url: nil, female_pct: nil, admin_rate: nil, enrolled_student: nil,
+     geo_point: nil}
   end
 
 
@@ -23,6 +24,33 @@ class School < ActiveRecord::Base
       end    
   end
 
+  def as_json(options=nil)
+    options ||= {}
+    result = super(options)
+    result[:name] = self.name
+    result[:grade] = self.grade
+    result[:student_teacher_ratio] = self.student_teacher_ratio
+    result[:rating] = self.rating
+    result[:school_type] = self.school_type
+    result[:rank] = self.rank
+    result[:url] = self.url
+    result[:female_pct] = self.female_pct
+    result[:admin_rate] = self.admin_rate
+    result[:enrolled_student] = self.enrolled_student
+    result[:geo_point] = self.geo_point
+    # result[:assigned_school] = self.get_assigned_schools
+    # result[:public_schools] = self.get_other_public_schools
+    # result[:private_schools] = self.get_private_schools
+    # result[:chinese_description] = self.home_cn.try(:description)
+    # result[:short_desc] = self.home_cn.try(:short_desc)
+    # result[:city_info] = City.find_by_name(self.city)
+    # result[:public_record] = get_latest_record || {}
+    # result[:monthly_rent] = self.cal_money
+    # result[:property_tax] = wrap_money((self.price * PROPERTY_TAX).round)
+    # result[:origin_price] = self.price
+    # result[:colleges] = self.get_college
+    result
+  end
 
   def self.importer(school)    
     # this part for school from waijule

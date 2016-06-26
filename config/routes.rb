@@ -28,6 +28,7 @@ MeHome::Application.routes.draw do
 
   get 'home/search/listing', to: 'home#search_by_listing'
   get 'all_city', to: 'region#all_city'
+  get 'all_schools', to: 'school#all_schools'
   get 'bay_area_cities', to: 'region#bay_area_cities'
 
   get 'wechat_login', to: 'application#wechat_login'
