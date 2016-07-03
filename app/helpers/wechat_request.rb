@@ -91,7 +91,8 @@ class WechatRequest
               content: opts[:body]
             }
     }
-    Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{@access_token}", body: body.to_json)
+    response = Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{@access_token}", body: body.to_json)
+    p response.inspect
   end
 
   def send_articles (opts)
@@ -133,7 +134,7 @@ class WechatRequest
 
   end
 
-  def download_media(media_id)
+  def download_media(media_id, file_path = './public/wechat_media')
     url = "https://api.weixin.qq.com/cgi-bin/media/get?access_token=#{@access_token}&media_id=#{media_id}"
     response = Typhoeus.get(url)
 
@@ -142,7 +143,7 @@ class WechatRequest
     content_disposition = response.headers["content-disposition"]
     filename = content_disposition.match(/filename=(\"?)(.+)\1/)[2] rescue nil
 
-    local_file = "./public/wechat_media/#{filename}"
+    local_file = File.join(file_path, filename)
 
     File.open(local_file, "w+") { |file| file.write filedata.force_encoding('utf-8') }
 

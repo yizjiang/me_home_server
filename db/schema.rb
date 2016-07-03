@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160605074811) do
+ActiveRecord::Schema.define(:version => 20160627013919) do
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -310,6 +310,7 @@ ActiveRecord::Schema.define(:version => 20160605074811) do
     t.string   "head_img_url"
     t.datetime "last_search"
     t.integer  "search_count"
+    t.string   "qrcode"
   end
 
 end

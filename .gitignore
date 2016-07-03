@@ -13,5 +13,6 @@
 public/agents/*
 public/homes/*
 public/shared_qr/*
+config/database.yml
 config/client_server.yml
 public/wechat_media/*

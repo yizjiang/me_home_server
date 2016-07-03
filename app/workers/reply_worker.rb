@@ -29,6 +29,10 @@ class ReplyWorker
                       url: agent.qr_code}]
 
           WechatRequest.new.send_articles(to_user: wid, body: article)
+        when 'upload_qrcode'
+          REDIS.setex("#{wid}:wait_input", 600, 'upload_customer_qr_code')
+          body = '您可以上传二维码以便经纪人与您取得联系'
+          WechatRequest.new.send_text(to_user: wid, body: body)
         when 'need_agent'
           body = '您可以回复经纪人编号获取联系方式，我们的经纪人也会尽快与您取得联系'
           WechatRequest.new.send_text(to_user: wid, body: body)

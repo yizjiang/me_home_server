@@ -33,7 +33,6 @@ class WechatController < ApplicationController
                     'articles' => :latest_articles,
                     'send_home_card' => :send_home_card,
                     'my_agent' => :my_agent
-
   }
 
   def collect_data
@@ -97,6 +96,7 @@ class WechatController < ApplicationController
              when 'text'
                params['xml']['Content']
              when 'image'
+               @media_id = params['xml']['MediaId']
                params['xml']['PicUrl']
              when 'voice'
                params['xml']['MediaId']
@@ -298,9 +298,15 @@ class WechatController < ApplicationController
     text_response
   end
 
+  def upload_customer_qr_code
+     QrcodeWorker.perform_async(@media_id, @wechat_user.id)
+     @msg_hash[:body] = '已上传'
+     text_response
+  end
+
   def upload_agent_qr_code
     user = @wechat_user.user
-    user.update_attributes(qr_code:  @msg_hash[:body])
+    user.update_attributes(qr_code: @msg_hash[:body])
     uid = user.id
     expect_file = "public/agents/#{uid}1.png"
     unless File.exist?(expect_file)
@@ -327,6 +333,10 @@ class WechatController < ApplicationController
 
     uid ||= @wechat_user.user_id
 
+    unless @wechat_user.qrcode
+      ReplyWorker.perform_async(@wechat_user.open_id, 'upload_qrcode')
+    end
+
     if @from_search
       confirm_string = "欢迎#{@wechat_user.nickname}关注觅家\n 您可以访问#{CLIENT_HOST}查看更多精彩内容"
     else
@@ -339,9 +349,24 @@ class WechatController < ApplicationController
   end
 
   def update_qr
-    set_redis(:wait_input, :upload_agent_qr_code)
-    @msg_hash[:body] = '请上传新的二维码联系方式'
-    text_response
+    if @wechat_user.user.agent_extention
+      set_redis(:wait_input, :upload_agent_qr_code)
+      @msg_hash[:body] = '请上传新的二维码联系方式'
+      text_response
+    else
+      set_redis(:wait_input, :upload_customer_qr_code)
+      if qrcode = @wechat_user.qrcode
+        @msg_hash[:items] = [{title: "请上传新二维码",
+                              body: '这是您已上传的二维码',
+                              pic_url: qrcode,
+                              url: qrcode}]
+        article_response
+      else
+        @msg_hash[:body] = '你可以上传你的二维码联系方式，以供专业的经纪人联系'
+        text_response
+      end
+    end
+
   end
 
   def update_identifier
@@ -618,7 +643,10 @@ class WechatController < ApplicationController
   def potential_buyer
     ReplyWorker.perform_async(@wechat_user.open_id, 'potential_buyer')
     set_redis(:wait_input, :select_buyer)
-    items = WechatUser.limit(10).order("RAND()").where('agent_id = 0 OR agent_id is NULL')
+    items = WechatUser.limit(10).order('last_search').where('qrcode is not null').where('agent_id = 0 OR agent_id is NULL')
+    if items.length < 10
+      items += WechatUser.limit(10).order('last_search').where('qrcode is null').where('agent_id = 0 OR agent_id is NULL')
+    end
     @msg_hash[:items] = wechat_user_items(items)
     set_redis('select_buyer', items.map(&:user_id).join(','))
     article_response
@@ -644,10 +672,15 @@ class WechatController < ApplicationController
 
   def wechat_user_items(wechat_users)
     wechat_users.map do |wuser|
-      {title: "编号#{wuser.user_id}: #{wuser.nickname}最近搜索了#{wuser.search_count.to_i}次, 希望能得到经纪人帮助",
+      title = if wuser.qrcode
+                "编号#{wuser.user_id}: #{wuser.nickname}最近搜索了#{wuser.search_count.to_i}次, 点击获取二维码"
+              else
+                "编号#{wuser.user_id}: #{wuser.nickname}最近搜索了#{wuser.search_count.to_i}次, 希望能得到经纪人帮助"
+              end
+      {title: title,
        body: '',
        pic_url: wuser.head_img_url,
-       url: ""
+       url: wuser.qrcode
       }
     end
   end

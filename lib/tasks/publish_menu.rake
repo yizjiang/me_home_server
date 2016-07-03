@@ -178,6 +178,12 @@ namespace :wechat do
                        type: "click",
                        name: "我的经纪人",
                        key: "my_agent"
+                     },
+
+                     {
+                       type: "click",
+                       name: "我的二维码",
+                       key: "update_qr"
                      }
 
                    ]}
