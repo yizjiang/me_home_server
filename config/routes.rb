@@ -5,6 +5,7 @@ MeHome::Application.routes.draw do
 
   root to: 'application#index'
   resources :home
+  get 'homes/show_all', to: 'home#show_all'
   resources :region
   resources :school
   resources :article, only: [:index, :show]

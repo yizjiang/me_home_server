@@ -118,7 +118,7 @@ class Home < ActiveRecord::Base
   def as_json(options=nil)
     options ||= {}
     if options[:shorten]
-      options.merge!(only: [:id, :addr1, :city, :bed_num, :bath_num])
+      options.merge!(only: [:id, :addr1, :city, :bed_num, :bath_num, :geo_point])
       result = super(options)
       result[:images] =  [self.images.try(:first)]
     else

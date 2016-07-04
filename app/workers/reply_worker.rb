@@ -11,6 +11,13 @@ class ReplyWorker
         when 'select_article'
           body = '您可以回复文章编号来推荐到您的主页'
           WechatRequest.new(true).send_text(to_user: wid, body: body)
+        when 'home_map'
+          article = [{title: "我们为您生成了地图看房连接",
+                      body: "点击文章打开地图，查看您感兴趣的房子",
+                      picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
+                      url: File.join(CLIENT_HOST, "homeMap?ids=#{reference_id}")}]
+
+          WechatRequest.new.send_articles(to_user: wid, body: article)
         when 'agent_card'
           agent = User.find(reference_id)
           extention = agent.agent_extention

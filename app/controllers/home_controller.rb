@@ -21,6 +21,11 @@ class HomeController < ApplicationController
     render json: home.as_json
   end
 
+  def show_all
+    homes = Home.includes(:home_cn, :images).find(params[:ids].split(','))
+    render json: homes.as_json(shorten: true)
+  end
+
   def search_by_listing
     source_type = case params[:sourceType]
                     when 'mls'
