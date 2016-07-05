@@ -11,8 +11,12 @@ class UserController < ApplicationController
     else
       search = {}
     end
-
     render json: search
+  end
+
+  def send_home_card
+    User.find(request.headers['HTTP_UID']).wechat_user.send_home_on_wechat(params[:home_id])
+    render json: {}
   end
 
   def get_user_json(params)

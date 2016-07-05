@@ -92,7 +92,6 @@ class WechatRequest
             }
     }
     response = Typhoeus.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{@access_token}", body: body.to_json)
-    p response.inspect
   end
 
   def send_articles (opts)
