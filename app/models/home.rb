@@ -182,12 +182,17 @@ class Home < ActiveRecord::Base
 
   def get_college
     schools = School.where(grade: 'college', zipcode: (self.zipcode.to_i - 1000 .. self.zipcode.to_i + 1000))
-    schools.to_a.sort!{|x, y| compare_distance(x.geo_point, y.geo_point)}.first(2)
+                    .where('geo_point != -1')
+    if self.geo_point.to_i != -1
+      schools.to_a.sort!{|x, y| compare_distance(x.geo_point, y.geo_point)}.first(2)
+    else
+      schools.to_a.first(2)
+    end
   end
 
   def compare_distance(geo_a, geo_b)
     dist1 = distance(self.geo_point.split(','), geo_a.split(','))
-    dist2 = distance(self.geo_point.split(','), geo_a.split(','))
+    dist2 = distance(self.geo_point.split(','), geo_b.split(','))
     dist1 <=> dist2
   end
 
