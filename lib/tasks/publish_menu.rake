@@ -88,6 +88,12 @@ namespace :wechat do
 
                      {
                        type: "click",
+                       name: "我的房名牌",
+                       key: "home_card"
+                     },
+
+                     {
+                       type: "click",
                        name: "我的主页",
                        key: "agent_page"
                      },

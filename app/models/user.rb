@@ -14,16 +14,22 @@ class User < ActiveRecord::Base
   has_many :saved_searches, foreign_key: 'uid'
   has_many :questions, foreign_key: 'uid'
   has_many :favorite_homes, foreign_key: 'uid'
+
   has_many :homes, through: :favorite_homes do
     def just_address
       select([:id, :addr1])
     end
   end
+
   has_many :answers, foreign_key: 'uid'
   has_one :agent_extention, dependent: :destroy
   has_one :wechat_user, foreign_key: 'user_id'
 
   after_create :assign_agent_extension, if: lambda{self.agent_extention_id.present?}
+
+  def listing_homes
+    ListingHome.where(user_id: self.id, status: 'active')
+  end
 
   def as_json(options=nil)
     options ||= {}

@@ -63,6 +63,16 @@ class UserController < ApplicationController
     render json: user.to_json(include: [:homes])
   end
 
+  def all_favorite_hoems
+    user = User.find(params[:id])
+    result = if params[:shorten]
+               user.homes.pluck(:id)
+             else
+               user.homes.as_json(shorten: true)
+             end
+    render json: result
+  end
+
   def submit_question
     uid = request.headers['HTTP_UID']
     user = User.find(uid)

@@ -18,6 +18,18 @@ class ReplyWorker
                       url: File.join(CLIENT_HOST, "homeMap?ids=#{reference_id}")}]
 
           WechatRequest.new.send_articles(to_user: wid, body: article)
+        when 'home_map_with_user'
+          article = [{title: "我们为您生成了地图看房连接",
+                      body: "点击文章打开地图，查看您感兴趣的房子",
+                      picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
+                      url: File.join(CLIENT_HOST, "homeMap?uid=#{reference_id}")}]
+
+          WechatRequest.new.send_articles(to_user: wid, body: article)
+        when 'home_card'
+          wechat_user = WechatUser.find(wid)
+          wechat_user.user.listing_homes.each do |home|
+            wechat_user.send_home_on_wechat(home.home_id, true)
+          end
         when 'agent_card'
           agent = User.find(reference_id)
           extention = agent.agent_extention

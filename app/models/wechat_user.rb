@@ -17,9 +17,14 @@ class WechatUser < ActiveRecord::Base
     SubscribeWorker.perform_async(self.id)
   end
 
-  def send_home_on_wechat(home_id)
+  def send_home_on_wechat(home_id, to_agent = false)
     body = home_search_items([Home.find(home_id)], 0, self.id)
-    WechatRequest.new.send_articles(to_user: self.open_id, body: body)
+
+    if(to_agent)
+      WechatRequest.new(true).send_articles(to_user: self.open_id, body: body)
+    else
+      WechatRequest.new.send_articles(to_user: self.open_id, body: body)
+    end
   end
 
   def send_homes_on_wechat(search = nil)

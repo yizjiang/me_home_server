@@ -11,9 +11,9 @@ MeHome::Application.routes.draw do
   resources :article, only: [:index, :show]
 
   resources :user do
-    #collection do
-    #  get 'questions'
-    #end
+    member do
+      get 'homes', to: 'user#all_favorite_hoems'
+    end
   end
 
   resources :session

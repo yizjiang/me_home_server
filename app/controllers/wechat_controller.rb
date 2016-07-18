@@ -32,6 +32,7 @@ class WechatController < ApplicationController
                     'buyer' => :potential_buyer,
                     'articles' => :latest_articles,
                     'send_home_card' => :send_home_card,
+                    'home_card' => :home_card,
                     'my_agent' => :my_agent
   }
 
@@ -69,6 +70,16 @@ class WechatController < ApplicationController
                           pic_url: "#{SERVER_HOST}/agent_assitant.jpg",
                           url: "#{SERVER_HOST}/agent_assitant.jpg"}]
     article_response
+  end
+
+  def home_card
+    if @wechat_user.user.listing_homes.count > 0
+      ReplyWorker.perform_async(@wechat_user.id, 'home_card')
+      @msg_hash[:body] = '您可以分享此房屋名牌'
+    else
+      @msg_hash[:body] = '对不起，没有找到您待售的房源'
+    end
+    text_response
   end
 
   def send_home_card
@@ -211,7 +222,6 @@ class WechatController < ApplicationController
   end
 
   def select_article
-    p @msg_hash[:body]
     page_config = @wechat_user.user.agent_extention.page_config || "{}"
     page_config = JSON.parse page_config
     page_config[:article_id] = @msg_hash[:body]
@@ -617,6 +627,7 @@ class WechatController < ApplicationController
     homes = User.find(@wechat_user.user_id).homes
     if homes.count > 0
       @msg_hash[:items] = home_search_items(homes)
+      ReplyWorker.perform_async(@wechat_user.open_id, 'home_map_with_user', @wechat_user.user_id)
       article_response
     else
       @msg_hash[:body] = '您还没有红心房源'
@@ -707,8 +718,6 @@ class WechatController < ApplicationController
     else
      wusers = [@msg_hash[:body].to_i]
     end
-    p 'xxx'
-    p wusers
     wusers = WechatUser.where('id in (?)', wusers)
     wusers.each do |wuser|
       ReplyWorker.perform_async(wuser.open_id, 'agent_card', @wechat_user.user_id)

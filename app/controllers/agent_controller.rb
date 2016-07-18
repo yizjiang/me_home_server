@@ -63,13 +63,13 @@ class AgentController < ApplicationController
         Search.new(criteria.with_indifferent_access.reject{|_, v| v.to_s.empty?})       #home num is a number
       end
 
-      home_list = Home.search(searches, 15).map do |home|
+      home_list = Home.search(searches).sample(8).map do |home|
         home.as_json(shorten: true)
       end
     else
       home_list = []
-      HOT_AREAS.sample(5).each do |area|
-        home_list += Home.search(Search.new(regionValue: area), 3).map do |home|
+      HOT_AREAS.sample(4).each do |area|
+        home_list += Home.search(Search.new(regionValue: area), 2).map do |home|
           home.as_json(shorten: true)
         end
       end

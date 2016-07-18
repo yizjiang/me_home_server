@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160627013919) do
+ActiveRecord::Schema.define(:version => 20160718014141) do
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -187,6 +187,12 @@ ActiveRecord::Schema.define(:version => 20160627013919) do
   end
 
   add_index "images", ["home_id"], :name => "index_images_on_home_id"
+
+  create_table "listing_homes", :force => true do |t|
+    t.integer "home_id"
+    t.integer "user_id"
+    t.string  "status"
+  end
 
   create_table "medias", :force => true do |t|
     t.integer  "reference_id"
