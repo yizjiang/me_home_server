@@ -51,7 +51,7 @@ class AgentExtention < ActiveRecord::Base
         agent = AgentExtention.where(license_id:broker_agent[18].lstrip.rstrip, license_state:biz_state).first
         agent = AgentExtention.new(:license_id => broker_agent[18].lstrip.rstrip, :license_state => biz_state) if agent.nil?    
         agent.first_name = broker_agent[8].nil? ? agent.first_name : broker_agent[8].lstrip.rstrip
-        if (broker_agent[8].eql?(broker_agent[9]))
+        if (!broker_agent[8].eql?(broker_agent[9]))
           agent.middle_name = broker_agent[9].nil? ? agent.middle_name : broker_agent[9].lstrip.rstrip
         end
         agent.last_name = broker_agent[10].nil? ? agent.last_name : broker_agent[10].lstrip.rstrip
