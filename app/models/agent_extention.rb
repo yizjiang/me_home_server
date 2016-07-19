@@ -61,15 +61,18 @@ class AgentExtention < ActiveRecord::Base
         agent.mail = broker_agent[14].nil? ? agent.mail : broker_agent[14].lstrip.rstrip
         agent.url = broker_agent[15].nil? ? agent.url : broker_agent[15].lstrip.rstrip
         agent.city_area = broker_agent[16].nil? ? agent.city_area : broker_agent[16].lstrip.rstrip 
-        agent.license_issue = broker_agent[17].nil? ? agent.license_issue : broker_agent[17].lstrip.rstrip
+        p (Time.now - broker_agent[17].lstrip.rstrip.to_i * 3600) 
+
+        agent.license_issue = broker_agent[17].nil? ? agent.license_issue : (Time.now - broker_agent[17].lstrip.rstrip.to_i * 3600) unless broker_agent[17].nil?
         agent.license_type = broker_agent[19].nil? ? agent.license_type : broker_agent[19].lstrip.rstrip
-        agent.license_expire = broker_agent[20].nil? ? agent_license_expire : broker_agent[20].lstrip.rstrip
+        agent.license_expire = broker_agent[20].nil? ? agent_license_expire : (Time.now - broker_agent[20].lstrip.rstrip.to_i * 3600) unless broker_agent[17].nil?
         agent.description = broker_agent[21].nil? ? agent.description : broker_agent[21].lstrip.rstrip
         agent.photo_url = broker_agent[22].nil? ? agent.photo_url : broker_agent[22].lstrip.rstrip[10..-5]
         agent.city_list = broker_agent[23].nil? ? agent.city_list : broker_agent[23].lstrip.rstrip
         agent.district_list = broker_agent[24].nil? ? agent.district_list : broker_agent[24].lstrip.rstrip
-        agent.source = broker_agent[25].nil? ? agent.source : broker_agent[25].lstrip.rstrip 
-        agent.source_id = broker_agent[26].nil? ? agent.source_id : broker_agent[26].lstrip.rstrip 
+        agent.mailing_address = broker_agent[25].nil? ? agent.source : broker_agent[25].lstrip.rstrip 
+        agent.source = broker_agent[26].nil? ? agent.source : broker_agent[26].lstrip.rstrip 
+        agent.source_id = broker_agent[27].nil? ? agent.source_id : broker_agent[27].lstrip.rstrip 
         agent.status = "pending"
         agent.broker_company_id = broker_company.id
         p "before save"
