@@ -28,7 +28,7 @@ class AgentExtention < ActiveRecord::Base
     end
 
     broker_company = BrokerCompany.where(license_id:biz_license_id).first
-    
+    p broker_company   
     if (broker_company.nil? &&  !biz_name.nil? && !biz_zipcode.nil? && !biz_state.nil?)
       broker_company = BrokerCompany.where(name:biz_name, state:biz_state, zipcode:biz_zipcode).first
       p 'did not find' if broker_company.nil?
@@ -38,7 +38,7 @@ class AgentExtention < ActiveRecord::Base
     if (!broker_company.nil? )
       p 'update broker'
       broker_company.country = "USA"
-      broker_company.phone = broker_agent[6]
+      broker_company.phone = broker_agent[6].nil? ? broker_company.phone : broker_agent[6]
       broker_company.save
     end  
          
@@ -46,8 +46,8 @@ class AgentExtention < ActiveRecord::Base
      p 'create agent'
      p broker_agent[18]         
       if (!broker_agent[18].nil? && broker_agent[18].match(/[-+]?[0-9]+/))
-
         biz_state = broker_company.state if biz_state.nil?
+        p biz_state
         agent = AgentExtention.where(license_id:broker_agent[18].lstrip.rstrip, license_state:biz_state).first
         agent = AgentExtention.new(:license_id => broker_agent[18].lstrip.rstrip, :license_state => biz_state) if agent.nil?    
         agent.first_name = broker_agent[8].nil? ? agent.first_name : broker_agent[8].lstrip.rstrip
@@ -73,7 +73,7 @@ class AgentExtention < ActiveRecord::Base
         agent.mailing_address = broker_agent[25].nil? ? agent.source : broker_agent[25].lstrip.rstrip 
         agent.source = broker_agent[26].nil? ? agent.source : broker_agent[26].lstrip.rstrip 
         agent.source_id = broker_agent[27].nil? ? agent.source_id : broker_agent[27].lstrip.rstrip 
-        agent.status = "pending"
+        agent.status = "pending" unless  agent.status.nil?
         agent.broker_company_id = broker_company.id
         p "before save"
         agent.save
