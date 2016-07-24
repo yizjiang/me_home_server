@@ -22,7 +22,7 @@ namespace :csv do
         end
 
         #if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
-       	 if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
+       	 if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && (row[5] == 'CA' || row[5] == 'NY'))
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
@@ -67,10 +67,9 @@ namespace :csv do
            elementary_schools = row[29] ?  parse_wierd_input_to_array(row[29])[1..-1] : [] 
            middle_schools =  row[30] ? parse_wierd_input_to_array(row[30])[1..-1]: [] 
            high_schools =  row[31] ? parse_wierd_input_to_array(row[31])[1..-1]: [] 
-           #private_schools = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: [] 
-
-          # import assigned school last, so it will not overwrite it.
-          home.other_schools(elementary_schools + middle_schools + high_schools, home_city, home_county, home_state)
+           private_schools = row[38] ? parse_wierd_input_to_array(row[38])[1..-1]: [] 
+           # import assigned school last, so it will not overwrite it.
+           home.other_schools(elementary_schools + middle_schools + high_schools + private_schools, home_city, home_county, home_state)
           home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
           #home.assign_private_schools(private_schools)
         end
