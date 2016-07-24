@@ -37,12 +37,14 @@ namespace :csv do
                           state: home_state,
                           zipcode: home_zip}
           home = Home.where(uniq_condition).first_or_create
-          if (!home.status.nil? && !home.status.eql?("Inactive"))
+          if (!home.status.nil? && !home.status.eql?("Inactive") && home.price.eql?(row[17].delete(',')))
 	       print "exist --", home.id, " ", home.price, " ", home.status, " ",  home.addr1, "\n"
                #print "db link:"+ home.redfin_link, ", pass_link:", row[10], "\n" 
 	       p home.redfin_link
 	       p row[10] 
+	       home.build_image_group(row[25]) unless row[25].nil?
       	  else   
+	   #    p 'update'
 	    home.update_attributes(county: home_county,
                                last_refresh_at: time_before_now(row[8]),
 			       added_to_site: row[9],
