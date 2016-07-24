@@ -2,6 +2,9 @@
 
 class WechatController < ApplicationController
   before_filter :get_message_from_params, :if => lambda { request.post? }
+  before_filter :check_agent_permission, :if => lambda { params['xml']['ToUserName'] == AGENT_ACCOUNT_ID &&
+    ['my_client', 'buyer', 'agent_request', 'cq', 'set_agent_page', 'articles'].include?(@msg_hash[:body].downcase)
+                                                       }
 
   METHOD_MAPPING = {'s' => :home_search,
                     'q' => :ask_question,
@@ -46,15 +49,21 @@ class WechatController < ApplicationController
   end
 
   def message
-    response = if methond_sym = METHOD_MAPPING[@msg_hash[:body].downcase]
-                 send(methond_sym)
-               elsif (service_type = cached_input(:wait_input))
-                 delete_redis(:wait_input)
-                 @user_input = @msg_hash[:body]
-                 send(service_type.to_sym)
-               else
-                 default_response
-               end
+    if !@can_access
+      @msg_hash[:body] = '请先回复您的经纪人编号，在尝试此功能'
+      set_redis(:wait_input, :update_agent_license, 60 * 60)
+      response = text_response
+    else
+      response = if methond_sym = METHOD_MAPPING[@msg_hash[:body].downcase]
+                   send(methond_sym)
+                 elsif (service_type = cached_input(:wait_input))
+                   delete_redis(:wait_input)
+                   @user_input = @msg_hash[:body]
+                   send(service_type.to_sym)
+                 else
+                   default_response
+                 end
+    end
     if response
       render xml: response
     else
@@ -169,6 +178,15 @@ class WechatController < ApplicationController
                  body: body,
                  type: params['xml']['MsgType']}
     @wechat_user = WechatUser.find_or_initialize_by_open_id(@msg_hash[:from_username])
+    @can_access = true
+  end
+
+  def check_agent_permission
+    if AgentExtention.where(user_id: @wechat_user.user.id).where("status != 'Inactive'").present?
+      @can_access = true
+    else
+      @can_access = false
+    end
   end
 
   def default_response
@@ -406,8 +424,7 @@ class WechatController < ApplicationController
       @msg_hash[:body] = "您登陆的Email和密码是: #{user.email}/meejia2016，经纪人编码是#{extention.agent_identifier}, 请点击网页上的确定键完成登陆"
       text_response
     else
-      extention = AgentExtention.create(user_id: user.id, agent_identifier: user.username, license_id: 'xxx')
-      user.agent_extention_id = extention.id
+      user.agent_extention_id = PENDING_LISCENCE
       user.save
       set_redis(:wait_input, :agent_license, 60 * 60)
       @msg_hash[:body] = "感谢您选择成为觅家经纪人，请输入您的经纪人序列号"
@@ -415,13 +432,18 @@ class WechatController < ApplicationController
     end
   end
 
+  def update_agent_license
+    extention = AgentExtention.find_by_user_id(@wechat_user.user.id)
+    extention.update_attributes(license_id: @msg_hash[:body], status: 'Active')
+    @msg_hash[:body] = "经纪人序列号已保存"
+    text_response
+  end
 
   def agent_license
-    extention = @wechat_user.user.agent_extention
-    if extention
-      extention.update_attributes(license_id: @msg_hash[:body])
-      AgentFetcher.perform_async(extention, @msg_hash[:body])
-    end
+    extention = AgentExtention.find_or_create_by_license_id(@msg_hash[:body])
+    @wechat_user.user.update_attributes(agent_extention_id: extention.id)
+    extention.update_attributes(user_id:  @wechat_user.user.id, status: 'Active')
+    AgentFetcher.perform_async(extention.id, @msg_hash[:body])
     set_redis(:wait_input, :upload_agent_qr_code, 60 * 60)
     @msg_hash[:body] = "经纪人序列号已保存，请上传您的二维码联系方式以便我们为您联系客户"
     text_response

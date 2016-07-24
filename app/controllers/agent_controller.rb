@@ -112,7 +112,7 @@ class AgentController < ApplicationController
     {
       agent_id: agent_extention.user.id,
       agent_identifier: agent_extention.agent_identifier,
-      license_year: agent_extention.license_year,
+      license_year: agent_extention.license_issue,
       license_id: agent_extention.license_id,
       page_config: agent_extention.page_config,
                   qr_code: agent_extention.user.qr_code,

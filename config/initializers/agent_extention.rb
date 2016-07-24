@@ -1,0 +1,1 @@
+PENDING_LISCENCE = AgentExtention.find_or_create_by_user_id_and_license_id(nil, 'xxxx').id

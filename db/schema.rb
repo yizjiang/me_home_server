@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160718014141) do
+ActiveRecord::Schema.define(:version => 20160724034745) do
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(:version => 20160718014141) do
     t.string  "mail"
     t.string  "url"
     t.string  "license_state"
-    t.string  "license_year"
+    t.string  "license_issue"
     t.text    "description"
     t.string  "photo_url"
     t.string  "status"
@@ -37,6 +37,9 @@ ActiveRecord::Schema.define(:version => 20160718014141) do
     t.string  "source"
     t.string  "source_id"
     t.integer "broker_company_id"
+    t.string  "license_type"
+    t.date    "license_expire"
+    t.string  "mailing_address"
   end
 
   create_table "agent_requests", :force => true do |t|
