@@ -227,9 +227,9 @@ class AgentController < ApplicationController
         agent_ids -= [agent_id.to_i]
       end
     end
-    agent_ids = agent_ids.sample(want_num_agent)
 
     agents = agents + User.where('qr_code is not NULL and id in (?)', agent_ids)
+    agents = agents.sample(want_num_agent)
     render json: agents.map{|a| agent_info(a.agent_extention)}
   end
 
