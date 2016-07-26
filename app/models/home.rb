@@ -256,6 +256,9 @@ class Home < ActiveRecord::Base
  def alternate_name(name)
 #   if !name.nil? && name.include("Incorporated")?
      a_name = name.sub!("Incorporated","Inc")  
+     a_name = name.sub!(" Private School"," School") if a_name.nil?
+     a_name = name.sub!(" School","") if a_name.nil?
+     #p a_name
  #  end
  end
 
@@ -269,16 +272,21 @@ class Home < ActiveRecord::Base
     #  print school[7], ",", school_city, ",", school_state, "\n" unless school[7].nil?
       if !(school[6].nil? || school[6].empty?) 
         school_type = school[6].lstrip.rstrip.capitalize
-        #record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:city, county:county, state:state, grade:school[2]).first_or_create
+       #record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:city, county:county, state:state, grade:school[2]).first_or_create
         record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:school_city, county:county, state:school_state, grade:school[2]).first
+        record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:school_city, state:school_state, grade:school[2]).first if record.nil?
+        record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:school_city, state:school_state).first if record.nil?
         record = School.where(name: school[0].lstrip.rstrip, county:county, state:school_state, grade:school[2]).first if record.nil?
         record = School.where(name: school[0].lstrip.rstrip, county:county, state:school_state).first if record.nil?
-        school_name = alternate_name(school[0].lstrip.rstrip)
+        school_name = alternate_name(school[0].lstrip.rstrip) if record.nil?
+        #p school_name if record.nil?
         record = School.where(name: school_name, school_type: school_type, city:city, county:county, state:state, grade:school[2]).first if record.nil? && !school_name.nil?
+        record = School.where(name: school_name, school_type: school_type, city:city, state:state, grade:school[2]).first if record.nil? && !school_name.nil?
+        record = School.where(name: school_name, school_type: school_type, city:city, state:state).first if record.nil? && !school_name.nil?
         record = School.where(name: school_name, county:county, state:state, grade:school[2]).first  if record.nil? && !school_name.nil?
         record = School.where(name: school_name, county:county, state:state).first  if record.nil? && !school_name.nil?
 
-        #print "no shcool find --", city, ": ", school[0], "\n"  if record.nil?
+        #print "no shcool find --", city, ": ", school_name, ",", school_type, ",", state, ",", school[2], "\n"  if record.nil?
         
         record = School.new(:name => school[0].lstrip.rstrip, :school_type => school_type, :city => city, :county => county, :state => state, :grade => school[2]) if record.nil?
        
