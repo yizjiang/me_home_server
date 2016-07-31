@@ -21,8 +21,8 @@ namespace :csv do
             print "unit price:", row[18], "\n"
         end
 
-        #if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
-       	 if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && (row[5] == 'CA' || row[5] == 'NY'))
+	#addr, state, zip, county  price (17), image
+        if ( !(row[3].nil? || row[3].empty? || row[5].nil? || row[5].empty? || row[6].nil? || row[6].empty? || row[7].nil? || row[7].empty? || row[17].nil? || row[25].nil? || row[25].empty?) && (row[5] == 'CA' || row[5] == 'NY'))
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
@@ -72,8 +72,11 @@ namespace :csv do
            home.other_schools(elementary_schools + middle_schools + high_schools + private_schools, home_city, home_county, home_state)
           home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
           #home.assign_private_schools(private_schools)
-        end
-
+       else
+          print "not import: ", index , "," , row[3], "," ,row[5],",", row[6],",", row[7], "\n"
+      
+       end
+ 
       rescue StandardError
         #p "error out for item #{index}"
      	print "error out for item: ", index , "," , row[3], "\n"
