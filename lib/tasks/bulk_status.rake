@@ -37,7 +37,6 @@ namespace :csv do
 	      home.zipcode = home_zip unless home.nil? 
 	  end
 
-	  p 'start'
 	  if (!home.nil?)
 	      u_count = u_count+1
 	      #print "find ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"	  
