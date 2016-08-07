@@ -111,7 +111,7 @@ namespace :csv do
          row[10].gsub!('://', '://www.') unless row[10].include?('www.')
       end 
   
-      if (row[7] != nil && row[7].lstrip.rstrip != "PK" && row[7].lstrip.rstrip != "K" && row[7].lstrip.rstrip != "PK-K")
+      if (row[7] != nil && row[7].lstrip.rstrip != "PK" && row[7].lstrip.rstrip != "K" && row[7].lstrip.rstrip != "PK-K" && !row[7].lstrip.rstrip.end_with?("-1"))
           a_school =School.importer(row)
 	  if (a_school != nil)
 	      a_school.import_image(row[9]) unless row[9].nil?

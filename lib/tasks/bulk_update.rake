@@ -35,7 +35,7 @@ namespace :csv do
                           state: home_state,
                           zipcode: home_zip}
           home = Home.where(uniq_condition).first_or_create
-          
+
           home.update_attributes(county: home_county,
                                last_refresh_at: time_before_now(row[8]),
 			       added_to_site: row[9],
@@ -62,21 +62,20 @@ namespace :csv do
            home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
            home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
            home.import_history_record(home_history)
- 
            assigned_schools = row[28] ? parse_wierd_input_to_array(row[28])[1..-1] : [] #remove header
            elementary_schools = row[29] ?  parse_wierd_input_to_array(row[29])[1..-1] : [] 
            middle_schools =  row[30] ? parse_wierd_input_to_array(row[30])[1..-1]: [] 
            high_schools =  row[31] ? parse_wierd_input_to_array(row[31])[1..-1]: [] 
            private_schools = row[38] ? parse_wierd_input_to_array(row[38])[1..-1]: [] 
            # import assigned school last, so it will not overwrite it.
-           home.other_schools(elementary_schools + middle_schools + high_schools + private_schools, home_city, home_county, home_state)
+          home.other_schools(elementary_schools + middle_schools + high_schools + private_schools, home_city, home_county, home_state)
           home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
-          #home.assign_private_schools(private_schools)
-       else
+         # home.assign_private_schools(private_schools, home_city, home_county, home_state) unless  private_schools.nil?
+      else
           print "not import: ", index , "," , row[3], "," ,row[5],",", row[6],",", row[7], "\n"
       
        end
- 
+  
       rescue StandardError
         #p "error out for item #{index}"
      	print "error out for item: ", index , "," , row[3], "\n"
