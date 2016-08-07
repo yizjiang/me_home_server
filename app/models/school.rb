@@ -72,6 +72,7 @@ class School < ActiveRecord::Base
 
     record = School.where(name:school[0].lstrip.rstrip, zipcode:zip_code,  city:school[3].lstrip.rstrip, state:school[4].lstrip.rstrip, grade:school[7].lstrip.rstrip).first if (record.nil? && school[1].nil?)
     record = School.where(name:school[0].lstrip.rstrip, addr1:school[2].lstrip.rstrip, city:school[3].lstrip.rstrip, state:school[4].lstrip.rstrip).first if (record.nil? && school[1].nil? && !school[2].nil?)
+    record = School.where(addr1:school[2].lstrip.rstrip, zipcode:zip_code, grade:school[7].lstrip.rstrip, state:school[4].lstrip.rstrip).first if (record.nil? && school[1].nil? && !school[2].nil?)
     if (!record.nil? && !record.zipcode.nil? && !zip_code.nil? && !record.zipcode.eql?(zip_code))
       record.zipcode = zip_code
     end 

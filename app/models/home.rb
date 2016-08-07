@@ -253,43 +253,83 @@ class Home < ActiveRecord::Base
     return monthly_rent
   end
 
- def alternate_name(name)
-#   if !name.nil? && name.include("Incorporated")?
-     a_name = name.sub!("Incorporated","Inc")  
-     a_name = name.sub!(" Private School"," School") if a_name.nil?
-     a_name = name.sub!(" School","") if a_name.nil?
-     #p a_name
- #  end
- end
+  def alternate_name(name, grade)
+    #print "start ",  name, "\n"
+    a_name = name.sub!("Incorporated","Inc")  
+    a_name = name.sub!(":",": ") if a_name.nil? 
+    a_name = name.sub!("PS ","P.S. ") if a_name.nil? && name.start_with?("PS")
+    a_name = name.sub!(" Junior School"," Junior High School") if a_name.nil?  && grade.end_with?("-8")
+    a_name = name.sub!(" High School","") if a_name.nil?
+    a_name = name.sub!(" School"," High School") if a_name.nil? && grade.end_with?("-12")
+    a_name = name.sub!(" School","") if a_name.nil?
+    #p a_name
+    return  a_name
+  end
 
   def assign_schools(schools, assigned, city, county, state)
+
     schools.each do |school|
+
       school_state = state
       scool_city = city
       tokens = school[7].split("/") unless school[7].nil?
       school_state = tokens[3] unless tokens.nil?
       school_city = tokens[4].sub!("-"," ") unless tokens.nil?
-    #  print school[7], ",", school_city, ",", school_state, "\n" unless school[7].nil?
-      if !(school[6].nil? || school[6].empty?) 
+      school_grade = school[2].lstrip.rstrip unless school[2].nil?
+      school_name = school[0].lstrip.rstrip unless school[0].nil?
+      #print school[7], ",", school_city, ",", school_state, "\n" unless school[7].nil?
+      if (!(school[6].nil? || school[6].empty?) && !school_name.nil?)
         school_type = school[6].lstrip.rstrip.capitalize
-       #record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:city, county:county, state:state, grade:school[2]).first_or_create
-        record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:school_city, county:county, state:school_state, grade:school[2]).first
-        record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:school_city, state:school_state, grade:school[2]).first if record.nil?
-        record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, city:school_city, state:school_state).first if record.nil?
-        record = School.where(name: school[0].lstrip.rstrip, county:county, state:school_state, grade:school[2]).first if record.nil?
-        record = School.where(name: school[0].lstrip.rstrip, county:county, state:school_state).first if record.nil?
-        school_name = alternate_name(school[0].lstrip.rstrip) if record.nil?
-        #p school_name if record.nil?
+        if (school_name.include?(" Charter School") && school_type.eql?("Public"))
+          school_type = "Charter"
+        end
+
+        if (school_name.include?("Private School") && school_type.eql?("Private"))
+          if (!school_name.include?(" Private School"))
+              school_name = school_name.sub!("Private School"," Private School") 
+          end
+          school_name = school_name.sub!("Private School","School") 
+        end
+
+        record = School.where(name: school_name, school_type: school_type, city: school_city, county: county, state: school_state, grade: school[2]).first
+        record = School.where(name: school_name, school_type: school_type, city: school_city, state: school_state, grade: school[2]).first if record.nil?
+        record = School.where(name: school_name, school_type: school_type, city: school_city, state: school_state).first if record.nil?
+        record = School.where(name: school_name, county: county, state: school_state, grade: school[2]).first if record.nil?
+        record = School.where(name: school_name, county: county, state: school_state).first if record.nil?
+        record = School.where(name: school_name, grade: school[2], state: state).first  if record.nil? && state.eql?("NY")
+        record = School.where(name: school_name, school_type: school_type, state: state).first  if record.nil?  && state.eql?("NY")
+
+        school_name = alternate_name(school_name, school_grade) if record.nil?
+       # p school_name
         record = School.where(name: school_name, school_type: school_type, city:city, county:county, state:state, grade:school[2]).first if record.nil? && !school_name.nil?
         record = School.where(name: school_name, school_type: school_type, city:city, state:state, grade:school[2]).first if record.nil? && !school_name.nil?
         record = School.where(name: school_name, school_type: school_type, city:city, state:state).first if record.nil? && !school_name.nil?
         record = School.where(name: school_name, county:county, state:state, grade:school[2]).first  if record.nil? && !school_name.nil?
         record = School.where(name: school_name, county:county, state:state).first  if record.nil? && !school_name.nil?
-
-        #print "no shcool find --", city, ": ", school_name, ",", school_type, ",", state, ",", school[2], "\n"  if record.nil?
+        #print school_name, ",", school[2], ",", state, "\n" 
+        record = School.where(name: school_name, grade:school[2], state:state).first  if record.nil? && !school_name.nil? && state.eql?("NY")
+        record = School.where(name: school_name, school_type: school_type, state:state).first  if record.nil? && !school_name.nil? && state.eql?("NY")
         
-        record = School.new(:name => school[0].lstrip.rstrip, :school_type => school_type, :city => city, :county => county, :state => state, :grade => school[2]) if record.nil?
        
+        if (record.nil? && !school_name.nil? && school_name.end_with?(" School"))
+            school_name = alternate_name(school_name.lstrip.rstrip, school_grade)
+            #p school_name
+            record = School.where(name: school_name, school_type: school_type, city:city, county:county, state:state, grade:school[2]).first if record.nil? && !school_name.nil?
+            record = School.where(name: school_name, school_type: school_type, city:city, state:state, grade:school[2]).first if record.nil? && !school_name.nil?
+            record = School.where(name: school_name, school_type: school_type, city:city, state:state).first if record.nil? && !school_name.nil?
+            record = School.where(name: school_name, county:county, state:state, grade:school[2]).first  if record.nil? && !school_name.nil?
+            record = School.where(name: school_name, county:county, state:state).first  if record.nil? && !school_name.nil?
+            record = School.where(name: school_name, grade:school[2], state:state).first  if record.nil? && !school_name.nil? && state.eql?("NY")
+            record = School.where(name: school_name, school_type: school_type, state:state).first  if record.nil? && !school_name.nil? && state.eql?("NY")
+        end
+
+        if (record.nil? && !school_grade.nil? && !school_grade.empty? && !school_grade.end_with?("-K") && !school_grade.end_with?("-1") && !school_grade.end_with?("-2"))       
+          #print "inside if grade=", school_grade, "\n"
+          record = School.where(name: school[0].lstrip.rstrip, school_type: school_type, county: county, state: state).first  if record.nil? && state.eql?("NY")
+          print " need add school", school, "\n"
+          #record = School.new(:name => school[0].lstrip.rstrip, :school_type => school_type, :city => city, :county => county, :state => state, :grade => school[2]) if record.nil?
+        end
+
         if !(record.nil?)
           record.school_type = school_type;
           record.grade = school[2] if record.grade.nil?
@@ -298,9 +338,10 @@ class Home < ActiveRecord::Base
           record.parent_rating = school[5].to_f  if record.parent_rating.nil?
           record.school_type = school_type if record.school_type.nil?
           record.save
-          
+       
           assignment = HomeSchoolAssignment.where(home_id: self.id, school_id: record.id).first_or_create
           assignment.update_attributes(distance: school[1], assigned: assigned)
+       
         end 
       end 
     end
