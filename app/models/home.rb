@@ -54,7 +54,7 @@ class Home < ActiveRecord::Base
 
           if normal_type.length > 0
             homes += where('id in (?) and last_refresh_at > ? and price < ? and price > ? and status = ? and bed_num > ? and indoor_size > ? and year_built > ? and meejia_type in (?)',
-                          homes_cn.pluck(:id), last_refresh, search.price_max, search.price_min, 'Active', search.bed_num - 1, search.indoor_size, search.year_built, normal_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :home_school_assignments, :images).limit(limit)
+                   homes_cn.pluck(:id), last_refresh, search.price_max, search.price_min, 'Active', search.bed_num - 1, search.indoor_size, search.year_built, normal_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :home_school_assignments, :images).limit(limit)
           end
 
           if other_type.length > 0
@@ -120,7 +120,14 @@ class Home < ActiveRecord::Base
     if options[:shorten]
       options.merge!(only: [:id, :addr1, :city, :bed_num, :bath_num, :geo_point])
       result = super(options)
-      result[:images] =  [self.images.try(:first)]
+      if options[:all_images]
+        result[:images] =  self.images.map do |img|
+          CDN_HOST + '/photos/' + img[:image_url]
+        end
+      else
+        result[:images] =  [self.images.try(:first)]
+      end
+
     else
       result = super(options)
       result[:images] = self.images
@@ -139,6 +146,8 @@ class Home < ActiveRecord::Base
     end
 
     result[:home_type] = convert_home_type(self.meejia_type)
+    result[:chinese_home_type] = convert_home_type_to_chinese(result[:home_type])
+
     if home_cn = self.home_cn
       result[:chinese_indoor_size] = home_cn.indoor_size
       result[:chinese_lot_size] = home_cn.lot_size
@@ -156,6 +165,25 @@ class Home < ActiveRecord::Base
       agent_info.merge!(id: agent.id, name: agent.agent_extention.cn_name, profile_image: agent.wechat_user.head_img_url)
     end
     agent_info
+  end
+
+  def convert_home_type_to_chinese(type)
+    case type
+      when 'single_family'
+        '别墅'
+      when 'condo'
+        '公寓'
+      when 'townhouse'
+        '联排别墅'
+      when 'business'
+        '商用'
+      when 'land'
+        '土地'
+      when 'farm'
+        '农场'
+      else
+        '其他'
+    end
   end
 
   def convert_home_type(meejia_type)

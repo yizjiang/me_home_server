@@ -28,6 +28,8 @@ MeHome::Application.routes.draw do
   #post 'users/sign_in', to: 'login#create'
 
   get 'home/search/listing', to: 'home#search_by_listing'
+  get 'home/search/price', to: 'home#search_by_price'
+
   get 'all_city', to: 'region#all_city'
   get 'all_schools', to: 'school#all_schools'
   get 'bay_area_cities', to: 'region#bay_area_cities'

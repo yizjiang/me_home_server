@@ -26,6 +26,22 @@ class HomeController < ApplicationController
     render json: homes.as_json(shorten: true)
   end
 
+  def search_by_price
+    indoor_size = params[:indoor_size].to_i / 0.092
+    price = params[:price].to_i / 6.67 * params[:indoor_size].to_i  + params[:cash].to_i / 6.67
+    query = 'city in (?) and price < ? and status = ? and indoor_size > ? and meejia_type in (?)'
+
+    city = [['Redwood City', 'San Mateo', 'San Bruno', 'Millbrae', 'Burlingame'], ['Sunnyvale', 'San Jose'], ['Fremont', 'Union City']]
+    region = ['peninsula', 'silicon_vally', 'east_bay']
+    response = {}
+    city.each_with_index do |city, index|
+      homes = Home.where(query ,city, price, 'Active', indoor_size,
+                          ['Single Family Home', 'Townhouse', 'Condominium', 'Apartment']).includes(:home_cn, :images).order(:price).limit(20).sample(8)
+      response.merge!(Hash[region[index], homes.as_json(shorten: true, all_images: true)])
+    end
+    render json: response
+  end
+
   def search_by_listing
     source_type = case params[:sourceType]
                     when 'mls'
