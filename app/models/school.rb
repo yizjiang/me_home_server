@@ -72,7 +72,7 @@ class School < ActiveRecord::Base
 
     record = School.where(name:school[0].lstrip.rstrip, zipcode:zip_code,  city:school[3].lstrip.rstrip, state:school[4].lstrip.rstrip, grade:school[7].lstrip.rstrip).first if (record.nil? && school[1].nil?)
     record = School.where(name:school[0].lstrip.rstrip, addr1:school[2].lstrip.rstrip, city:school[3].lstrip.rstrip, state:school[4].lstrip.rstrip).first if (record.nil? && school[1].nil? && !school[2].nil?)
-
+    record = School.where(addr1:school[2].lstrip.rstrip, zipcode:zip_code, grade:school[7].lstrip.rstrip, state:school[4].lstrip.rstrip).first if (record.nil? && school[1].nil? && !school[2].nil?)
     if (!record.nil? && !record.zipcode.nil? && !zip_code.nil? && !record.zipcode.eql?(zip_code))
       record.zipcode = zip_code
     end 
@@ -82,7 +82,7 @@ class School < ActiveRecord::Base
     if (record.nil? && school[1].nil?)
       record = School.where(name:school[0].lstrip.rstrip, city:school[3].lstrip.rstrip, state:school[4].lstrip.rstrip, grade:school[7].lstrip.rstrip).first
       record = nil if (!record.nil? && !record.zipcode.nil? && record.zipcode != zip_code)
-      print "reset to null", school[5], "\n" if record.nil? 
+      #print "reset to null", school[5], "\n" if record.nil? 
     end 
     #print "find school: ", school[0], ",", school[5], ",", school[2],"\n"  unless record.nil?
     record = School.new(:name => school[0].lstrip.rstrip, :zipcode => zip_code,  :city => school[3].lstrip.rstrip, :state => school[4].lstrip.rstrip, :grade => school[7].lstrip.rstrip) if (record.nil? && school[1].nil?)
@@ -109,6 +109,8 @@ class School < ActiveRecord::Base
       record.fee ||= school[24] 
       record.county = school[25].nil? ? record.county : school[25].lstrip.rstrip if record.county.nil?
       record.enrolled_student = school[26].nil? ? record.enrolled_student : school[26].lstrip.rstrip if record.enrolled_student.nil?
+      #p record.rating
+      #p school[27]
       record.rating = school[27].nil? ? record.rating : school[27].lstrip.rstrip if record.rating.nil?
       #p record.enrolled_student
       record.save

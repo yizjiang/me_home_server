@@ -8,7 +8,8 @@ namespace :csv do
     home[1..-1].each_with_index do |row, index|
       begin
         #row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
-       if (row[25].nil? || row[25].empty?)
+         
+        if (row[25].nil? || row[25].empty?)
           row[25] = row[37]
           if (!row[25].nil? && row[25].end_with?(".jpg"))
               row[25] = row[25] + "\">"
@@ -20,9 +21,11 @@ namespace :csv do
            row[18] = (row[17].to_f / row[15].to_f).round
           print "unit price:", row[18], "\n"
         end         
+        
 
-        #if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && row[5] == 'CA')
-         if ( !(row[7].nil? || row[7].empty? || row[5].nil? || row[17].nil? || row[25].nil? || row[25].empty?) && (row[5] == 'CA' || row[5] == 'NY'))
+        #addr, state, zip, county  price (17), image 
+
+       if ( !(row[3].nil? || row[3].empty? || row[5].nil? || row[5].empty? || row[6].nil? || row[6].empty? || row[7].nil? || row[7].empty? || row[17].nil? || row[25].nil? || row[25].empty?) && (row[5] == 'CA' || row[5] == 'NY'))
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
@@ -37,7 +40,7 @@ namespace :csv do
                           state: home_state,
                           zipcode: home_zip}
           home = Home.where(uniq_condition).first_or_create
-          if (!home.status.nil? && !home.status.eql?("Inactive") && home.price.eql?(row[17].delete(',')))
+          if (!home.status.nil? && !home.status.eql?("Inactive") && !home.status.eql?("Inactive-Obsolete")  && home.price.eql?(row[17].delete(',')))
 	       print "exist --", home.id, " ", home.price, " ", home.status, " ",  home.addr1, "\n"
                #print "db link:"+ home.redfin_link, ", pass_link:", row[10], "\n" 
 	       p home.redfin_link
@@ -81,9 +84,9 @@ namespace :csv do
              #home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
              #home.assign_private_schools(private_schools)
 	  end    
-        else 
-	   print "not import: ", index , "," , row[3], "\n"
-	end
+       else 
+	  print "not import: ", index , "," , row[3], "," ,row[5],",", row[6],",", row[7], "\n"
+      end
 
       rescue StandardError
         # p "error out for item #{index}"
@@ -108,7 +111,7 @@ namespace :csv do
          row[10].gsub!('://', '://www.') unless row[10].include?('www.')
       end 
   
-      if (row[7] != nil && row[7].lstrip.rstrip != "PK" && row[7].lstrip.rstrip != "K" && row[7].lstrip.rstrip != "PK-K")
+      if (row[7] != nil && row[7].lstrip.rstrip != "PK" && row[7].lstrip.rstrip != "K" && row[7].lstrip.rstrip != "PK-K" && !row[7].lstrip.rstrip.end_with?("-1"))
           a_school =School.importer(row)
 	  if (a_school != nil)
 	      a_school.import_image(row[9]) unless row[9].nil?

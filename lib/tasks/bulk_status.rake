@@ -12,7 +12,7 @@ namespace :csv do
       begin
         home_status = row[24].lstrip.rstrip 
 	#row.each_with_index{|r, index| p "#{home[0][index]} : #{r}"}
-        if ( !(row[4].nil? || row[4].empty? || row[5].nil? ) && row[5] == 'CA'  && !home_status.starts_with?('Active'))
+        if ( !(row[4].nil? || row[4].empty? || row[5].nil? ) && (row[5] == 'CA' || row[5] == 'NY')  && !home_status.starts_with?('Active'))
 	  home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
@@ -25,17 +25,18 @@ namespace :csv do
             ia_count = ia_count+1
           end 
 
-	  # uniq_condition = {addr1: row[3].lstrip.rstrip,
-          #                city: home_city,
-          #                state: home_state,
-          #                zipcode: home_zip}
-          # home = Home.where(uniq_condition).first
-	  #if (home.nil?)
+	  if (! (row[10].nil? || row[10].empty?))
               home = Home.where(city:home_city, state:home_state, redfin_link:row[10]).first 
               home = Home.where(state:home_state, redfin_link:row[10]).first if home.nil?
-	     # home.addr1 = row[3].lstrip.rstrip
-	       home.zipcode = home_zip unless home.nil? 
-	  #end
+	      home.zipcode = home_zip unless home.nil? 
+	  end
+
+	  if (! (row[11].nil? || row[11].empty?))
+              home = Home.where(city:home_city, state:home_state, realtor_link:row[11]).first 
+              home = Home.where(state:home_state, redfin_link:row[11]).first if home.nil?
+	      home.zipcode = home_zip unless home.nil? 
+	  end
+
 	  if (!home.nil?)
 	      u_count = u_count+1
 	      #print "find ", index , "," , row[3], ", city:", home_city, ", zip:", home_zip, ", state", home_state,  "\n"	  
