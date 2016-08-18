@@ -122,7 +122,7 @@ class Home < ActiveRecord::Base
       result = super(options)
       if options[:all_images]
         result[:images] =  self.images.map do |img|
-          CDN_HOST + '/photos/' + img[:image_url]
+          CDN_HOST + '/photo/' + img[:image_url]
         end
       else
         result[:images] =  [self.images.try(:first)]
