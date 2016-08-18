@@ -210,7 +210,7 @@ class WechatController < ApplicationController
       end
 
       homes = Home.search(searches) # fair divide?
-      ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.map(&:id).join(','))
+      ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.first(20).map(&:id).join(','))
       home_result(homes)
     else
       if cached_input('quick_search')
