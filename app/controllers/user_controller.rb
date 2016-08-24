@@ -1,5 +1,16 @@
 class UserController < ApplicationController
 
+
+  def qr_code
+    url = WechatRequest.new.generate_home_code("login_#{params[:uid]}")
+    RemoveFileWorker.perform_async(2.hours, url)
+    render json: {url: File.join(SERVER_HOST , url['/public/'.length..-1])}
+  end
+
+  def check_login
+    render json: {login: REDIS.keys(params[:uid]).present?}
+  end
+
   def index
     temp_json = get_user_json(params)
     render json: temp_json.to_json  #TODO write to json method in model

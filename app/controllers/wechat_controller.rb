@@ -2,7 +2,7 @@
 
 class WechatController < ApplicationController
   before_filter :get_message_from_params, :if => lambda { request.post? }
-  before_filter :check_agent_permission, :if => lambda { params['xml']['ToUserName'] == AGENT_ACCOUNT_ID &&
+  before_filter :check_agent_permission, :if => lambda { params['xml'] && params['xml']['ToUserName'] == AGENT_ACCOUNT_ID &&
     ['my_client', 'buyer', 'agent_request', 'cq', 'set_agent_page', 'articles'].include?(@msg_hash[:body].downcase)
                                                        }
 
@@ -36,7 +36,8 @@ class WechatController < ApplicationController
                     'articles' => :latest_articles,
                     'send_home_card' => :send_home_card,
                     'home_card' => :home_card,
-                    'my_agent' => :my_agent
+                    'my_agent' => :my_agent,
+                    'game_login' => :game_login
   }
 
   def collect_data
@@ -91,6 +92,12 @@ class WechatController < ApplicationController
     text_response
   end
 
+  def game_login
+    REDIS.setex(@uid, 60 * 60, @wechat_user.id)
+    @msg_hash[:body] = '您可以查看房屋后分享'
+    text_response
+  end
+
   def send_home_card
     home = Home.find(@home_id)
 
@@ -126,6 +133,9 @@ class WechatController < ApplicationController
                    home_id, @agent_id = params['xml']['EventKey'].split('a')
                    @home_id = home_id[1..-1]
                    'send_home_card'
+                 elsif params['xml']['EventKey'].start_with?('login')
+                   @uid = params['xml']['EventKey'][6..-1]
+                   'game_login'
                  else
                    @agent_id = params['xml']['EventKey'].to_i/10
                    event_id = params['xml']['EventKey'].to_i % 10
@@ -672,6 +682,10 @@ class WechatController < ApplicationController
                           pic_url: @wechat_user.head_img_url,
                           url: "#{CLIENT_HOST}/agent/#{@wechat_user.user_id}/setting"}]
     article_response
+  end
+
+  def visited_buyer
+
   end
 
   def potential_buyer

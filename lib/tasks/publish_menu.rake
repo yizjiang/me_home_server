@@ -129,6 +129,11 @@ namespace :wechat do
                        type: 'click',
                        name: '当前位置',
                        key: 'home_here'
+                     },
+                     {
+                       type: 'view',
+                       name: '换房游戏',
+                       url: "#{CLIENT_HOST}/home_game.html"
                      }
                    ]
 

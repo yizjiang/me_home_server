@@ -27,6 +27,9 @@ MeHome::Application.routes.draw do
 
   #post 'users/sign_in', to: 'login#create'
 
+  post 'qr_code', to: 'user#qr_code'
+  get 'check_login', to: 'user#check_login'
+
   get 'home/search/listing', to: 'home#search_by_listing'
   get 'home/search/price', to: 'home#search_by_price'
 

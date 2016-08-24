@@ -49,6 +49,9 @@ class AgentController < ApplicationController
 
   def index
     agent_extention = AgentExtention.find_by_agent_identifier(params[:name])
+    if params[:uid] && wuser = WechatUser.find_by_user_id(params[:uid])
+      WechatTracking.create(tracking_type: "agent viewed", wechat_user_id: wuser.id, item: agent_extention.user_id)
+    end
     render json: agent_info(agent_extention)
   end
 
