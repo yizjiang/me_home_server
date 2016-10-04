@@ -44,7 +44,7 @@ class Home < ActiveRecord::Base
     end
     result = []
     searches.each do |search|
-      if(region = search.region)
+      if(region = search.region.strip)
         homes = []
         normal_type = search.home_type - OTHER_PROPERTY_TYPE
         other_type = search.home_type - normal_type
@@ -77,7 +77,7 @@ class Home < ActiveRecord::Base
 
         limit -= homes.count if limit
         result.push(*homes)
-        if limit == 0
+        if limit <= 0
           break
         end
       else

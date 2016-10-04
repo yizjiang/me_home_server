@@ -130,10 +130,17 @@ namespace :wechat do
                        name: '当前位置',
                        key: 'home_here'
                      },
+
+                     {
+                       type: 'view',
+                       name: '了解湾区',
+                       url: "#{CLIENT_HOST}/region_tutorial"
+                     },
+
                      {
                        type: 'view',
                        name: '换房游戏',
-                       url: "#{CLIENT_HOST}/home_game.html"
+                       url: "#{CLIENT_HOST}/game"
                      }
                    ]
 
@@ -142,24 +149,29 @@ namespace :wechat do
                  {
                    name: '专业咨询',
                    sub_button: [
-
                      {
-                       type: "click",
-                       name: "提问",
-                       key: "q"
-                     },
-
-                     {
-                       name: '购房经纪人',
-                       type: 'click',
-                       key: 'a'
-                     },
-
-                     {
-                       type: "click",
-                       name: "贷款经纪人",
-                       key: "l"
+                       type: 'view',
+                       name: '常见问题',
+                       url: "#{CLIENT_HOST}/tutorial"
                      }
+                     #
+                     # {
+                     #   type: "click",
+                     #   name: "提问",
+                     #   key: "q"
+                     # },
+                     #
+                     # {
+                     #   name: '购房经纪人',
+                     #   type: 'click',
+                     #   key: 'a'
+                     # },
+                     #
+                     # {
+                     #   type: "click",
+                     #   name: "贷款经纪人",
+                     #   key: "l"
+                     # }
                    ]
 
                  },
@@ -179,11 +191,11 @@ namespace :wechat do
                        key: "u"
                      },
 
-                     {
-                       type: "click",
-                       name: "忘记密码",
-                       key: "my_login"
-                     },
+                     # {
+                     #   type: "click",
+                     #   name: "忘记密码",
+                     #   key: "my_login"
+                     # },
 
                      {
                        type: "click",

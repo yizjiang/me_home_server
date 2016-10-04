@@ -10,8 +10,13 @@ class HomeController < ApplicationController
         search
       end
     end
-    result = Home.search(searches).map do |home|
-      home.as_json
+    result = Home.search(searches, params[:limit].to_i).map do |home|
+      if(params[:shorten])
+        home.as_json(shorten: true)
+      else
+        home.as_json
+      end
+
     end
     render json: result
   end
