@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  year: MyString
+  taxes: 1.5
+  land_value: 1.5
+  added_value: 1.5
+  home_id: 1
+  created_at: 
+  updated_at: 
+
+two:
+  year: MyString
+  taxes: 1.5
+  land_value: 1.5
+  added_value: 1.5
+  home_id: 1
+  created_at: 
+  updated_at: 
