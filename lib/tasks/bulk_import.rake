@@ -40,7 +40,10 @@ namespace :csv do
                           state: home_state,
                           zipcode: home_zip}
           home = Home.where(uniq_condition).first_or_create
-          if (!home.status.nil? && !home.status.eql?("Inactive") && !home.status.eql?("Inactive-Obsolete")  && home.price.eql?(row[17].delete(',')))
+	  old_price = home.price.floor.to_s if !home.price.nil?
+          new_price = row[17].delete(',').lstrip.rstrip  if !row[17].nil?
+          print old_price, new_price, "\n"
+          if (!home.status.nil? && !home.status.eql?("Inactive") && !home.status.eql?("Inactive-Obsolete")  && old_price.eql?(new_price))
 	       print "exist --", home.id, " ", home.price, " ", home.status, " ",  home.addr1, "\n"
                #print "db link:"+ home.redfin_link, ", pass_link:", row[10], "\n" 
 	       p home.redfin_link
@@ -73,7 +76,10 @@ namespace :csv do
               home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
               home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
               home.import_history_record(home_history)
-       
+              home_tax = row[36] ? parse_wierd_input_to_array(row[36])[1..-1]: []
+              #print home_tax, ",  before import \n"       
+              home.import_tax_record(home_tax)
+
               assigned_schools = row[28] ? parse_wierd_input_to_array(row[28])[1..-1] : []  #remove header 
               elementary_schools = row[29] ?  parse_wierd_input_to_array(row[29])[1..-1] : [] 
               middle_schools =  row[30] ? parse_wierd_input_to_array(row[30])[1..-1]: [] 
