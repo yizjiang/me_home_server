@@ -74,12 +74,11 @@ class Home < ActiveRecord::Base
                             last_refresh, "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active', other_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :home_school_assignments, :images).limit(limit)
           end
         end
-
-        limit -= homes.count if limit
-        result.push(*homes)
-        if limit <= 0
-          break
+        if limit
+          limit -= homes.count
+          break if limit <= 0
         end
+        result.push(*homes)
       else
         result.push(*where('last_refresh_at > ? and price < ? and price > ? and indoor_size > ? and year_built > ? and status = ? and meejia_type in (?)', last_refresh, search.price_max, search.price_min, search.indoor_size, search.year_built, 'Active', search.home_type).includes(:home_cn, :home_school_assignments, :schools, :images).order('last_refresh_at DESC').limit(limit))
       end

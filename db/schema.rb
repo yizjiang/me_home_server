@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160724034745) do
+ActiveRecord::Schema.define(:version => 20161003060708) do
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -27,7 +27,6 @@ ActiveRecord::Schema.define(:version => 20160724034745) do
     t.string  "mail"
     t.string  "url"
     t.string  "license_state"
-    t.string  "license_issue"
     t.text    "description"
     t.string  "photo_url"
     t.string  "status"
@@ -38,6 +37,7 @@ ActiveRecord::Schema.define(:version => 20160724034745) do
     t.string  "source_id"
     t.integer "broker_company_id"
     t.string  "license_type"
+    t.date    "license_issue"
     t.date    "license_expire"
     t.string  "mailing_address"
   end
@@ -105,26 +105,28 @@ ActiveRecord::Schema.define(:version => 20160724034745) do
     t.string   "phone"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+    t.string   "license_id"
   end
 
   create_table "cities", :force => true do |t|
-    t.string   "name",           :limit => 255
+    t.string   "name"
     t.integer  "population"
     t.float    "income"
-    t.string   "above_bachelor", :limit => 255
+    t.string   "above_bachelor"
     t.float    "crime"
     t.float    "us_crime"
-    t.string   "unemploy",       :limit => 255
-    t.string   "state_unemploy", :limit => 255
-    t.string   "hispanics",      :limit => 255
-    t.string   "asian",          :limit => 255
-    t.string   "caucasion",      :limit => 255
-    t.string   "black",          :limit => 255
+    t.string   "unemploy"
+    t.string   "state_unemploy"
+    t.string   "hispanics"
+    t.string   "asian"
+    t.string   "caucasion"
+    t.string   "black"
     t.float    "PMI"
-    t.datetime "created_at",                    :null => false
-    t.datetime "updated_at",                    :null => false
-    t.string   "state",          :limit => 255
-    t.string   "county",         :limit => 255
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+    t.string   "state"
+    t.string   "county"
+    t.string   "geo_point"
   end
 
   create_table "favorite_homes", :force => true do |t|
@@ -140,6 +142,16 @@ ActiveRecord::Schema.define(:version => 20160724034745) do
   end
 
   add_index "home_school_assignments", ["home_id"], :name => "index_home_school_assignments_on_home_id"
+
+  create_table "home_taxes", :force => true do |t|
+    t.string   "year"
+    t.float    "taxes"
+    t.float    "land_value"
+    t.float    "added_value"
+    t.integer  "home_id"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
 
   create_table "homes", :force => true do |t|
     t.string   "addr1"
@@ -184,8 +196,13 @@ ActiveRecord::Schema.define(:version => 20160724034745) do
     t.string "home_type"
   end
 
+  create_table "image_obsolete", :id => false, :force => true do |t|
+    t.string "image_url", :limit => 250
+    t.string "status",    :limit => 20
+  end
+
   create_table "images", :force => true do |t|
-    t.string  "image_url", :limit => 255
+    t.string  "image_url"
     t.integer "home_id"
   end
 
@@ -208,12 +225,12 @@ ActiveRecord::Schema.define(:version => 20160724034745) do
   end
 
   create_table "public_records", :force => true do |t|
-    t.string  "source",      :limit => 255
-    t.string  "property_id", :limit => 255
-    t.string  "file_id",     :limit => 255
+    t.string  "source"
+    t.string  "property_id"
+    t.string  "file_id"
     t.integer "home_id"
     t.date    "record_date"
-    t.string  "event",       :limit => 255
+    t.string  "event"
     t.float   "price"
   end
 
@@ -226,9 +243,9 @@ ActiveRecord::Schema.define(:version => 20160724034745) do
   end
 
   create_table "rents", :force => true do |t|
-    t.string   "metro",      :limit => 255
-    t.string   "state",      :limit => 255
-    t.string   "city",       :limit => 255
+    t.string   "metro"
+    t.string   "state"
+    t.string   "city"
     t.float    "studio"
     t.float    "one_bed"
     t.float    "two_bed"
@@ -237,8 +254,8 @@ ActiveRecord::Schema.define(:version => 20160724034745) do
     t.float    "five_bed"
     t.float    "six_bed"
     t.date     "reported"
-    t.datetime "created_at",                :null => false
-    t.datetime "updated_at",                :null => false
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "saved_searches", :force => true do |t|
