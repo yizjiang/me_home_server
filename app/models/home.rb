@@ -445,9 +445,9 @@ class Home < ActiveRecord::Base
     
   end
 
- def import_history_record(records)
+  def import_history_record(records)
     records.each do |record|
-       if record[3].include? 'Sold'
+      if record[3].include? 'Sold'
           history_record =  PublicRecord.where(source: record[0], property_id: record[1],home_id: self.id).first_or_create
           history_record.record_date = record[2]
           history_record.event = record[3]
@@ -458,5 +458,15 @@ class Home < ActiveRecord::Base
     end
   end
 
-
+  def import_tax_record(records)
+    records.each do |record|
+      #print record,"\n"                                                                                                                                
+      tax_record = HomeTax.where(year: record[0], home_id: self.id).first_or_create
+      tax_record.taxes = record[1].delete('$').delete(',')
+      tax_record.land_value = record[2].delete('$').delete(',')
+      tax_record.added_value = record[3].delete('$').delete(',')
+      tax_record.save
+    end
+  end
+ 
 end
