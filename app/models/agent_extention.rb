@@ -33,14 +33,17 @@ class AgentExtention < ActiveRecord::Base
     end
     
     if (!broker_company.nil? )
-#      p 'update broker'
+#      print 'update broker:', broker_company, "\n"
       broker_company.country = "USA"
       broker_company.phone = broker_agent[6].nil? ? broker_company.phone : broker_agent[6]
+      if (broker_company.license_id.nil? && !biz_license_id.nil?)
+        broker_company.license_id = biz_license_id 
+      end
       broker_company.save
     end  
          
     if (!broker_company.nil?)
-      p 'create agent'
+      print 'create/update agent:', broker_agent[8], "\n"
       if (!broker_agent[18].nil? && broker_agent[18].match(/[-+]?[0-9]+/))
         biz_state = broker_company.state if biz_state.nil?
         agent = AgentExtention.where(license_id:broker_agent[18].lstrip.rstrip, license_state:biz_state).first
