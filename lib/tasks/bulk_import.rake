@@ -24,8 +24,10 @@ namespace :csv do
         
 
         #addr, state, zip, county  price (17), image 
-
-       if ( !(row[3].nil? || row[3].empty? || row[5].nil? || row[5].empty? || row[6].nil? || row[6].empty? || row[7].nil? || row[7].empty? || row[17].nil? || row[25].nil? || row[25].empty?) && (row[5] == 'CA' || row[5] == 'NY'))
+        if (!row[10].nil? && (row[10].include? "Undisclosed-address"))
+           print row[10], "\n"
+	end 
+       if ( !(row[3].nil? || row[3].empty? || row[5].nil? || row[5].empty? || row[6].nil? || row[6].empty? || row[7].nil? || row[7].empty? || row[17].nil? || row[25].nil? || row[25].empty? || (!row[10].nil? && (row[10].include? ('Undisclosed-address')))) && (row[5] == 'CA' || row[5] == 'NY'))
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
           home_zip = row[6].lstrip.rstrip
