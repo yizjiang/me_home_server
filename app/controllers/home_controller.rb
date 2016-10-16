@@ -6,7 +6,7 @@ class HomeController < ApplicationController
       search = Search.new(params.with_indifferent_access.reject{|_, v| v.empty?})
       searches = search.region.split(',').map do |region|
         search = search.clone
-        search.region = region
+        search.region = region.strip
         search
       end
     end

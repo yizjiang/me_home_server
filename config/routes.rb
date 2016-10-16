@@ -41,6 +41,7 @@ MeHome::Application.routes.draw do
   get 'agent/set_search', to: 'agent#set_search'
   #get 'agent/customers', to: 'agent#all_customer'
   post 'agent/save_customer_search', to: 'agent#save_customer_search'
+  post 'agent/add_customer_search', to: 'agent#add_customer_search'
 
   get 'agent/:name', to: 'agent#index'
   get 'agents', to: 'agent#active_agents'

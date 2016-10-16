@@ -168,6 +168,21 @@ class AgentController < ApplicationController
     render 'agent/customer_search_form'
   end
 
+  def add_customer_search
+    customer = WechatUser.find(params[:customer_id])
+    if search = customer.search
+       search = JSON.parse(search)
+       regions = search['regionValue'].split(',')
+       regions += params[:regionValue].split(',')
+       search['regionValue'] = regions.uniq.join(',')
+       customer.update_attributes(search: search.to_json)
+    else
+      search = Search.new(params.with_indifferent_access.reject{|_, v| v.to_s.empty?})
+      customer.update_attributes(search: search.search_query.to_json)
+    end
+    render json: {}
+  end
+
   def save_customer_search
     @customer = WechatUser.find(params[:customer_id])
     user = User.find(@customer.user_id)

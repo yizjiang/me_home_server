@@ -9,7 +9,14 @@ class LocationWorker
   end
 
   sidekiq_retries_exhausted do |msg|
-    WechatRequest.new.send_text(to_user: msg['args'][0], body: '无法获取地址，请您 1.前往手机设置开启微信的位置服务. 2.允许公众号获取地址(您可以点击右上角菜单开启)')
+    open_id = msg['args'][0]
+    wuser = WechatUser.find_by_open_id(open_id)
+    WechatRequest.new.send_text(to_user: open_id, body: '无法获取地址，请您 1.前往手机设置开启微信的位置服务. 2.允许公众号获取地址(您可以点击右上角菜单开启)')
+    article = [{title: "湾区地图导购",
+                body: "点击文章开启导购模式",
+                picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
+                url: "#{CLIENT_HOST}/region_tutorial?uid=#{wuser.id}"}]
+    WechatRequest.new.send_articles(to_user: open_id, body: article)
   end
 
   def perform(uid)

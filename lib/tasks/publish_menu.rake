@@ -133,7 +133,7 @@ namespace :wechat do
 
                      {
                        type: 'view',
-                       name: '了解湾区',
+                       name: '湾区导购',
                        url: "#{CLIENT_HOST}/region_tutorial"
                      },
 

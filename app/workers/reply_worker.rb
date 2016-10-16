@@ -11,6 +11,12 @@ class ReplyWorker
         when 'select_article'
           body = '您可以回复文章编号来推荐到您的主页'
           WechatRequest.new(true).send_text(to_user: wid, body: body)
+        when 'region_tutorial'
+          article = [{title: "湾区地图导购",
+                      body: "点击文章开启导购模式",
+                      picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
+                      url: "#{CLIENT_HOST}/region_tutorial?uid=#{reference_id}"}]
+          WechatRequest.new.send_articles(to_user: wid, body: article)
         when 'home_map'
           article = [{title: "我们为您生成了地图看房连接",
                       body: "点击文章打开地图，查看您感兴趣的房子",
