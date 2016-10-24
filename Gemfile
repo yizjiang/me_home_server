@@ -14,6 +14,7 @@ gem 'typhoeus'
 gem 'sidekiq'
 gem 'sinatra', require: false
 gem 'slim'
+gem 'nokogiri'
 
 # Gems used only for assets and not required
 # in production environments by default.

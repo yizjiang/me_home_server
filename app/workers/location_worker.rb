@@ -2,7 +2,7 @@
 
 class LocationWorker
   include Sidekiq::Worker
-  sidekiq_options retry: 3
+  sidekiq_options retry: 2
 
   sidekiq_retry_in do |count|
     count
@@ -22,7 +22,11 @@ class LocationWorker
   def perform(uid)
     @uid = uid
     location = REDIS.get("#{uid}:location")
-    raise 'location not set' unless location
+    unless location
+      WechatRequest.new.send_text(to_user: uid, body: '正在获取地址, 请稍后...')
+      raise 'location not set'
+    end
+
     url = "http://dev.virtualearth.net/REST/v1/Locations/#{location}?o=json&includeEntityTypes=Postcode1&key=#{ACCESS_KEY}"
     response = Typhoeus.get(url)
     result = JSON.parse response.body

@@ -11,7 +11,21 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20161003060708) do
+ActiveRecord::Schema.define(:version => 20161023032918) do
+
+  create_table "agent_articles", :force => true do |t|
+    t.string   "media_id"
+    t.text     "content"
+    t.string   "url"
+    t.string   "title"
+    t.string   "digest"
+    t.string   "author"
+    t.string   "content_source_url"
+    t.integer  "user_id"
+    t.string   "thumb_media_id"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
+  end
 
   create_table "agent_extentions", :force => true do |t|
     t.text    "page_config"
@@ -27,6 +41,7 @@ ActiveRecord::Schema.define(:version => 20161003060708) do
     t.string  "mail"
     t.string  "url"
     t.string  "license_state"
+    t.string  "license_issue"
     t.text    "description"
     t.string  "photo_url"
     t.string  "status"
@@ -37,7 +52,6 @@ ActiveRecord::Schema.define(:version => 20161003060708) do
     t.string  "source_id"
     t.integer "broker_company_id"
     t.string  "license_type"
-    t.date    "license_issue"
     t.date    "license_expire"
     t.string  "mailing_address"
   end
@@ -109,23 +123,23 @@ ActiveRecord::Schema.define(:version => 20161003060708) do
   end
 
   create_table "cities", :force => true do |t|
-    t.string   "name"
+    t.string   "name",           :limit => 255
     t.integer  "population"
     t.float    "income"
-    t.string   "above_bachelor"
+    t.string   "above_bachelor", :limit => 255
     t.float    "crime"
     t.float    "us_crime"
-    t.string   "unemploy"
-    t.string   "state_unemploy"
-    t.string   "hispanics"
-    t.string   "asian"
-    t.string   "caucasion"
-    t.string   "black"
+    t.string   "unemploy",       :limit => 255
+    t.string   "state_unemploy", :limit => 255
+    t.string   "hispanics",      :limit => 255
+    t.string   "asian",          :limit => 255
+    t.string   "caucasion",      :limit => 255
+    t.string   "black",          :limit => 255
     t.float    "PMI"
-    t.datetime "created_at",     :null => false
-    t.datetime "updated_at",     :null => false
-    t.string   "state"
-    t.string   "county"
+    t.datetime "created_at",                    :null => false
+    t.datetime "updated_at",                    :null => false
+    t.string   "state",          :limit => 255
+    t.string   "county",         :limit => 255
     t.string   "geo_point"
   end
 
@@ -196,13 +210,8 @@ ActiveRecord::Schema.define(:version => 20161003060708) do
     t.string "home_type"
   end
 
-  create_table "image_obsolete", :id => false, :force => true do |t|
-    t.string "image_url", :limit => 250
-    t.string "status",    :limit => 20
-  end
-
   create_table "images", :force => true do |t|
-    t.string  "image_url"
+    t.string  "image_url", :limit => 255
     t.integer "home_id"
   end
 
@@ -225,12 +234,12 @@ ActiveRecord::Schema.define(:version => 20161003060708) do
   end
 
   create_table "public_records", :force => true do |t|
-    t.string  "source"
-    t.string  "property_id"
-    t.string  "file_id"
+    t.string  "source",      :limit => 255
+    t.string  "property_id", :limit => 255
+    t.string  "file_id",     :limit => 255
     t.integer "home_id"
     t.date    "record_date"
-    t.string  "event"
+    t.string  "event",       :limit => 255
     t.float   "price"
   end
 
@@ -243,9 +252,9 @@ ActiveRecord::Schema.define(:version => 20161003060708) do
   end
 
   create_table "rents", :force => true do |t|
-    t.string   "metro"
-    t.string   "state"
-    t.string   "city"
+    t.string   "metro",      :limit => 255
+    t.string   "state",      :limit => 255
+    t.string   "city",       :limit => 255
     t.float    "studio"
     t.float    "one_bed"
     t.float    "two_bed"
@@ -254,8 +263,8 @@ ActiveRecord::Schema.define(:version => 20161003060708) do
     t.float    "five_bed"
     t.float    "six_bed"
     t.date     "reported"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",                :null => false
+    t.datetime "updated_at",                :null => false
   end
 
   create_table "saved_searches", :force => true do |t|

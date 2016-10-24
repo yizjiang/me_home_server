@@ -37,7 +37,8 @@ class WechatController < ApplicationController
                     'send_home_card' => :send_home_card,
                     'home_card' => :home_card,
                     'my_agent' => :my_agent,
-                    'game_login' => :game_login
+                    'game_login' => :game_login,
+                    'client_articles' => :client_articles
   }
 
   def collect_data
@@ -219,7 +220,7 @@ class WechatController < ApplicationController
         Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'], home_type: search['home_type'])
       end
 
-      homes = Home.search(searches) # fair divide?
+      homes = Home.search(searches).shuffle
       ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.first(20).map(&:id).join(','))
       home_result(homes)
     else
@@ -242,10 +243,24 @@ class WechatController < ApplicationController
     end
   end
 
+  def client_articles
+    @msg_hash[:items] = Article.last(10).map do |item|
+      doc = Nokogiri::HTML(item.content)
+      pic_url = doc.xpath("//img").select{|d| d['src'].end_with?('jpeg')}[0]['src']
+
+      {title: item.title,
+       body: item.digest,
+       pic_url: pic_url,
+       url: item.url}
+    end
+
+    article_response
+  end
+
   def latest_articles
     set_redis(:wait_input, :select_article)
     ReplyWorker.perform_async(@wechat_user.open_id, 'select_article')
-    @msg_hash[:items] = article_items(Article.last(10))
+    @msg_hash[:items] = article_items(AgentArticle.last(10))
     article_response
   end
 
@@ -784,7 +799,13 @@ class WechatController < ApplicationController
     set_redis(:wait_input, :like_agent)
 
     agents.map do |agent|
-      {title: "编号#{agent.id}, 姓名: #{agent.agent_extention.cn_name || agent.wechat_user.try(:nickname)}",
+      experience = if license_issued = agent.agent_extention.license_issue
+                     diff = Date.today.year - license_issued.to_s.to_i
+                     diff > 0 ? diff : 0.5
+                   else
+                     0.5
+                   end
+      {title: "编号#{agent.id}: #{agent.agent_extention.cn_name || agent.wechat_user.try(:nickname)}, 从业#{experience}年",
        body: "#{agent.agent_extention.description}",
        pic_url: "#{agent.wechat_user.try(:head_img_url)}",
        url: "#{CLIENT_HOST}/agent/#{agent.agent_extention.try(:agent_identifier)}"}

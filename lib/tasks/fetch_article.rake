@@ -1,19 +1,26 @@
 namespace :wechat do
+  task :article_count => :environment do
+    token = get_access_token(true)
+    response = Typhoeus.get("https://api.weixin.qq.com/cgi-bin/material/get_materialcount?access_token=#{token}")
+    p JSON.parse response.body
+  end
+
   task :agent_articles => :environment do
     token = get_access_token(true)
     articles = article_list(token)['item']
     articles.each do |article|
-      if Article.find_by_title(article['title']).nil?
-        news = article['content']['news_item']
-        news.each do |item|
-          Article.create(media_id: article['media_id'],
-                         content: item['content'].gsub('data-src', 'src'),
-                         url: item['url'],
-                         title: item['title'],
-                         digest: item['digest'],
-                         author: item['author'],
-                         thumb_media_id: item['thumb_media_id'],
-                         content_source_url: item['content_source_url']
+      news = article['content']['news_item']
+      news.each do |item|
+        unless AgentArticle.where(title: item['title'], media_id: article['media_id']).present?
+          AgentArticle.create(
+            media_id: article['media_id'],
+            title: item['title'],
+            content: item['content'].gsub('data-src', 'src'),
+            thumb_media_id: item['thumb_media_id'],
+            url: item['url'],
+            digest: item['digest'],
+            author: item['author'],
+            content_source_url: item['content_source_url']
           )
         end
       end
@@ -27,10 +34,23 @@ namespace :wechat do
       news = article['content']['news_item']
       news.each do |item|
         p item['title']
-        p 'converting...'
-        item['thumb_media_id'] = convert_thumb_media_id(item['thumb_media_id'])
-        media_id = publish_article(item, get_access_token(true))['media_id']
-        p "done #{media_id}"
+        unless Article.where(title: item['title'], media_id: article['media_id']).present?
+          Article.create(
+            media_id: article['media_id'],
+            title: item['title'],
+            content: item['content'].gsub('data-src', 'src'),
+            thumb_media_id: item['thumb_media_id'],
+            url: item['url'],
+            digest: item['digest'],
+            author: item['author'],
+            content_source_url: item['content_source_url']
+          )
+
+          p 'converting...'
+          item['thumb_media_id'] = convert_thumb_media_id(item['thumb_media_id'])
+          media_id = publish_article(item, get_access_token(true))['media_id']
+          p "done #{media_id}"
+        end
       end
     end
   end

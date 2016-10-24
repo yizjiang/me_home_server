@@ -39,7 +39,7 @@ class WechatUser < ActiveRecord::Base
         Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'], home_type: search['home_type'])
       end
 
-      homes = Home.search(searches) # fair divide?
+      homes = Home.search(searches).shuffle # fair divide?
       home_result(homes, self.id)
     end
   end

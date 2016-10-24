@@ -153,20 +153,26 @@ namespace :wechat do
                        type: 'view',
                        name: '常见问题',
                        url: "#{CLIENT_HOST}/tutorial"
+                     },
+
+                     {
+                       type: 'click',
+                       name: '近期文章',
+                       key: 'client_articles'
+                     },
+
+                     {
+                       type: "click",
+                       name: "提问",
+                       key: "q"
+                     },
+
+                     {
+                       name: '购房经纪人',
+                       type: 'click',
+                       key: 'a'
                      }
-                     #
-                     # {
-                     #   type: "click",
-                     #   name: "提问",
-                     #   key: "q"
-                     # },
-                     #
-                     # {
-                     #   name: '购房经纪人',
-                     #   type: 'click',
-                     #   key: 'a'
-                     # },
-                     #
+
                      # {
                      #   type: "click",
                      #   name: "贷款经纪人",
