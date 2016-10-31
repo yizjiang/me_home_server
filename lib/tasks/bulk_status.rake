@@ -22,6 +22,7 @@ namespace :csv do
             pb_count = pb_count+1
 	  else
 	    home_status = 'Inactive'
+	    row[24] = home_status + "-"+row[24] if !row[24].start_with?('Inactive')
             ia_count = ia_count+1
           end 
 

@@ -436,19 +436,14 @@ class Home < ActiveRecord::Base
     source = record[0].lstrip.rstrip unless record[0].nil?
     property_id = record[1].lstrip.rstrip unless record[1].nil?
     n_event = record[4].lstrip.rstrip unless record[4].nil?
+
     o_event = 'Active'
-    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first 
-    o_event = 'Active-REO'
-    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
-    o_event = 'Active-Short Sale'
-    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
-    o_event = 'Price Change'
-    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
-    o_event = 'Price Change-REO'
-    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
+    history_record =  PublicRecord.where("home_id =? and event like ?", self.id, "#{o_event}%").first if history_record.nil?
+    o_event = 'Price'
+    history_record =  PublicRecord.where("home_id =? and event like ?", self.id, "#{o_event}%").first if history_record.nil?
     o_event = 'Back On Market'
-    history_record =  PublicRecord.where(event: o_event, home_id: self.id).first if history_record.nil?
-  
+    history_record =  PublicRecord.where("home_id =? and event like ?", self.id, "#{o_event}%").first if history_record.nil?
+   
    if (history_record.nil? && !property_id.nil? && !source.nil?)
       history_record =  PublicRecord.where(source: source, property_id: property_id, home_id: self.id, event:n_event).first
       if (history_record.nil?)
