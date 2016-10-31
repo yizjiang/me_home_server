@@ -18,7 +18,7 @@ class ReplyWorker
                       url: "#{CLIENT_HOST}/region_tutorial?uid=#{reference_id}"}]
           WechatRequest.new.send_articles(to_user: wid, body: article)
         when 'home_map'
-          article = [{title: "我们为您生成了地图看房连接",
+          article = [{title: "我们为您生成了#{reference_id.split(',').count}处房源的地图链接",
                       body: "点击文章打开地图，查看您感兴趣的房子",
                       picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
                       url: File.join(CLIENT_HOST, "homeMap?ids=#{reference_id}")}]
@@ -56,10 +56,10 @@ class ReplyWorker
           WechatRequest.new.send_articles(to_user: wid, body: article)
         when 'upload_qrcode'
           REDIS.setex("#{wid}:wait_input", 600, 'upload_customer_qr_code')
-          body = '您可以上传二维码以便经纪人与您取得联系'
+          body = '小提示: 上传二维码能更方便经纪人与您取得联系。您可以随时点击下方菜单，我的觅家->我的二维码进行上传'
           WechatRequest.new.send_text(to_user: wid, body: body)
         when 'need_agent'
-          body = '您可以回复经纪人编号获取联系方式，我们的经纪人也会尽快与您取得联系'
+          body = '您可以点击经纪人头像查看详情 或 直接回复一位经纪人编号获取联系方式，我们的经纪人也会尽快与您取得联系'
           WechatRequest.new.send_text(to_user: wid, body: body)
         when 'submit_answer'
           body = '您可以回复经纪人编号获取联系方式.'

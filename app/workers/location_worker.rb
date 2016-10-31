@@ -12,11 +12,7 @@ class LocationWorker
     open_id = msg['args'][0]
     wuser = WechatUser.find_by_open_id(open_id)
     WechatRequest.new.send_text(to_user: open_id, body: '无法获取地址，请您 1.前往手机设置开启微信的位置服务. 2.允许公众号获取地址(您可以点击右上角菜单开启)')
-    article = [{title: "湾区地图导购",
-                body: "点击文章开启导购模式",
-                picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
-                url: "#{CLIENT_HOST}/region_tutorial?uid=#{wuser.id}"}]
-    WechatRequest.new.send_articles(to_user: open_id, body: article)
+    send_region_article(wuser)
   end
 
   def perform(uid)
@@ -30,9 +26,23 @@ class LocationWorker
     url = "http://dev.virtualearth.net/REST/v1/Locations/#{location}?o=json&includeEntityTypes=Postcode1&key=#{ACCESS_KEY}"
     response = Typhoeus.get(url)
     result = JSON.parse response.body
-    zipcode = result['resourceSets'][0]['resources'][0]['address']['postalCode']
-    wuser = WechatUser.find_by_open_id(uid)
-    wuser.send_homes_to_wechat(zipcode, wuser.user.id)
+    if result = result['resourceSets'][0]['resources'][0]
+      zipcode = result['address']['postalCode']
+      wuser = WechatUser.find_by_open_id(uid)
+      wuser.send_homes_to_wechat(zipcode, wuser.user.id)
+    else
+      WechatRequest.new.send_text(to_user: wuser.open_id, body: '对不起, 无法获取您当前在美国的地址。此功能暂时无法对身处国内的用户使用, 您可以通过地图导购了解湾区')
+      send_region_article(wuser)
+    end
+
     # do something
+  end
+
+  def send_region_article(wuser)
+    article = [{title: "湾区地图导购",
+                body: "点击文章开启导购模式",
+                picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
+                url: "#{CLIENT_HOST}/region_tutorial?uid=#{wuser.id}"}]
+    WechatRequest.new.send_articles(to_user: wuser.open_id, body: article)
   end
 end

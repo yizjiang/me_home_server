@@ -201,11 +201,13 @@ class WechatController < ApplicationController
   end
 
   def default_response
-    searches = @msg_hash[:body].split(',').map do |region|
-      Search.new(regionValue: region)
+    homes = Home.search_by_address(@msg_hash[:body])
+    if homes.empty?
+      @msg_hash[:body] = '对不起，没有找到位于 ' + @msg_hash[:body] + ' 的房源'
+      text_response
+    else
+      home_result(homes)
     end
-    homes = Home.search(searches)                        # should query id not equel
-    home_result(homes)
   end
 
   def home_search
@@ -221,7 +223,7 @@ class WechatController < ApplicationController
       end
 
       homes = Home.search(searches).shuffle
-      ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.first(20).map(&:id).join(','))
+      ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.map(&:id).join(','))
       home_result(homes)
     else
       if cached_input('quick_search')
@@ -392,7 +394,7 @@ class WechatController < ApplicationController
     end
 
     if @from_search
-      confirm_string = "欢迎#{@wechat_user.nickname}关注觅家\n 您可以访问#{CLIENT_HOST}查看更多精彩内容"
+      confirm_string = "欢迎#{@wechat_user.nickname}关注觅家"
     else
       confirm_string = "欢迎#{@wechat_user.nickname}登陆觅家\n 请点击网页上的确认键 或输入如下Email和密码: #{user.email}/meejia2016 完成登陆。"
     end
@@ -410,13 +412,13 @@ class WechatController < ApplicationController
     else
       set_redis(:wait_input, :upload_customer_qr_code)
       if qrcode = @wechat_user.qrcode
-        @msg_hash[:items] = [{title: "请上传新二维码",
-                              body: '这是您已上传的二维码',
+        @msg_hash[:items] = [{title: "您已上传二维码,您可以上传进行更新",
+                              body: '',
                               pic_url: qrcode,
                               url: qrcode}]
         article_response
       else
-        @msg_hash[:body] = '你可以上传你的二维码联系方式，以供专业的经纪人联系'
+        @msg_hash[:body] = "请上传您的二维码。\n\n不知道如何上传?\n简单，您只需要发送二维码图片到当前公众号。\n\n不知道如何获取?\n简单, 返回至微信菜单 点击 菜单我->最上方头像-> My QR code -> 右上方 ... -> Save Image -> 保存至手机相册"
         text_response
       end
     end
@@ -650,19 +652,25 @@ class WechatController < ApplicationController
       title = ''
       search = JSON.parse(search)
 
+      searches = search['regionValue'].split(',').map do |region|
+        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'], home_type: search['home_type'])
+      end
+
+      home = Home.search(searches, 1).as_json(shorten: true).first
+
       if (search['home_type'] - Home::OTHER_PROPERTY_TYPE).length == 0
         title = "#{search['regionValue']}其他类型房产"
       else
-        title = "#{search['regionValue']}多于#{search['bedNum']}卧室的房源"
+        title = "#{search['regionValue']}多于#{search['bedNum']}卧室"
       end
 
-      @msg_hash[:items] = [{title: title,
-                            body: '点击头像更新搜索条件',
-                            pic_url: @wechat_user.head_img_url,
+      @msg_hash[:items] = [{title: "当前搜索:#{title}, 点击更新",
+                            body: '',
+                            pic_url: home.try(:[], 'images').try(:first).try(:image_url) || @wechat_user.head_img_url,
                             url: "#{CLIENT_HOST}/quick_search/?wid=#{@wechat_user.id}"}]
       article_response
     else
-      @msg_hash[:items] = [{title: "点击头像设置智能搜索条件",
+      @msg_hash[:items] = [{title: "点击设置智能搜索条件",
                             body: '',
                             pic_url: @wechat_user.head_img_url,
                             url: "#{CLIENT_HOST}/quick_search/?wid=#{@wechat_user.id}"}]

@@ -38,6 +38,32 @@ class Home < ActiveRecord::Base
   has_many :favorite_homes, foreign_key: 'home_id'
   has_many :users, through: :favorite_homes
 
+  def self.search_by_address(addr)
+    addr_list = addr.split(' ')
+    addr_list = addr_list.join(',').split(',').map{|str| str.capitalize}
+    result = Home.where('addr1 LIKE ? and status = ?', "%#{addr_list.first}%", 'Active')
+    if result.empty?
+      return Home.where('city LIKE ? and status = ?', "%#{addr_list.first}%", 'Active')
+    end
+
+    local_search = true
+
+    for i in (1 .. addr_list.length - 1)
+      if local_search
+        homes = result.select {|home| home.addr1.include?(addr_list[i])}
+      else
+        homes = result.select {|home| home.city.include?(addr_list[i])}
+      end
+
+      if homes.count != 0
+        result = homes
+      else
+        local_search = false if local_search
+      end
+    end
+    result
+  end
+
   def self.search(searches, limit = nil, last_refresh = Time.at(-284061600))
     unless searches.is_a? Array
       searches = [searches]
