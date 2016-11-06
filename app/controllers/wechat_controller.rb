@@ -41,6 +41,8 @@ class WechatController < ApplicationController
                     'client_articles' => :client_articles
   }
 
+  LASTING_METHOD = %w(like_agent)
+
   def collect_data
     p params
     #redirect_to 'http://www.google.com'
@@ -59,7 +61,7 @@ class WechatController < ApplicationController
       response = if methond_sym = METHOD_MAPPING[@msg_hash[:body].downcase]
                    send(methond_sym)
                  elsif (service_type = cached_input(:wait_input))
-                   delete_redis(:wait_input)
+                   delete_redis(:wait_input) unless LASTING_METHOD.include?(service_type)
                    @user_input = @msg_hash[:body]
                    send(service_type.to_sym)
                  else
@@ -802,7 +804,8 @@ class WechatController < ApplicationController
   end
 
   def agent_search_items
-    agents = User.where('agent_extention_id is NOT NULL').includes(:agent_extention, :wechat_user).limit(8)
+    user_ids = AgentExtention.where(status: 'Active').map(&:user_id)
+    agents = User.where('id in (?) and agent_extention_id is NOT NULL', user_ids).includes(:agent_extention, :wechat_user).limit(8)
     ReplyWorker.perform_async(@msg_hash[:from_username], 'need_agent')
     set_redis(:wait_input, :like_agent)
 

@@ -18,10 +18,12 @@ class ReplyWorker
                       url: "#{CLIENT_HOST}/region_tutorial?uid=#{reference_id}"}]
           WechatRequest.new.send_articles(to_user: wid, body: article)
         when 'home_map'
+          random_id = SecureRandom.hex
+          cache_redis(random_id, 'home_map', reference_id)
           article = [{title: "我们为您生成了#{reference_id.split(',').count}处房源的地图链接",
                       body: "点击文章打开地图，查看您感兴趣的房子",
                       picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
-                      url: File.join(CLIENT_HOST, "homeMap?ids=#{reference_id}")}]
+                      url: File.join(CLIENT_HOST, "homeMap?rid=#{random_id}")}]
 
           WechatRequest.new.send_articles(to_user: wid, body: article)
         when 'home_map_with_user'
@@ -98,5 +100,9 @@ class ReplyWorker
           WechatRequest.new.send_articles(to_user: wid, body: article)
       end
     end
+  end
+
+  def cache_redis(wid, key, value)
+    REDIS.setex("#{wid}:#{key}", 60 * 60 * 24, value.to_s)
   end
 end

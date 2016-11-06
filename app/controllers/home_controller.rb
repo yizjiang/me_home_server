@@ -27,7 +27,12 @@ class HomeController < ApplicationController
   end
 
   def show_all
-    homes = Home.includes(:home_cn, :images).find(params[:ids].split(','))
+    if params[:rid]
+      ids = REDIS.get("#{params[:rid]}:home_map")
+    else params[:ids]
+      ids = params[:ids]
+    end
+    homes = Home.includes(:home_cn, :images).find(ids.split(','))
     render json: homes.as_json(shorten: true)
   end
 
