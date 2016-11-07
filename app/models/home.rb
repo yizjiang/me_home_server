@@ -38,6 +38,22 @@ class Home < ActiveRecord::Base
   has_many :favorite_homes, foreign_key: 'home_id'
   has_many :users, through: :favorite_homes
 
+  after_save :send_update_on_wechat, if: lambda {
+    self.is_sold?
+  }
+
+  def is_sold?
+    if self.changes['status'] && self.changes['status'][0] == 'Active'
+      return true
+    end
+    false
+  end
+
+  def send_update_on_wechat
+    p 'sending'
+    NotifyUser.perform_async(self.id, 'home_sold')
+  end
+
   def self.search_by_address(addr)
     addr_list = addr.split(' ')
     addr_list = addr_list.join(',').split(',').map{|str| str.capitalize}

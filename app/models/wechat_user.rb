@@ -17,6 +17,25 @@ class WechatUser < ActiveRecord::Base
     SubscribeWorker.perform_async(self.id)
   end
 
+  def send_home_update_on_wechat(home_id, to_agent = false)
+    home = Home.find(home_id)
+    if Home::OTHER_PROPERTY_TYPE.include?(home.meejia_type)
+      title = "位于#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}或已售出"
+    else
+      title = "位于#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}或已售出"
+    end
+    body = [{title: "#{title} \n请点击查看详情",
+     body: '',
+     picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
+     url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{self.user_id}"}]
+
+    if(to_agent)
+      WechatRequest.new(true).send_articles(to_user: self.open_id, body: body)
+    else
+      WechatRequest.new.send_articles(to_user: self.open_id, body: body)
+    end
+  end
+
   def send_home_on_wechat(home_id, to_agent = false)
     body = home_search_items([Home.find(home_id)], 0, self.id)
 

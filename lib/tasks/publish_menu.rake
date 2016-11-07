@@ -131,6 +131,12 @@ namespace :wechat do
                        key: 'home_here'
                      },
 
+                     # {
+                     #   type: 'click',
+                     #   name: '沿途房产',
+                     #   key: 'home_on_the_way'
+                     # },
+
                      {
                        type: 'view',
                        name: '湾区导购',

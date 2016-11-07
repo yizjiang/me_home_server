@@ -38,10 +38,11 @@ class WechatController < ApplicationController
                     'home_card' => :home_card,
                     'my_agent' => :my_agent,
                     'game_login' => :game_login,
-                    'client_articles' => :client_articles
+                    'client_articles' => :client_articles,
+                    'home_on_the_way' => :home_on_the_way
   }
 
-  LASTING_METHOD = %w(like_agent)
+  LASTING_METHOD = %w(like_agent start_my_way)
 
   def collect_data
     p params
@@ -99,6 +100,30 @@ class WechatController < ApplicationController
     REDIS.setex(@uid, 60 * 60, @wechat_user.id)
     @msg_hash[:body] = '您可以查看房屋后分享'
     text_response
+  end
+
+  def home_on_the_way
+    @msg_hash[:body] = '正在获取您的初始地点'
+    LocationChecker.perform_async(@msg_hash[:from_username])
+    text_response
+  end
+
+  def start_my_way
+    if @user_input.downcase == 'k'
+      set_redis('routine_tracking', 1, 2 * 3600)
+      @msg_hash[:body] = '行程记录已开启'
+      text_response
+    elsif @user_input.downcase == 'e'
+      delete_redis('start_my_way')
+      p 'xxxxx'
+      p "#{@wechat_user.open_id}:routine"
+      p REDIS.lrange("#{@msg_hash[:from_username]}:routine", 0, -1)
+      ReplyWorker.perform_async(@wechat_user.open_id, 'home_on_my_way', REDIS.lrange("#{@msg_hash[:from_username]}:routine", 0, -1))
+      delete_redis('routine_tracking')
+      delete_redis('routine')
+      @msg_hash[:body] = '行程记录已结束'
+      text_response
+    end
   end
 
   def send_home_card
@@ -323,12 +348,15 @@ class WechatController < ApplicationController
   def report_location
     lat, long = params['xml']['Latitude'], params['xml']['Longitude']
     set_redis('location', "#{lat},#{long}" , 300)
+    if(cached_input('routine_tracking'))
+      REDIS.rpush("#{@msg_hash[:from_username]}:routine", "#{lat},#{long}")
+    end
     nil
   end
 
   def home_here
     LocationWorker.perform_async(@msg_hash[:from_username])
-    @msg_hash[:body] = '正在获取地址，请稍后....'
+    @msg_hash[:body] = '正在获取地址, 请稍后....'
     text_response
   end
 
@@ -684,11 +712,15 @@ class WechatController < ApplicationController
     homes = User.find(@wechat_user.user_id).homes
     if homes.count > 0
       @msg_hash[:items] = home_search_items(homes)
-      ReplyWorker.perform_async(@wechat_user.open_id, 'home_map_with_user', @wechat_user.user_id)
+
+      if homes.count > 1
+        ReplyWorker.perform_async(@wechat_user.open_id, 'home_map_with_user', @wechat_user.user_id)
+      end
+
       article_response
     else
       @msg_hash[:body] = '您还没有红心房源'
-      text_responsen
+      text_response
     end
   end
 

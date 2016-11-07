@@ -17,6 +17,9 @@ class ReplyWorker
                       picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
                       url: "#{CLIENT_HOST}/region_tutorial?uid=#{reference_id}"}]
           WechatRequest.new.send_articles(to_user: wid, body: article)
+        when 'home_on_my_way'
+          body = "您经过的坐标为 #{reference_id}"
+          WechatRequest.new.send_text(to_user: wid, body: body)
         when 'home_map'
           random_id = SecureRandom.hex
           cache_redis(random_id, 'home_map', reference_id)
@@ -27,8 +30,8 @@ class ReplyWorker
 
           WechatRequest.new.send_articles(to_user: wid, body: article)
         when 'home_map_with_user'
-          article = [{title: "我们为您生成了地图看房连接",
-                      body: "点击文章打开地图，查看您感兴趣的房子",
+          article = [{title: '我们在地图上标注了您感兴趣的房屋',
+                      body: '请点击文章查看',
                       picurl: File.join(SERVER_HOST, 'bay_area_map.jpeg'),
                       url: File.join(CLIENT_HOST, "homeMap?uid=#{reference_id}")}]
 
