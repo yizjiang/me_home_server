@@ -2,10 +2,9 @@ class AgentReview < ActiveRecord::Base
   attr_accessible :agent_extention_id, :comment, :expertise_rate, :knowledge_rate, :negotiation_skill_rate, :poster_id, :recommendation_rate, :responsiveness_rate, :source, :source_post_id, :source_reviewer
 
 def self.importer(agent_review)
-  
+
      agent_source_id = agent_review[0].nil? ? nil : agent_review[0].lstrip.rstrip
      reviewer = agent_review[1].nil? ? nil : agent_review[1].lstrip.rstrip
-
      comment = agent_review[2].nil? ? nil : agent_review[2].lstrip.rstrip
      recommendation = agent_review[3].nil? ? nil : agent_review[3].lstrip.rstrip
      knowledge = agent_review[4].nil? ? nil : agent_review[4].lstrip.rstrip
@@ -15,9 +14,11 @@ def self.importer(agent_review)
      source = agent_review[9].nil? ? nil : agent_review[9].lstrip.rstrip
      poster = agent_review[10].nil? ? nil : agent_review[10].lstrip.rstrip
      post_id = agent_review[11].nil? ? nil : agent_review[11].lstrip.rstrip
+
      if (reviewer.nil?)
        reviewer = poster
      end 
+
      if (source.nil?)
        source = 'wjl'
      end 

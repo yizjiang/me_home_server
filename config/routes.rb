@@ -62,7 +62,6 @@ MeHome::Application.routes.draw do
   post 'agent/contact_request', to: 'agent#contact_request'
   post 'agent/request_response', to: 'agent#request_response'
 
-  post 'user/metric_tracking', to: 'user#metric_tracking'
   post 'user/save_search', to: 'user#save_search'
   delete 'user/remove_search/:id', to: 'user#remove_search'
   post 'user/submit_question', to: 'user#submit_question'
@@ -79,5 +78,10 @@ MeHome::Application.routes.draw do
   get 'customers', to: 'customer#index'
   post 'customers/connect', to: 'customer#connect'
 
+  get 'metric/home_view_list', to: 'metric#display_all_users'
+  get 'metric/user/:id/house_viewed', to: 'metric#display_all_houses'
+  post 'user/metric_tracking', to: 'metric#metric_tracking'
+  post 'user/metric_tracking_h', to: 'metric#metric_tracking_h'
+  get 'metric/house_list', to: 'metric#house_list'
 
 end
