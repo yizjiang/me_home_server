@@ -25,8 +25,9 @@ namespace :csv do
 
         #addr, state, zip, county  price (17), image 
         if (!row[10].nil? && (row[10].include? "Undisclosed-address"))
-           print row[10], "\n"
+           print "no address:", row[10], "\n"
 	end 
+	#p row
        if ( !(row[3].nil? || row[3].empty? || row[5].nil? || row[5].empty? || row[6].nil? || row[6].empty? || row[7].nil? || row[7].empty? || row[17].nil? || row[25].nil? || row[25].empty? || (!row[10].nil? && (row[10].include? ('Undisclosed-address')))) && (row[5] == 'CA' || row[5] == 'NY'))
           home_city = row[4].lstrip.rstrip 
           home_state = row[5].lstrip.rstrip
@@ -44,15 +45,15 @@ namespace :csv do
           home = Home.where(uniq_condition).first_or_create
 	  old_price = home.price.floor.to_s if !home.price.nil?
           new_price = row[17].delete(',').lstrip.rstrip  if !row[17].nil?
-          print old_price, new_price, "\n"
+          print "old price:", old_price, " new price:", new_price, "\n"
           if (!home.status.nil? && !home.status.eql?("Inactive") && !home.status.eql?("Inactive-Obsolete")  && old_price.eql?(new_price))
 	       print "exist --", home.id, " ", home.price, " ", home.status, " ",  home.addr1, "\n"
                #print "db link:"+ home.redfin_link, ", pass_link:", row[10], "\n" 
-	       p home.redfin_link
-	       p row[10] 
+	       #p home.redfin_link
+	       #p row[10] 
 	       home.build_image_group(row[25]) unless row[25].nil?
       	  else   
-	   #    p 'update'
+	       p 'update'
 	    home.update_attributes(county: home_county,
                                last_refresh_at: time_before_now(row[8]),
 			       added_to_site: row[9],
@@ -74,19 +75,23 @@ namespace :csv do
 			       listing_agent: row[26],
 			       listed_by: row[27]
               ) 
+	      #p 'import image'
               home.build_image_group(row[25]) unless row[25].nil?
               home.import_public_record(row[0..2].concat([row[9]]).concat([row[24]]).concat([row[17]]))
-              home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
+	      #p 'after public record'
+	      home_history = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: []
               home.import_history_record(home_history)
-              home_tax = row[36] ? parse_wierd_input_to_array(row[36])[1..-1]: []
+              #p 'after history record'
+	      home_tax = row[36] ? parse_wierd_input_to_array(row[36])[1..-1]: []
               #print home_tax, ",  before import \n"       
               home.import_tax_record(home_tax)
-
+              #p 'after tax'
               assigned_schools = row[28] ? parse_wierd_input_to_array(row[28])[1..-1] : []  #remove header 
               elementary_schools = row[29] ?  parse_wierd_input_to_array(row[29])[1..-1] : [] 
               middle_schools =  row[30] ? parse_wierd_input_to_array(row[30])[1..-1]: [] 
               high_schools =  row[31] ? parse_wierd_input_to_array(row[31])[1..-1]: [] 
-              #private_schools = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: [] 
+              #p 'almost end'
+	      #private_schools = row[32] ? parse_wierd_input_to_array(row[32])[1..-1]: [] 
               # import assigned school last, so it will not overwrite it.
               #home.other_schools(elementary_schools + middle_schools + high_schools, home_city, home_county, home_state)
              #home.assign_public_schools(assigned_schools, home_city, home_county, home_state)
