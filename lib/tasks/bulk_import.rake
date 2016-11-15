@@ -53,7 +53,7 @@ namespace :csv do
 	       #p row[10] 
 	       home.build_image_group(row[25]) unless row[25].nil?
       	  else   
-	       p 'update'
+	   #    p 'update'
 	    home.update_attributes(county: home_county,
                                last_refresh_at: time_before_now(row[8]),
 			       added_to_site: row[9],
