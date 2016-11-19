@@ -5,7 +5,7 @@ development:
   database: meejia
   pool: 50
   username: root
-  password: password
+  password: 
 
 test:
   adapter: mysql2

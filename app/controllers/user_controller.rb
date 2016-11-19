@@ -1,6 +1,5 @@
 class UserController < ApplicationController
 
-
   def qr_code
     url = WechatRequest.new.generate_home_code("login_#{params[:uid]}")
     RemoveFileWorker.perform_async(2.hours, url)
@@ -91,10 +90,4 @@ class UserController < ApplicationController
     render json: user.to_json(include: [:questions])    #TODO pagination
   end
 
-  def metric_tracking
-    uid = request.headers['HTTP_UID']
-    user = User.find(uid)
-    WechatTracking.where(wechat_user_id: user.wechat_user.try(:id), tracking_type: 'home viewed', item: params[:home_id]).first_or_create
-    render json: []
-  end
 end

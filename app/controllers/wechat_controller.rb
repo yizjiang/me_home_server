@@ -138,7 +138,7 @@ class WechatController < ApplicationController
     body = {title: title,
      body: home.home_cn.try(:short_desc) || '绝对超值',
      pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-     url: "#{CLIENT_HOST}/home/#{home.id}/?agent_id=#{@agent_id}"}
+     url: "#{CLIENT_HOST}/metric/home/#{home.id}/?s=#{TRACKING_SOURCE["send_home_card"]}&agent_id=#{@agent_id}"}
 
     ReplyWorker.perform_async(@wechat_user.open_id, 'listing_agent_card', @agent_id)
 
@@ -861,7 +861,7 @@ class WechatController < ApplicationController
       {title: "编号#{request.from_user}: " + request.body % {detail: "#{home.addr1} #{home.city}的房源信息"},
        body: '点击图片查看',
        picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{@wechat_user.user_id}"
+       url: "#{CLIENT_HOST}/metric/home/#{home.id}/?s=#{TRACKING_SOURCE["agent_request_items"]}&uid=#{@wechat_user.user_id}"
       }
     end
   end
@@ -879,7 +879,7 @@ class WechatController < ApplicationController
       {title: title,
        body: 'nice home',
        pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{@wechat_user.user_id}"}
+       url: "#{CLIENT_HOST}/metric/home/#{home.id}/?s=#{TRACKING_SOURCE["home_search_items"]}&uid=#{@wechat_user.user_id}"}
     end
 
     if more_home > 0

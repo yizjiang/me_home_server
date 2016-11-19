@@ -28,7 +28,7 @@ class AgentRequest < ActiveRecord::Base
                 {
                   title: "编号#{self.to_user}" + self.body % {detail: "位于#{home.city}的#{home.addr1}房源信息"},
                   description: '点击图片查看',
-                  url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{self.to_user}",
+                  url: "#{CLIENT_HOST}/metric/home/#{home.id}/?uid=#{self.to_user}&s=#{TRACKING_SOURCE["agent_send"]}",
                   picurl: home.images.first
                 }]
               }

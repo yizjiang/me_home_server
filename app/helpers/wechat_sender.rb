@@ -32,7 +32,7 @@ module WechatSender
       {title: title,
        body: '',
        picurl: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/home/#{home.id}/?uid=#{uid}"}
+       url: "#{CLIENT_HOST}/metric/home/#{home.id}/?uid=#{uid}&s=#{TRACKING_SOURCE["home_search_items"]}"}
     end
 
     if more_home.to_i > 0
