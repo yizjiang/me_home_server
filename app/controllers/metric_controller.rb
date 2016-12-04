@@ -4,12 +4,14 @@ class MetricController < ApplicationController
   end
 
   def display_all_users
-    list = REDIS.keys("UserView*").map{|x| x[10..-1]}
+    list = REDIS.keys("UserView:*").map{|x| x[9..-1]}
     results = {}
-    list.each{|x| results[x] = REDIS.hgetall("UserView:" + x)}
     u_list = User.where(id: list)
     u_list.each do |x|
+      results[x.id.to_s] = {}
       results[x.id.to_s]["user_name"] = x.wechat_user.nickname
+      results[x.id.to_s]["home_list"] = REDIS.hgetall("UserView:" + x.id.to_s)
+      results[x.id.to_s]["source_list"] = REDIS.hgetall("UserViewSource:" + x.id.to_s)
     end
     render json: results.to_json
   end
@@ -28,7 +30,7 @@ class MetricController < ApplicationController
   end
 
   def house_list
-    list = REDIS.keys("HouseViewed*").map{|x| x[12..-1]}
+    list = REDIS.keys("HouseViewed:*").map{|x| x[12..-1]}
     results = {}
     list.each do |x|
       r = REDIS.hgetall("HouseViewed:" + x)
@@ -46,16 +48,17 @@ class MetricController < ApplicationController
 
   def metric_tracking_h
     uid = request.headers['HTTP_UID']
-    hid = params["hid"].to_i
-    user = User.find(uid)
-    we_id = user.wechat_user.try(:id)
-    if we_id
-      key = (params["s"] ? params["s"] : "other")
+    hid = params["hid"]
+    key = (params["s"] ? params["s"] : "other")
+    unless REDIS.exists("Cache:" + request.env["REMOTE_ADDR"] + ":" + key)
+      REDIS.setex("Cache:" + request.env["REMOTE_ADDR"] + ":" + key, 5, "1")
       REDIS.hincrby("HouseViewed:" + hid.to_s, "total", 1)
       REDIS.hincrby("HouseViewed:" + hid.to_s, key, 1)
-      REDIS.hincrby("UserView:" + user.id.to_s, params["hid"], 1)
-      REDIS.hincrby("UserViewSource:" + user.id.to_s, key, 1)
-      MetricHomeTracking.create({uid: we_id, hid: hid, source: params["s"]||"other", viewed_time: Time.now.to_i})
+      if uid
+        REDIS.hincrby("UserView:" + uid.to_s, params["hid"], 1)
+        REDIS.hincrby("UserViewSource:" + uid.to_s, key, 1)
+        MetricHomeTracking.create({uid: uid.to_i, hid: hid.to_i, source: key, viewed_time: Time.now.to_i})
+      end
     end
     render :nothing => true, :status => 200, :content_type => 'text/html'
   end
