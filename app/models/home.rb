@@ -116,6 +116,7 @@ class Home < ActiveRecord::Base
                             last_refresh, "%#{region}%", "%#{region}%", search.price_max, search.price_min, 'Active', other_type).order('last_refresh_at DESC').includes(:home_cn, :schools, :home_school_assignments, :images).limit(limit)
           end
         end
+        homes = filter_home_by_school_rate(homes, search)
         result.push(*homes)
         if limit
           limit -= homes.count
@@ -126,6 +127,21 @@ class Home < ActiveRecord::Base
       end
     end
     result
+  end
+
+  def self.filter_home_by_school_rate(homes, search)
+    if search.primary_rating.to_i > 0 || search.junior_high_rating.to_i > 0 || search.senior_high_rating.to_i > 0
+      homes = homes.select do |h|
+        schools = h.get_assigned_schools
+        primary_school = schools.select { |sch| sch[:grade].include?('K')}.first || {}
+        junior_high = schools.select { |sch| sch[:grade].include?('6') || sch[:grade].include?('8')}.first || {}
+        senior_high = schools.select { |sch| sch[:grade].include?('12')}.first || {}
+        primary_school[:rating].to_i >= search.primary_rating.to_i &&
+          junior_high[:rating].to_i >= search.junior_high_rating.to_i &&
+          senior_high[:rating].to_i >= search.senior_high_rating.to_i
+      end
+    end
+    homes
   end
 
   def schools_with_distance(schools)

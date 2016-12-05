@@ -32,7 +32,7 @@ class HomeController < ApplicationController
     else params[:ids]
       ids = params[:ids]
     end
-    homes = Home.includes(:home_cn, :images).find(ids.split(','))
+    homes = Home.where('id in (?) AND geo_point != -1', ids.split(',')).includes(:home_cn, :images)
     render json: homes.as_json(shorten: true)
   end
 

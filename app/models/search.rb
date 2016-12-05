@@ -1,7 +1,9 @@
 # encoding: utf-8
 HOME_TYPE = Home.pluck(:meejia_type).uniq
 class Search
-  attr_accessor :region, :price_min, :price_max, :bed_num, :home_type, :indoor_size, :year_built, :client_home_type, :search_query
+  attr_accessor :region, :price_min, :price_max, :bed_num, :home_type, :indoor_size,
+                :year_built, :client_home_type, :primary_rating, :junior_high_rating,
+                :senior_high_rating, :search_query
 
   def default_attributes
     cities = Home.select('DISTINCT city').sample(2).map(&:city)
@@ -10,6 +12,9 @@ class Search
      priceMin: '',
      priceMax: '',
      bedNum: 2,
+     primary_rating: 0,
+     junior_high_rating: 0,
+     senior_high_rating: 0,
      single_family: true,
      condo: true,
      townhouse: true,
@@ -104,6 +109,14 @@ class Search
     end
     @search_query[:home_type] = @home_type
     @search_query[:client_home_type] = @client_home_type
+
+    @primary_rating = attributes[:primary_rating]
+    @junior_high_rating = attributes[:junior_high_rating]
+    @senior_high_rating = attributes[:senior_high_rating]
+
+    @search_query[:primary_rating] = attributes[:primary_rating]
+    @search_query[:junior_high_rating] = attributes[:junior_high_rating]
+    @search_query[:senior_high_rating] = attributes[:senior_high_rating]
   end
 
 end

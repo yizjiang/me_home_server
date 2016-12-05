@@ -246,7 +246,9 @@ class WechatController < ApplicationController
 
     if !search.empty?
       searches = search['regionValue'].split(',').map do |region|
-        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'], home_type: search['home_type'])
+        attributes = search.dup.symbolize_keys
+        attributes[:regionValue] = region
+        Search.new(attributes)
       end
 
       homes = Home.search(searches).shuffle

@@ -55,7 +55,9 @@ class WechatUser < ActiveRecord::Base
 
     if !search.empty?
       searches = search['regionValue'].split(',').map do |region|
-        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'], home_type: search['home_type'])
+        attributes = search.dup.symbolize_keys
+        attributes[:regionValue] = region
+        Search.new(attributes)
       end
 
       homes = Home.search(searches).shuffle # fair divide?
@@ -95,7 +97,7 @@ class WechatUser < ActiveRecord::Base
 
       latest = homes.map { |h| h.last_refresh_at }.max + 1
       #self.update_attributes(last_search: latest, search_count: (self.search_count || 0) + 1)
-      body = home_search_items(show_homes, more_home, uid)
+      body = home_search_items(show_homes || homes, more_home, uid)
       WechatRequest.new.send_articles(to_user: self.open_id, body: body)
       ReplyWorker.perform_async(self.open_id, 'home_map', homes.map(&:id).join(','))
     else
