@@ -8,6 +8,7 @@ TRACKING_SOURCE = {
                     "agent_request_items" => "agt_req",
                     "send_home_card" => "h_c",
                     "agent_send" => "agt_snd",
-                    "home_map" => "h_m"
+                    "home_map" => "h_m",
+                    "home_game" => "h_g"
                   }
 TRACKING_SOURCE.default = "other"
