@@ -99,7 +99,11 @@ class WechatUser < ActiveRecord::Base
       #self.update_attributes(last_search: latest, search_count: (self.search_count || 0) + 1)
       body = home_search_items(show_homes || homes, more_home, uid)
       WechatRequest.new.send_articles(to_user: self.open_id, body: body)
-      ReplyWorker.perform_async(self.open_id, 'home_map', homes.map(&:id).join(','))
+      if self.search_changed?
+        ReplyWorker.perform_async(self.open_id, 'home_map', homes.map(&:id).join(','))
+      else
+        ReplyWorker.perform_async(self.open_id, 'home_map_with_my_location', homes.map(&:id).join(','))
+      end
     else
       WechatRequest.new.send_text(to_user: self.open_id, body: '没有在售房源')
     end
