@@ -17,8 +17,8 @@ class Commercial < ActiveRecord::Base
       city: city,
       state: state,
       county: county,
-      zipcode: zipcode
-#      source_id: row[0].lstrip.rstrip
+      zipcode: zipcode,
+      source_id: row[0].lstrip.rstrip
     }
 
     
@@ -26,7 +26,7 @@ class Commercial < ActiveRecord::Base
     a_commercial = Commercial.where(uniq_condition).first
     print "uniq_condition: ", uniq_condition, "\n" unless a_commercial.nil?
     a_commercial = Commercial.new(uniq_condition) if a_commercial.nil? 
-    
+
     if (!a_commercial.nil?)
       #print "update", row[0], "\n"
       a_commercial.source_id = row[0].nil? ? a_commercial.source_id: row[0].lstrip.rstrip if a_commercial.source_id.nil?
