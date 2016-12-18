@@ -42,6 +42,7 @@ namespace :csv do
       #print a_firstname,",", a_lastname, ",",a_title, ",",a_phone, ",", a_email, "\n"
       agent = AgentExtention.import_one(a_firstname, a_lastname,a_title,c_city,c_state, a_phone, a_email, company.id)
       s_addr = row[31]
+      
       a_commercial = row[0..21]
       a_commercial.insert(-1,company.id)
       a_commercial.insert(-1,agent.id)
@@ -56,11 +57,15 @@ namespace :csv do
       a_commercial[16] = rating[0]
       
       a_commercial[17] = s_addr unless s_addr.nil?
-      a_commercial[17] = addr[0] unless a_commercial[17].nil?
+      
+      #print "addr= ", addr, " addr[0]= ", addr[0], "\n"
+      a_commercial[17] = addr[0] if s_addr.nil?
+      
+      #print "a_commercial[17]=", a_commercial[17], "\n"
       #print "s_addr= ",a_commercial[17],"p_addr: ", addr[0], "\n"
       # print "check a_commercial:", a_commercial, "\n"
-       commercial = Commercial.importer(a_commercial)
-       print "index=", index, "c_id:",  commercial.id, "\n"
+      commercial = Commercial.importer(a_commercial)
+      print "index=", index, "c_id:",  commercial.id, "\n"
 
       # insert image
       #print "insert image: ", row[22], "\n"
