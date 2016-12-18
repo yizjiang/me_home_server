@@ -1,0 +1,67 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  sale_type: MyString
+  category: MyString
+  status: MyString
+  name: MyString
+  rating: 1
+  size: 1.5
+  price: 1.5
+  price_sf: 1.5
+  cap_rate: 1.5
+  on_market: 2016-12-15 08:46:27
+  last_updated: 2016-12-15 08:46:27
+  num_of_properties: 1
+  land_size: MyString
+  rating: 1
+  property_type: MyString
+  addr1: MyString
+  city: MyString
+  county: MyString
+  state: MyString
+  zipcode: 1
+  geo_point: MyString
+  year_b_r: 1
+  submarket: MyString
+  market: MyString
+  stories: 1
+  broker_company_id: MyString
+  agent_extention_id: MyString
+  source_id: MyString
+  costar_link: MyString
+  created_at: 2016-12-15 08:46:27
+  updated_at: 2016-12-15 08:46:27
+
+two:
+  sale_type: MyString
+  category: MyString
+  status: MyString
+  name: MyString
+  rating: 1
+  size: 1.5
+  price: 1.5
+  price_sf: 1.5
+  cap_rate: 1.5
+  on_market: 2016-12-15 08:46:27
+  last_updated: 2016-12-15 08:46:27
+  num_of_properties: 1
+  land_size: MyString
+  rating: 1
+  property_type: MyString
+  addr1: MyString
+  city: MyString
+  county: MyString
+  state: MyString
+  zipcode: 1
+  geo_point: MyString
+  year_b_r: 1
+  submarket: MyString
+  market: MyString
+  stories: 1
+  broker_company_id: MyString
+  agent_extention_id: MyString
+  source_id: MyString
+  costar_link: MyString
+  created_at: 2016-12-15 08:46:27
+  updated_at: 2016-12-15 08:46:27

@@ -1,0 +1,57 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  property_type: MyString
+  addr1: MyString
+  city: MyString
+  county: MyString
+  state: MyString
+  zipcode: 1
+  rating: 1
+  land_size: 1.5
+  land_parcel: MyString
+  land_zoning: MyString
+  land_use: MyString
+  building_desc: MyString
+  building_size: 1.5
+  year_built: 1
+  year_renovated: 1
+  building_stories: 1
+  building_class: MyString
+  building_tenancy: MyString
+  building_parking: MyString
+  building_elevator: MyString
+  geo_point: MyString
+  sale_property_id: MyString
+  source_id: MyString
+  costar_link: MyString
+  created_at: 2016-12-15 08:53:38
+  updated_at: 2016-12-15 08:53:38
+
+two:
+  property_type: MyString
+  addr1: MyString
+  city: MyString
+  county: MyString
+  state: MyString
+  zipcode: 1
+  rating: 1
+  land_size: 1.5
+  land_parcel: MyString
+  land_zoning: MyString
+  land_use: MyString
+  building_desc: MyString
+  building_size: 1.5
+  year_built: 1
+  year_renovated: 1
+  building_stories: 1
+  building_class: MyString
+  building_tenancy: MyString
+  building_parking: MyString
+  building_elevator: MyString
+  geo_point: MyString
+  sale_property_id: MyString
+  source_id: MyString
+  costar_link: MyString
+  created_at: 2016-12-15 08:53:38
+  updated_at: 2016-12-15 08:53:38
