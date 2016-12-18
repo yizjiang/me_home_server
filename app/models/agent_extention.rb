@@ -4,6 +4,26 @@ class AgentExtention < ActiveRecord::Base
   attr_accessible *column_names
   belongs_to :user
 
+  def self.import_one(firstname, lastname, title, city, state, phone,email, company_id)
+     #print "--", firstname, ",", lastname, ",", title, ",", phone, ",", email, ",", company_id, "\n"
+    uniq_condition =
+      {
+      first_name: firstname,
+      last_name: lastname,
+      title: title,
+      city_area: city,
+      license_state: state,
+      status: "pending",
+      mail: email,
+      broker_company_id: company_id
+    }
+    
+    agent = AgentExtention.where(uniq_condition).first
+    agent = AgentExtention.new(uniq_condition) if agent.nil?
+    agent.update_attributes(phone: phone, description: "commercial property contact")
+    return agent
+  end
+
   def self.importer(broker_agent)
     biz_license_id = broker_agent[7].nil? ? nil : broker_agent[7].lstrip.rstrip
     biz_name = broker_agent[0].nil? ? nil : broker_agent[0].lstrip.rstrip
