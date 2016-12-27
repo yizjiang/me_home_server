@@ -1,6 +1,9 @@
 class Commercial < ActiveRecord::Base
   attr_accessible :addr1, :agent_extention_id, :broker_company_id, :cap_rate, :category, :city, :costar_link, :county, :created_at, :geo_point, :land_size, :last_updated, :market, :name, :num_of_properties, :on_market, :price, :price_sf, :property_type, :rating, :rating, :sale_type, :size, :source_id, :state, :status, :stories, :submarket, :updated_at, :year_b_r, :zipcode
 
+  extend SearchByAddress
+  has_many :properties, foreign_key: :sale_property_id
+  has_many :commercial_images
 
   def self.importer(row)
 
@@ -72,5 +75,12 @@ class Commercial < ActiveRecord::Base
     return a_commercial
   end
 
-
+  def as_json(options = nil)
+    options ||= {}
+    result = super(options)
+    result[:properties] = self.properties
+    result[:images] = self.commercial_images.map(&:image_url)
+    result[:city_info] = City.find_by_name(self.city)
+    result
+  end
 end
