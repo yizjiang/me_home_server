@@ -251,9 +251,16 @@ class WechatController < ApplicationController
         Search.new(attributes)
       end
 
-      homes = Home.search(searches).shuffle
-      ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.map(&:id).join(','))
-      home_result(homes)
+      if search['property_type'] == 'business'
+        homes = Commercial.search_by_city(search['regionValue'].split(',')).shuffle
+
+        ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.map(&:id).join(','))
+        home_result(homes)
+      else
+        homes = Home.search(searches).shuffle
+        ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.map(&:id).join(','))
+        home_result(homes)
+      end
     else
       if cached_input('quick_search')
         homes = []
@@ -337,7 +344,7 @@ class WechatController < ApplicationController
         delete_redis('next_ids')
       end
 
-      latest = homes.map { |h| h.last_refresh_at }.max + 1
+      latest = homes.map { |h| h.class.name == 'Home' ? h.last_refresh_at : h.last_updated }.max + 1
       @wechat_user.update_attributes(last_search: latest, search_count: (@wechat_user.search_count || 0) + 1)
       @msg_hash[:items] = home_search_items(homes, more_home)
       article_response
@@ -684,11 +691,16 @@ class WechatController < ApplicationController
       title = ''
       search = JSON.parse(search)
 
-      searches = search['regionValue'].split(',').map do |region|
-        Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'], home_type: search['home_type'])
+      if search['property_type'] == 'resident'
+        searches = search['regionValue'].split(',').map do |region|
+          Search.new(regionValue: region, priceMin: search['priceMin'], priceMax: search['priceMax'], bedNum: search['bedNum'], home_type: search['home_type'])
+        end
+
+        home = Home.search(searches, 1).as_json(shorten: true).first
+      else
+        home = Commercial.search_by_city(search['regionValue'].split(',')).as_json(shorten: true).first
       end
 
-      home = Home.search(searches, 1).as_json(shorten: true).first
 
       if (search['home_type'] - Home::OTHER_PROPERTY_TYPE).length == 0
         title = "#{search['regionValue']}其他类型房产"
@@ -872,16 +884,23 @@ class WechatController < ApplicationController
     ticket = TicketGenerator.encrypt_uid(@wechat_user.user_id)
     homes = homes.map do |home|
 
-      if Home::OTHER_PROPERTY_TYPE.include?(home.meejia_type)
-        title = "#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
-      else
-        title = "#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
-      end
+      title =
+        if home.class.name == 'Commercial'
+          "#{home.city}的投资房产, #{(home.price || 0) / 10000}万美金"
+        else
+          if Home::OTHER_PROPERTY_TYPE.include?(home.meejia_type)
+            "#{home.city}的#{home.home_cn.try(:lot_size)}#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+          else
+            "#{home.city}的#{home.bed_num}卧室#{home.home_cn.try(:home_type) || home.meejia_type}，#{home.price / 10000}万美金"
+          end
+        end
+
+
 
       {title: title,
        body: 'nice home',
        pic_url: "#{CDN_HOST}/photo/#{home.images.first.try(:image_url) || 'default.jpeg'}",
-       url: "#{CLIENT_HOST}/metric/home/#{home.id}/?s=#{TRACKING_SOURCE["home_search_items"]}&uid=#{@wechat_user.user_id}"}
+       url: "#{CLIENT_HOST}/metric/#{home.class.name.downcase}/#{home.id}/?s=#{TRACKING_SOURCE["home_search_items"]}&uid=#{@wechat_user.user_id}"}
     end
 
     if more_home > 0

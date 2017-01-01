@@ -110,6 +110,8 @@ class Search
     @search_query[:home_type] = @home_type
     @search_query[:client_home_type] = @client_home_type
 
+    @search_query[:property_type] = attributes[:propertyType]
+
     @primary_rating = attributes[:primary_rating]
     @junior_high_rating = attributes[:junior_high_rating]
     @senior_high_rating = attributes[:senior_high_rating]

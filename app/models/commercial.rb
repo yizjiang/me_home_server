@@ -5,6 +5,8 @@ class Commercial < ActiveRecord::Base
   has_many :properties, foreign_key: :sale_property_id
   has_many :commercial_images
 
+  alias images commercial_images
+
   def self.importer(row)
 
     #status = row[3].nil? ? nil : row[3].lstrip.rstrip
