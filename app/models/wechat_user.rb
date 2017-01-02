@@ -53,7 +53,7 @@ class WechatUser < ActiveRecord::Base
                {}
              end
 
-    if !search.empty?
+    if !search.empty? && search['property_type'] == 'resident'
       searches = search['regionValue'].split(',').map do |region|
         attributes = search.dup.symbolize_keys
         attributes[:regionValue] = region

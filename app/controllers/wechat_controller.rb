@@ -254,7 +254,7 @@ class WechatController < ApplicationController
       if search['property_type'] == 'business'
         homes = Commercial.search_by_city(search['regionValue'].split(',')).shuffle
 
-        ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.map(&:id).join(','))
+        #ReplyWorker.perform_async(@wechat_user.open_id, 'home_map', homes.map(&:id).join(','))
         home_result(homes)
       else
         homes = Home.search(searches).shuffle
